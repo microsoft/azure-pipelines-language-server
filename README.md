@@ -83,6 +83,11 @@ This repository only contains the server implementation. Here are some known cli
    * latest [Visual Studio Code](https://code.visualstudio.com/)
    * [Node.js](https://nodejs.org/) v6.0.0 or higher
 2. Fork and clone this repository
+3. Install the Windows npm auth helper:
+    ```cmd
+    npm install -g vsts-npm-auth --registry https://registry.npmjs.com --always-auth false
+    vsts-npm-auth -config .npmrc
+    ```
 3. Install the dependencies
 	```bash
     cd yaml-language-server
