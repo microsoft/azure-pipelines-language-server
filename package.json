@@ -1,10 +1,14 @@
 {
-  "name": "yaml-language-server",
-  "description": "YAML language server",
-  "version": "0.0.17",
-  "author": "Gorkem Ercan (Red Hat)",
+  "name": "pipelines-language-server",
+  "description": "Azure Pipelines language server",
+  "version": "0.9.0",
+  "author": "Microsoft",
   "license": "MIT",
   "contributors": [
+    {
+      "name": "Gorkem Ercan",
+      "email": "gorkem.ercan@gmail.com"
+    },
     {
       "name": "Joshua Pinkney",
       "email": "joshpinkney@gmail.com"
@@ -14,12 +18,12 @@
     "node": "*"
   },
   "keywords": [
-    "yaml",
+    "azure-pipelines",
     "LSP"
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/redhat-developer/yaml-language-server.git"
+    "url": "https://github.com/Microsoft/pipelines-language-server.git"
   },
   "dependencies": {
     "js-yaml": "^3.12.0",
