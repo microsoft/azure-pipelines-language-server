@@ -218,8 +218,6 @@ connection.onDidChangeConfiguration((change) => {
 		schemaConfigurationSettings.push(schemaObj);
 	}
 
-	setSchemaStoreSettingsIfNotSet();
-
 	updateConfiguration();
 
 	// dynamically enable & disable the formatter
@@ -235,15 +233,6 @@ connection.onDidChangeConfiguration((change) => {
 		}
 	}
 });
-
-function setSchemaStoreSettingsIfNotSet(){
-	if(schemaStoreSettings.length === 0){
-		getSchemaStoreMatchingSchemas().then(schemaStore => {
-			schemaStoreSettings = schemaStore.schemas;
-			updateConfiguration();
-		});
-	}
-}
 
 function getSchemaStoreMatchingSchemas(){
 
@@ -283,7 +272,6 @@ function getSchemaStoreMatchingSchemas(){
 connection.onNotification(SchemaAssociationNotification.type, associations => {
 	schemaAssociations = associations;
 	specificValidatorPaths = [];
-	setSchemaStoreSettingsIfNotSet();
 	updateConfiguration();
 });
 
