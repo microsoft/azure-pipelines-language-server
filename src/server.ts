@@ -195,7 +195,6 @@ let schemaAssociations: ISchemaAssociations = void 0;
 let formatterRegistration: Thenable<Disposable> = null;
 let specificValidatorPaths = [];
 let schemaConfigurationSettings = [];
-let yamlShouldValidate = true;
 let schemaStoreSettings = [];
 let customTags = [];
 
@@ -205,7 +204,6 @@ connection.onDidChangeConfiguration((change) => {
 
 	specificValidatorPaths = [];
 	yamlConfigurationSettings = settings.yaml && settings.yaml.schemas;
-	yamlShouldValidate = settings.yaml && settings.yaml.validate;
 	schemaConfigurationSettings = [];
 	customTags = settings.yaml && settings.yaml.customTags ? settings.yaml.customTags : [];
 
@@ -217,8 +215,6 @@ connection.onDidChangeConfiguration((change) => {
 		}
 		schemaConfigurationSettings.push(schemaObj);
 	}
-
-	setSchemaStoreSettingsIfNotSet();
 
 	updateConfiguration();
 
@@ -235,15 +231,6 @@ connection.onDidChangeConfiguration((change) => {
 		}
 	}
 });
-
-function setSchemaStoreSettingsIfNotSet(){
-	if(schemaStoreSettings.length === 0){
-		getSchemaStoreMatchingSchemas().then(schemaStore => {
-			schemaStoreSettings = schemaStore.schemas;
-			updateConfiguration();
-		});
-	}
-}
 
 function getSchemaStoreMatchingSchemas(){
 
@@ -283,13 +270,12 @@ function getSchemaStoreMatchingSchemas(){
 connection.onNotification(SchemaAssociationNotification.type, associations => {
 	schemaAssociations = associations;
 	specificValidatorPaths = [];
-	setSchemaStoreSettingsIfNotSet();
 	updateConfiguration();
 });
 
 function updateConfiguration() {
 	let languageSettings: LanguageSettings = {
-		validate: yamlShouldValidate,
+		validate: true,
 		schemas: [],
 		customTags: customTags
 	};
@@ -494,7 +480,7 @@ function completionHelper(document: TextDocument, textDocumentPosition: Position
 		let trimmedText = textLine.trim();
 		if(trimmedText.length === 0 || (trimmedText.length === 1 && trimmedText[0] === '-')){
 			//Add a temp node that is in the document but we don't use at all.
-			newText = document.getText().substring(0, start+textLine.length) + "holder:\r\n" + document.getText().substr(lineOffset[linePos+1] || document.getText().length);
+			newText = document.getText().substring(0, start+textLine.length) + "h:\r\n" + document.getText().substr(lineOffset[linePos+1] || document.getText().length);
 
 		//For when missing semi colon case
 		}else{
