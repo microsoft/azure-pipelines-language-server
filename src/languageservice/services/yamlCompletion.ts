@@ -17,8 +17,8 @@ import { CompletionItem, CompletionItemKind, CompletionList, TextDocument, Posit
 
 import * as nls from 'vscode-nls';
 import { matchOffsetToDocument } from '../utils/arrUtils';
+import { YAMLDocument } from '../parser/yamlParser';
 const localize = nls.loadMessageBundle();
-
 
 export class YAMLCompletion {
 
@@ -50,7 +50,7 @@ export class YAMLCompletion {
 		return this.promise.resolve(item);
 	}
 
-	public doComplete(document: TextDocument, position: Position, doc: Parser.JSONDocument): Thenable<CompletionList> {
+	public doComplete(document: TextDocument, position: Position, doc: YAMLDocument/*Parser.JSONDocument*/): Thenable<CompletionList> {
 
 		let result: CompletionList = {
 			items: [],
@@ -62,6 +62,7 @@ export class YAMLCompletion {
 			return Promise.resolve(result);
 		}
 		
+		//let currentDoc = matchOffsetToDocument(offset, doc);
 		let currentDoc = matchOffsetToDocument(offset, doc);
 		if(currentDoc === null){
 			return Promise.resolve(result);
@@ -71,24 +72,31 @@ export class YAMLCompletion {
 			return Promise.resolve(result);
 		}
 
+		//console.log(JSON.pruned(node));
+
 		let currentWord = this.getCurrentWord(document, offset);
 
 		let overwriteRange = null;
 		if(node && node.type === 'null'){
+			//console.log('type = null');
 			let nodeStartPos = document.positionAt(node.start);
 			nodeStartPos.character += 1;
 			let nodeEndPos = document.positionAt(node.end);
 			nodeEndPos.character += 1;
 			overwriteRange = Range.create(nodeStartPos, nodeEndPos);
 		}else if (node && (node.type === 'string' || node.type === 'number' || node.type === 'boolean')) {
+			//console.log('type = string | nuber | boolean');
 			overwriteRange = Range.create(document.positionAt(node.start), document.positionAt(node.end));
 		} else {
+			//console.log('else');
 			let overwriteStart = offset - currentWord.length;
 			if (overwriteStart > 0 && document.getText()[overwriteStart - 1] === '"') {
 				overwriteStart--;
 			}
 			overwriteRange = Range.create(document.positionAt(overwriteStart), position);
 		}
+
+		//console.log('overwriteRange: ' + JSON.stringify(overwriteRange));
 
 		let proposed: { [key: string]: CompletionItem } = {};
 		let collector: CompletionsCollector = {
@@ -118,8 +126,10 @@ export class YAMLCompletion {
 			}
 		};
 
+		//console.log('document.uri: ' + JSON.stringify(document.uri));
 		return this.schemaService.getSchemaForResource(document.uri).then((schema) => {
-
+			//console.log('start');
+			//console.log('schema: ' + JSON.stringify(schema));
 			if(!schema){
 				return Promise.resolve(result);
 			}
@@ -146,6 +156,7 @@ export class YAMLCompletion {
 			}
 
 			// proposals for properties
+			//console.log('node and node object');
 			if (node && node.type === 'object') {
 				// don't suggest properties that are already present
 				let properties = (<Parser.ObjectASTNode>node).properties;
@@ -185,6 +196,7 @@ export class YAMLCompletion {
 
 			// proposals for values
 			let types: { [type: string]: boolean } = {};
+			//console.log('schema: ' + JSON.stringify(schema));
 			if (schema) {
 				this.getValueCompletions(schema, currentDoc, node, offset, document, collector, types);
 			} 
@@ -224,7 +236,9 @@ export class YAMLCompletion {
 		});
 	}
 
-	private getValueCompletions(schema: SchemaService.ResolvedSchema, doc, node: Parser.ASTNode, offset: number, document: TextDocument, collector: CompletionsCollector, types: { [type: string]: boolean }	): void {
+	private getValueCompletions(schema: SchemaService.ResolvedSchema, doc, node: Parser.ASTNode, offset: number, document: TextDocument, collector: CompletionsCollector, types: { [type: string]: boolean } ): void {
+		
+
 		let offsetForSeparator = offset;
 		let parentKey: string = null;
 		let valueNode: Parser.ASTNode = null;
@@ -283,6 +297,7 @@ export class YAMLCompletion {
 						}
 					}
 					if (s.schema.properties) {
+						//console.log('property schema');
 						let propertySchema = s.schema.properties[parentKey];
 						if (propertySchema) {
 							this.addSchemaValueCompletions(propertySchema, collector, types, separatorAfter);
@@ -379,6 +394,7 @@ export class YAMLCompletion {
 	}
 
 	private addEnumValueCompletions(schema: JSONSchema, collector: CompletionsCollector, separatorAfter: string): void {
+		console.log('addEnumValueCompletions');
 		if (Array.isArray(schema.enum)) {
 			for (let i = 0, length = schema.enum.length; i < length; i++) {
 				let enm = schema.enum[i];

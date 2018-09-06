@@ -16,7 +16,7 @@ import {
 import { xhr, XHRResponse, configure as configureHttpRequests, getErrorStatusDescription } from 'request-light';
 import path = require('path');
 import fs = require('fs');
-import URI from './languageservice/utils/uri';
+import URI from 'vscode-uri';
 import * as URL from 'url';
 import Strings = require('./languageservice/utils/strings');
 import { getLineOffsets, removeDuplicatesObj } from './languageservice/utils/arrUtils';
@@ -362,6 +362,8 @@ function isKubernetes(textDocument){
 }
 
 documents.onDidChangeContent((change) => {
+	
+
 	triggerValidation(change.document);
 });
 

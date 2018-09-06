@@ -18,6 +18,9 @@ function encodeNoop(str: string): string {
 }
 
 
+// TODO: Why is this code in here? Why would we need to create our own URI?
+// Looks like it's copied from vscode-uri
+
 /**
  * Uniform Resource Identifier (URI) http://tools.ietf.org/html/rfc3986.
  * This class is a simple parser which creates the basic component paths

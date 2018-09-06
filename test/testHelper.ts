@@ -1,32 +1,20 @@
-/*---------------------------------------------------------------------------------------------
- *  Copyright (c) Red Hat. All rights reserved.
- *  Licensed under the MIT License. See License.txt in the project root for license information.
- *--------------------------------------------------------------------------------------------*/
+
+
+
 import {
 	IPCMessageReader, IPCMessageWriter,
 	createConnection, IConnection, TextDocumentSyncKind,
-	TextDocuments, TextDocument, Diagnostic, DiagnosticSeverity,
-	InitializeParams, InitializeResult, TextDocumentPositionParams,
-	CompletionItem, CompletionItemKind, RequestType
+	InitializeResult, RequestType
 } from 'vscode-languageserver';
-import {load as yamlLoader, YAMLDocument, YAMLException, YAMLNode} from 'yaml-ast-parser';
-import { xhr, XHRResponse, configure as configureHttpRequests, getErrorStatusDescription } from 'request-light';
-import {getLanguageService} from '../src/languageservice/yamlLanguageService'
+import { xhr, XHRResponse, getErrorStatusDescription } from 'request-light';
 import Strings = require( '../src/languageservice/utils/strings');
-import URI from '../src/languageservice/utils/uri';
+import URI from 'vscode-uri';
 import * as URL from 'url';
 import fs = require('fs');
-import {JSONSchemaService} from '../src/languageservice/services/jsonSchemaService'
-var assert = require('assert');
 
 namespace VSCodeContentRequest {
 	export const type: RequestType<{}, {}, {}, {}> = new RequestType('vscode/content');
 }
-
-const validationDelayMs = 250;
-let pendingValidationRequests: { [uri: string]: NodeJS.Timer; } = {};
-let validDocuments: Array<String>;
-
 
 // Create a connection for the server.
 let connection: IConnection = null;

@@ -3,19 +3,8 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 import {
-	IPCMessageReader, IPCMessageWriter,
-	createConnection, IConnection, TextDocumentSyncKind,
-	TextDocuments, TextDocument, Diagnostic, DiagnosticSeverity,
-	InitializeParams, InitializeResult, TextDocumentPositionParams,
-	CompletionItem, CompletionItemKind, RequestType
-} from 'vscode-languageserver';
-import { xhr, XHRResponse, configure as configureHttpRequests, getErrorStatusDescription } from 'request-light';
+	TextDocument} from 'vscode-languageserver';
 import {getLanguageService} from '../src/languageservice/yamlLanguageService'
-import Strings = require( '../src/languageservice/utils/strings');
-import URI from '../src/languageservice/utils/uri';
-import * as URL from 'url';
-import fs = require('fs');
-import {JSONSchemaService} from '../src/languageservice/services/jsonSchemaService'
 import {schemaRequestService, workspaceContext}  from './testHelper';
 import { parse as parseYAML } from '../src/languageservice/parser/yamlParser';
 import { getLineOffsets } from '../src/languageservice/utils/arrUtils';
@@ -23,7 +12,6 @@ var assert = require('assert');
 
 let languageService = getLanguageService(schemaRequestService, workspaceContext, [], null);
 
-let schemaService = new JSONSchemaService(schemaRequestService, workspaceContext);
 
 let uri = 'http://json.schemastore.org/bowerrc';
 let languageSettings = {
@@ -46,7 +34,6 @@ suite("Auto Completion Tests", () => {
 
 			function parseSetup(content: string, position){
 				let testTextDocument = setup(content);
-				let yDoc = parseYAML(testTextDocument.getText());
 				return completionHelper(testTextDocument, testTextDocument.positionAt(position));
 			}
 
