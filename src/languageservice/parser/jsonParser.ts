@@ -13,6 +13,9 @@ import * as nls from 'vscode-nls';
 import { LanguageSettings } from '../yamlLanguageService';
 const localize = nls.loadMessageBundle();
 
+import * as logger from '../../logger';
+import * as util from 'util';
+
 export interface IRange {
 	start: number;
 	end: number;
@@ -126,6 +129,8 @@ export class ASTNode {
 	}
 
 	public getNodeFromOffsetEndInclusive(offset: number): ASTNode {
+		logger.log('getNodeFromOffsetEndInclusive');
+
 		let collector = [];
 		let findNode = (node: ASTNode): ASTNode => {
 			if (offset >= node.start && offset <= node.end) {
@@ -140,17 +145,38 @@ export class ASTNode {
 			}
 			return null;
 		};
+
 		let foundNode = findNode(this);
 		let currMinDist = Number.MAX_VALUE;
 		let currMinNode = null;
+
+		// logger.log('getNodeFromOffsetEndInclusive-collector(after findNode): ' + util.inspect(collector));
+
+		// The bug might be in here... compare collector first
+		// The passing test has a full node and is of type PropertyASTNode, the failing test root node type is NullASTNode
+
+
+		// For the failed test the first item is a NullAstNode, I don't think we want this. If we ignored it and took the second I think it would be right.
+		// I think the passing test returns the last node, we want the failing one to do the same?
 		for(let possibleNode in collector){
 			let currNode = collector[possibleNode];
 			let minDist = (currNode.end - offset) + (offset - currNode.start);
+			logger.log('getNodeFromOffsetEndInclusive-collector iterator minDist(possibleNode: )' + possibleNode + ': ' + util.inspect(minDist));
 			if(minDist < currMinDist){
+				logger.log('getNodeFromOffsetEndInclusive-collector iterator changing min node');
 				currMinNode = currNode;
 				currMinDist = minDist;
 			}
 		}
+
+		// except for the end length, which we expect to be different, this seems to be the same across tests
+		// foundNode appears to be the same, currMinNode is different and that's what we see in yamlCompletion since it's non null
+		// 
+		// 
+
+		// logger.log('getNodeFromOffsetEndInclusive-currMinNode: ' + util.inspect(currMinNode));
+		// logger.log('getNodeFromOffsetEndInclusive-foundNode: ' + util.inspect(foundNode));
+
 		return currMinNode || foundNode;
 	}
 
@@ -972,6 +998,8 @@ export class JSONDocument {
 	}
 
 	public getNodeFromOffsetEndInclusive(offset: number): ASTNode {
+		// TODO: Possible it's combining?
+
 		return this.root && this.root.getNodeFromOffsetEndInclusive(offset);
 	}
 

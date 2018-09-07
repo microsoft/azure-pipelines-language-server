@@ -15,8 +15,9 @@ import { PromiseConstructor, Thenable } from 'vscode-json-languageservice';
 import { CompletionItem, CompletionItemKind, CompletionList, TextDocument, Position, Range, TextEdit, InsertTextFormat } from 'vscode-languageserver-types';
 import * as nls from 'vscode-nls';
 import { matchOffsetToDocument } from '../utils/arrUtils';
-import { YAMLDocument } from '../parser/yamlParser';
+import { YAMLDocument, SingleYAMLDocument } from '../parser/yamlParser';
 import * as logger from '../../logger';
+import * as util from 'util';
 
 const localize = nls.loadMessageBundle();
 
@@ -64,36 +65,81 @@ export class YAMLCompletion {
 		}
 		
 		//let currentDoc = matchOffsetToDocument(offset, doc);
-		let currentDoc = matchOffsetToDocument(offset, doc);
+		let currentDoc: SingleYAMLDocument = matchOffsetToDocument(offset, doc);
 		if(currentDoc === null){
 			return Promise.resolve(result);
 		}
+
+		// logger.log('offest: ' + offset);
+		// both tests have an offset of 14
+		logger.log(util.inspect(currentDoc));
+
+		// it looks like both tests are equivalent in terms of currentDoc
+
+		// this is just getting the node from where the cursor is?
 		let node = currentDoc.getNodeFromOffsetEndInclusive(offset);
+
+		// logger.log('node in yaml completion: ' + util.inspect(node));
+
+		// This is where the issue is.
+		// The passing test has a full node and is of type PropertyASTNode, the failing test root node type is NullASTNode
+		// The passing test also has a StringASTNode beneath it as a "key", this is for the task key
+		// 	it also has the value
+		// The failing test doesn't have this StringASTNode for the task key
+		// 
+		// 
+
 		if (this.isInComment(document, node ? node.start : 0, offset)) {
 			return Promise.resolve(result);
 		}
 
 		let currentWord = this.getCurrentWord(document, offset);
-
 		let overwriteRange = null;
+
+		
+
 		if(node && node.type === 'null'){
-			logger.log('doComplete-node type is null');
+			//logger.log('doComplete-node type is null');
 			let nodeStartPos = document.positionAt(node.start);
 			nodeStartPos.character += 1;
 			let nodeEndPos = document.positionAt(node.end);
 			nodeEndPos.character += 1;
 			overwriteRange = Range.create(nodeStartPos, nodeEndPos);
 		}else if (node && (node.type === 'string' || node.type === 'number' || node.type === 'boolean')) {
-			logger.log('doComplete-type = string | nuber | boolean');
+			//logger.log('doComplete-type = string | nuber | boolean');
 			overwriteRange = Range.create(document.positionAt(node.start), document.positionAt(node.end));
 		} else {
-			logger.log('doComplete-else');
+			//logger.log('doComplete-else');
 			let overwriteStart = offset - currentWord.length;
 			if (overwriteStart > 0 && document.getText()[overwriteStart - 1] === '"') {
 				overwriteStart--;
 			}
 			overwriteRange = Range.create(document.positionAt(overwriteStart), position);
 		}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 		let proposed: { [key: string]: CompletionItem } = {};
 		let collector: CompletionsCollector = {
@@ -125,7 +171,7 @@ export class YAMLCompletion {
 
 		//console.log('document.uri: ' + JSON.stringify(document.uri));
 		return this.schemaService.getSchemaForResource(document.uri).then((schema) => {
-			console.log('post.getSchemaForResource');
+			//console.log('post.getSchemaForResource');
 
 			if(!schema){
 				return Promise.resolve(result);
@@ -154,7 +200,7 @@ export class YAMLCompletion {
 			// proposals for properties
 			//console.log('node and node object');
 			if (node && node.type === 'object') {
-				console.log('post.getSchemaForResource-node and type is object');
+				//console.log('post.getSchemaForResource-node and type is object');
 
 				// don't suggest properties that are already present
 				let properties = (<Parser.ObjectASTNode>node).properties;
@@ -182,7 +228,7 @@ export class YAMLCompletion {
 					}
 				});
 				if ((!schema && currentWord.length > 0 && document.getText().charAt(offset - currentWord.length - 1) !== '"')) {
-					console.log('post.getSchemaForResource-complex add');
+					//console.log('post.getSchemaForResource-complex add');
 
 					collector.add({
 						kind: CompletionItemKind.Property,
@@ -484,7 +530,7 @@ export class YAMLCompletion {
 	}
 
 	private getSuggestionKind(type: any): CompletionItemKind {
-		logger.log('getSuggestionKind');
+		//logger.log('getSuggestionKind');
 
 		if (Array.isArray(type)) {
 			let array = <any[]>type;
