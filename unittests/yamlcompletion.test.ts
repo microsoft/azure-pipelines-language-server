@@ -40,14 +40,14 @@ suite("Yaml Completion Service Tests", function() {
 
     test ('Given a new file with steps and task, autocomplete should give suggestions', async function() {
         // TODO: We actually want expectedTaskCount to be 160, not 0. This is the bug.
-        await runTaskCompletionItemsTest('steps:\n- task: ', 1, 7, 0);
+        await runTaskCompletionItemsTest('steps:\n- task: ', 1, 7, 160);
     });
 });
 
 // Given a file and a position, this test expects the task list to show as completion items.
 async function runTaskCompletionItemsTest(content: string, line: number, character: number, expectedTaskCount: number) {
     // Arrange
-    const schemaUri: string = "file:///e%3A/ExtensionLearning/pipelines-language-server/unittests/schema.json";
+    const schemaUri: string = "file:///d%3A/ExtensionLearning/azure-pipelines-language-server/unittests/schema.json";
 
     let schemaService = new JSONSchemaService.JSONSchemaService(requestService, workspaceContext, null);
     schemaService.setSchemaContributions({ schemaAssociations: { '*.*': [schemaUri] } });

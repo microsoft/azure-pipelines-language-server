@@ -12,12 +12,12 @@ import SchemaService = require('./jsonSchemaService');
 import { JSONSchema } from '../jsonSchema';
 import { JSONWorkerContribution, CompletionsCollector } from '../jsonContributions';
 import { PromiseConstructor, Thenable } from 'vscode-json-languageservice';
-
 import { CompletionItem, CompletionItemKind, CompletionList, TextDocument, Position, Range, TextEdit, InsertTextFormat } from 'vscode-languageserver-types';
-
 import * as nls from 'vscode-nls';
 import { matchOffsetToDocument } from '../utils/arrUtils';
 import { YAMLDocument } from '../parser/yamlParser';
+import * as logger from '../../logger';
+
 const localize = nls.loadMessageBundle();
 
 export class YAMLCompletion {
@@ -95,8 +95,6 @@ export class YAMLCompletion {
 			}
 			overwriteRange = Range.create(document.positionAt(overwriteStart), position);
 		}
-
-		//console.log('overwriteRange: ' + JSON.stringify(overwriteRange));
 
 		let proposed: { [key: string]: CompletionItem } = {};
 		let collector: CompletionsCollector = {
