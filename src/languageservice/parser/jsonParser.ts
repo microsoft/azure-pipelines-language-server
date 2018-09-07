@@ -160,16 +160,18 @@ export class ASTNode {
 		// I think the passing test returns the last node, we want the failing one to do the same?
 		for(let possibleNode in collector){
 			let currNode = collector[possibleNode];
-			logger.log('\n\n\ncurrNode: ' + util.inspect(currNode));
+			//logger.log('\n\n\ncurrNode: ' + util.inspect(currNode));
 			let minDist = (currNode.end - offset) + (offset - currNode.start);
-			logger.log(`currNode.start: ${currNode.start}, currNode.end: ${currNode.end}, offset: ${offset}`);
-			logger.log('getNodeFromOffsetEndInclusive-collector iterator minDist(possibleNode: ' + possibleNode + ') -- minDist = ' + util.inspect(minDist));
+			//logger.log(`currNode.start: ${currNode.start}, currNode.end: ${currNode.end}, offset: ${offset}`);
+			//logger.log('getNodeFromOffsetEndInclusive-collector iterator minDist(possibleNode: ' + possibleNode + ') -- minDist = ' + util.inspect(minDist));
 			
 			// If minDist === 0 we are at the end of the file, I don't think we want that null node?
 			if(minDist !== 0 && minDist < currMinDist){
-				logger.log('getNodeFromOffsetEndInclusive-collector iterator changing min node');
+				//logger.log('getNodeFromOffsetEndInclusive-collector iterator changing min node');
 				currMinNode = currNode;
 				currMinDist = minDist;
+
+				logger.log('\n\n\nchange current mind node to: ' + util.inspect(currNode));
 			}
 		}
 
