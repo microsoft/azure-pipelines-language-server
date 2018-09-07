@@ -129,7 +129,7 @@ export class ASTNode {
 	}
 
 	public getNodeFromOffsetEndInclusive(offset: number): ASTNode {
-		logger.log('getNodeFromOffsetEndInclusive');
+		//logger.log('getNodeFromOffsetEndInclusive');
 
 		let collector = [];
 		let findNode = (node: ASTNode): ASTNode => {
@@ -160,8 +160,10 @@ export class ASTNode {
 		// I think the passing test returns the last node, we want the failing one to do the same?
 		for(let possibleNode in collector){
 			let currNode = collector[possibleNode];
+			logger.log('\n\n\ncurrNode: ' + util.inspect(currNode));
 			let minDist = (currNode.end - offset) + (offset - currNode.start);
-			logger.log('getNodeFromOffsetEndInclusive-collector iterator minDist(possibleNode: )' + possibleNode + ': ' + util.inspect(minDist));
+			logger.log(`currNode.start: ${currNode.start}, currNode.end: ${currNode.end}, offset: ${offset}`);
+			logger.log('getNodeFromOffsetEndInclusive-collector iterator minDist(possibleNode: ' + possibleNode + ') -- minDist = ' + util.inspect(minDist));
 			if(minDist < currMinDist){
 				logger.log('getNodeFromOffsetEndInclusive-collector iterator changing min node');
 				currMinNode = currNode;

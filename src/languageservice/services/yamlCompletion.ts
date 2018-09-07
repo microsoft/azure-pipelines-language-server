@@ -72,7 +72,7 @@ export class YAMLCompletion {
 
 		// logger.log('offest: ' + offset);
 		// both tests have an offset of 14
-		logger.log(util.inspect(currentDoc));
+		//logger.log(util.inspect(currentDoc));
 
 		// it looks like both tests are equivalent in terms of currentDoc
 

@@ -376,7 +376,7 @@ export class JSONSchemaService implements IJSONSchemaService {
 	}
 
 	public loadSchema(url: string): Thenable<UnresolvedSchema> {
-		console.log('loadSchema');
+		//console.log('loadSchema');
 
 		if (!this.requestService) {
 			let errorMessage = localize('json.schema.norequestservice', 'Unable to load schema from \'{0}\'. No schema request service available', toDisplayString(url));
@@ -513,14 +513,14 @@ export class JSONSchemaService implements IJSONSchemaService {
 	}
 
 	public getSchemaForResource(resource: string ): Thenable<ResolvedSchema> {
-		console.log('getSchemaForResource');
-		console.log('resource: ' + resource);
+		//console.log('getSchemaForResource');
+		//console.log('resource: ' + resource);
 
 		const resolveSchema = () => {
 			// check for matching file names, last to first
 
 			// TODO: We want this to return the contents of the unittest/schema.json file
-			console.log(`filePatternAssociations: ${JSON.stringify(this.filePatternAssociations)}`);
+			//console.log(`filePatternAssociations: ${JSON.stringify(this.filePatternAssociations)}`);
 
 			for (let i = this.filePatternAssociations.length - 1; i >= 0; i--) {
 				let entry = this.filePatternAssociations[i];
@@ -532,14 +532,14 @@ export class JSONSchemaService implements IJSONSchemaService {
 		};
 
 		if (this.customSchemaProvider) {
-			console.log('this.customSchemaProvider: yes');
+			//console.log('this.customSchemaProvider: yes');
 			return this.customSchemaProvider(resource).then(schemaUri => {
 				return this.loadSchema(schemaUri).then(unsolvedSchema => this.resolveSchemaContent(unsolvedSchema, schemaUri));
 			}).then(schema => schema, err => {
 				return resolveSchema();
 			});
 		} else {
-			console.log('this.customSchemaProvider: no');
+			//console.log('this.customSchemaProvider: no');
 			return resolveSchema();
 		}
 	}
