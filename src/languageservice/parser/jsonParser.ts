@@ -164,7 +164,9 @@ export class ASTNode {
 			let minDist = (currNode.end - offset) + (offset - currNode.start);
 			logger.log(`currNode.start: ${currNode.start}, currNode.end: ${currNode.end}, offset: ${offset}`);
 			logger.log('getNodeFromOffsetEndInclusive-collector iterator minDist(possibleNode: ' + possibleNode + ') -- minDist = ' + util.inspect(minDist));
-			if(minDist < currMinDist){
+			
+			// If minDist === 0 we are at the end of the file, I don't think we want that null node?
+			if(minDist !== 0 && minDist < currMinDist){
 				logger.log('getNodeFromOffsetEndInclusive-collector iterator changing min node');
 				currMinNode = currNode;
 				currMinDist = minDist;
