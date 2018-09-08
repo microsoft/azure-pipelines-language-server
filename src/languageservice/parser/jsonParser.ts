@@ -166,12 +166,14 @@ export class ASTNode {
 			//logger.log('getNodeFromOffsetEndInclusive-collector iterator minDist(possibleNode: ' + possibleNode + ') -- minDist = ' + util.inspect(minDist));
 			
 			// If minDist === 0 we are at the end of the file, I don't think we want that null node?
-			if(minDist !== 0 && minDist < currMinDist){
+			if(minDist < currMinDist){
 				//logger.log('getNodeFromOffsetEndInclusive-collector iterator changing min node');
 				currMinNode = currNode;
 				currMinDist = minDist;
 
-				logger.log('\n\n\nchange current mind node to: ' + util.inspect(currNode));
+				// TODO: We are now at least, I think, returning the right node. Now something downstream may also be broken?
+				// It could also be the calling code needs to call a different method, EndNotInclusive, instead of this one.
+				//logger.log('\n\n\nchange current mind node to: ' + util.inspect(currNode));
 			}
 		}
 
@@ -186,6 +188,7 @@ export class ASTNode {
 		return currMinNode || foundNode;
 	}
 
+	// TODO: This probably has the bug. TEST THIS NEXT.
 	public validate(schema: JSONSchema, validationResult: ValidationResult, matchingSchemas: ISchemaCollector): void {
 		if (!matchingSchemas.include(this)) {
 			return;
@@ -1031,6 +1034,8 @@ export class JSONDocument {
 	}
 
 	public getMatchingSchemas(schema: JSONSchema, focusOffset: number = -1, exclude: ASTNode = null): IApplicableSchema[] {
+		// TODO: Test this properly.
+
 		let matchingSchemas = new SchemaCollector(focusOffset, exclude);
 		let validationResult = new ValidationResult();
 		if (this.root && schema) {

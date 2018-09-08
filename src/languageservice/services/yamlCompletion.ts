@@ -77,7 +77,8 @@ export class YAMLCompletion {
 		// it looks like both tests are equivalent in terms of currentDoc
 
 		// this is just getting the node from where the cursor is?
-		let node = currentDoc.getNodeFromOffsetEndInclusive(offset);
+		//let node = currentDoc.getNodeFromOffsetEndInclusive(offset);
+		let node = currentDoc.getNodeFromOffset(offset);
 
 		// logger.log('node in yaml completion: ' + util.inspect(node));
 
@@ -100,10 +101,16 @@ export class YAMLCompletion {
 
 		if(node && node.type === 'null'){
 			//logger.log('doComplete-node type is null');
+			// It's possible the bug is in here... maybe returning a null node is correct....
+			// We still want to do what is done in the else.. I think. So we get the same result.
+
+
 			let nodeStartPos = document.positionAt(node.start);
 			nodeStartPos.character += 1;
 			let nodeEndPos = document.positionAt(node.end);
 			nodeEndPos.character += 1;
+
+			
 			overwriteRange = Range.create(nodeStartPos, nodeEndPos);
 		}else if (node && (node.type === 'string' || node.type === 'number' || node.type === 'boolean')) {
 			//logger.log('doComplete-type = string | nuber | boolean');
@@ -119,8 +126,9 @@ export class YAMLCompletion {
 
 
 
-
-
+		// In the passing test its line 1 char 7, in failing its line 1 char 8... weird?
+		// Even replacing the character increment above doesn't give the result we want... break it down logic-ly? where is the flaw?
+		logger.log(`overwriteRange: ${util.inspect(overwriteRange)}`);
 
 
 
@@ -200,7 +208,7 @@ export class YAMLCompletion {
 			// proposals for properties
 			//console.log('node and node object');
 			if (node && node.type === 'object') {
-				//console.log('post.getSchemaForResource-node and type is object');
+				console.log('post.getSchemaForResource-node and type is object');
 
 				// don't suggest properties that are already present
 				let properties = (<Parser.ObjectASTNode>node).properties;
@@ -246,9 +254,11 @@ export class YAMLCompletion {
 			if (schema) {
 				this.getValueCompletions(schema, currentDoc, node, offset, document, collector, types);
 			} 
+			// TODO: Comment this?
 			if (this.contributions.length > 0) {
 				this.getContributedValueCompletions(currentDoc, node, offset, document, collector, collectionPromises);
 			}
+			// TODO: Comment this?
 			if (this.customTags.length > 0) {
 				this.getCustomTagValueCompletions(collector);
 			}
@@ -285,7 +295,12 @@ export class YAMLCompletion {
 	}
 
 	private getValueCompletions(schema: SchemaService.ResolvedSchema, doc, node: Parser.ASTNode, offset: number, document: TextDocument, collector: CompletionsCollector, types: { [type: string]: boolean } ): void {
-		logger.log('getValueCompletions');
+		logger.log('getValueCompletions node.Type: ' + node.type);
+
+		// Passing node.type = property, failing node.type = null
+
+		// TODO: This is the main method that we use. In the successful one it calls this may times to get completions, in the failed one it does nothing.
+		// TODO: Investigate here more deeply.
 
 		let offsetForSeparator = offset;
 		let parentKey: string = null;
@@ -302,7 +317,7 @@ export class YAMLCompletion {
 			
 			/*
 			 * This is going to be an object for some reason and we need to find the property
-			 * Its an issue with the null node
+			 * Its an issue with the null node <---------------?
 			 */
 			if(nodeParent && nodeParent.type === "object"){
 				for(let prop in nodeParent["properties"]){
@@ -329,12 +344,40 @@ export class YAMLCompletion {
 			node = node.parent;
 		}
 
-		let separatorAfter = this.evaluateSeparatorAfter(document, offsetForSeparator);
+		logger.log('values before import part:');
+
+		// This node seems fine... one has null property for the final node and one has string but that's expected given the values.
+		//logger.log(`node: ${util.inspect(node)}`);
+
+		// Both have parentKey = "task", that seems good
+		//logger.log(`parentKey: ${util.inspect(parentKey)}`);
+
+
+		// Is this where we try to match to the schema? Simply, extract, unit test, if so.
+		const separatorAfter = this.evaluateSeparatorAfter(document, offsetForSeparator);
 		if (node && (parentKey !== null || node.type === 'array')) {
-			let matchingSchemas = doc.getMatchingSchemas(schema.schema);
+			//logger.log('INSIDE IF');
+			// Both tests get here.
+
+			// I think this returns a pairing of nodes and their potential matching schemas? Probably needs to be tested too.
+			// Passing test has 8 items, failing test has 4
+			const matchingSchemas: Parser.IApplicableSchema[] = doc.getMatchingSchemas(schema.schema);
+			//logger.log(`matchingSchemas: ${util.inspect(matchingSchemas)}`);
+
+			// FOUND IT?
+			// There is a schema in the passing on where it's an anyOf that points to the task names. It maches a node of ObjectASTNode.
+			// We don't get that in the failing one.
+			// The ObjectASTNode is for "task: npmAuthenticate@0"
+			// There is an ObjectASTNode with matching, relatively speaking, items from the failing test but it doesnt return the match.
+			// Is there a problem with the tree walking for getMatchingSchemas when the final value is null?(and the rest of the tree is empty... I think that's the narrow case to make it fail?)
+			// Pretty sure now the bug is in getMatchingSchemas
 			matchingSchemas.forEach(s => {
+				logger.log(`\n\nmatching schema(singular): ${util.inspect(s)}`);
+
 				if (s.node === node && !s.inverted && s.schema) {
 					if (s.schema.items) {
+						logger.log('s.schema.items');
+
 						if (Array.isArray(s.schema.items)) {
 							let index = this.findItemAtOffset(node, document, offset);
 							if (index < s.schema.items.length) {
@@ -345,7 +388,8 @@ export class YAMLCompletion {
 						}
 					}
 					if (s.schema.properties) {
-						//console.log('property schema');
+						logger.log('s.schema.properties');
+
 						let propertySchema = s.schema.properties[parentKey];
 						if (propertySchema) {
 							this.addSchemaValueCompletions(propertySchema, collector, types, separatorAfter);
@@ -354,6 +398,7 @@ export class YAMLCompletion {
 				}
 			});
 		}
+
 		if(node){
 			if (types['boolean']) {
 				this.addBooleanValueCompletion(true, collector, separatorAfter);
