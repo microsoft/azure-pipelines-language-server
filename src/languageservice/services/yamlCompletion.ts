@@ -366,9 +366,9 @@ export class YAMLCompletion {
 			//logger.log("doc: " + JSON.stringify(doc));
 
 			let matchingSchemas: Parser.IApplicableSchema[] = doc.getMatchingSchemas(schema.schema);
-			logger.log(`matchingSchemas: ${util.inspect(matchingSchemas)}`);
+			//logger.log(`matchingSchemas: ${util.inspect(matchingSchemas)}`);
 			logger.log(`matchingSchemas.length: ${util.inspect(matchingSchemas.length)}`);
-			logger.log(`schema.schema: ${util.inspect(schema.schema)}`);
+			//logger.log(`schema.schema: ${util.inspect(schema.schema)}`);
 			// TODO: Can we compare this across passing and failing unit tests?
 
 			// FOUND IT?
@@ -379,7 +379,7 @@ export class YAMLCompletion {
 			// Is there a problem with the tree walking for getMatchingSchemas when the final value is null?(and the rest of the tree is empty... I think that's the narrow case to make it fail?)
 			// Pretty sure now the bug is in getMatchingSchemas
 			matchingSchemas.forEach(s => {
-				logger.log(`\n\nmatching schema(singular): ${util.inspect(s)}`);
+				//logger.log(`\n\nmatching schema(singular): ${util.inspect(s)}`);
 
 				if (s.node === node && !s.inverted && s.schema) {
 					if (s.schema.items) {

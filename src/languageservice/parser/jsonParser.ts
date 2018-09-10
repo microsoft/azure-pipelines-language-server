@@ -190,6 +190,8 @@ export class ASTNode {
 
 	// TODO: This probably has the bug. TEST THIS NEXT.
 	public validate(schema: JSONSchema, validationResult: ValidationResult, matchingSchemas: ISchemaCollector): void {
+		//console.log('validate in ASTNode ' + 'type = ' + this.type);
+
 		if (!matchingSchemas.include(this)) {
 			return;
 		}
@@ -230,6 +232,7 @@ export class ASTNode {
 			}
 			subMatchingSchemas.schemas.forEach((ms) => {
 				ms.inverted = !ms.inverted;
+				console.log('matchingSchemas.add(ms); in subMatchingSchemas.schemas.forEach');
 				matchingSchemas.add(ms);
 			});
 		}
@@ -306,6 +309,8 @@ export class ASTNode {
 				message: schema.deprecationMessage
 			});
 		}
+
+		console.log('adding in ASTNode.validate');
 		matchingSchemas.add({ node: this, schema: schema });
 	}
 }
@@ -374,6 +379,7 @@ export class ArrayASTNode extends ASTNode {
 	}
 
 	public validate(schema: JSONSchema, validationResult: ValidationResult, matchingSchemas: ISchemaCollector): void {
+		console.log('validate in ArrayASTNode');
 		if (!matchingSchemas.include(this)) {
 			return;
 		}
@@ -465,6 +471,7 @@ export class NumberASTNode extends ASTNode {
 	}
 
 	public validate(schema: JSONSchema, validationResult: ValidationResult, matchingSchemas: ISchemaCollector): void {
+		console.log('validate in NumberASTNode');
 		if (!matchingSchemas.include(this)) {
 			return;
 		}
@@ -544,6 +551,7 @@ export class StringASTNode extends ASTNode {
 	}
 
 	public validate(schema: JSONSchema, validationResult: ValidationResult, matchingSchemas: ISchemaCollector): void {
+		console.log('validate in StringASTNode');
 		if (!matchingSchemas.include(this)) {
 			return;
 		}
@@ -610,6 +618,7 @@ export class PropertyASTNode extends ASTNode {
 	}
 
 	public validate(schema: JSONSchema, validationResult: ValidationResult, matchingSchemas: ISchemaCollector): void {
+		console.log('validate in PropertyASTNode');
 		if (!matchingSchemas.include(this)) {
 			return;
 		}
@@ -677,6 +686,7 @@ export class ObjectASTNode extends ASTNode {
 	}
 
 	public validate(schema: JSONSchema, validationResult: ValidationResult, matchingSchemas: ISchemaCollector): void {
+		//console.log('validate in ObjectASTNode');
 		if (!matchingSchemas.include(this)) {
 			return;
 		}
@@ -1035,12 +1045,17 @@ export class JSONDocument {
 
 	public getMatchingSchemas(schema: JSONSchema, focusOffset: number = -1, exclude: ASTNode = null): IApplicableSchema[] {
 		// TODO: Test this properly.
+		console.log('getMatchingSchemas.schema: ' + util.inspect(schema));
+		//console.log('getMatchingSchemas.schema.type: ' + util.inspect(schema.type));
 
 		let matchingSchemas = new SchemaCollector(focusOffset, exclude);
 		let validationResult = new ValidationResult();
+
 		if (this.root && schema) {
+			// Validate must push into matchingSchemas
 			this.root.validate(schema, validationResult, matchingSchemas);
 		}
+
 		return matchingSchemas.schemas;
 	}
 

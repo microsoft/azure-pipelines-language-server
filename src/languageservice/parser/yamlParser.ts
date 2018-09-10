@@ -40,46 +40,46 @@ export class SingleYAMLDocument extends JSONDocument {
 		return this.getNodeFromOffsetEndInclusive(offset);
 	}
 
-	private getNodeByIndent = (lines: number[], offset: number, node: ASTNode) => {
+	// private getNodeByIndent = (lines: number[], offset: number, node: ASTNode) => {
 
-		const { line, column: indent } = getPosition(offset, this.lines)
+	// 	const { line, column: indent } = getPosition(offset, this.lines)
 
-		const children = node.getChildNodes()
+	// 	const children = node.getChildNodes()
 
-		function findNode(children) {
-			for (var idx = 0; idx < children.length; idx++) {
-				var child = children[idx];
+	// 	function findNode(children) {
+	// 		for (var idx = 0; idx < children.length; idx++) {
+	// 			var child = children[idx];
 
-				const { line: childLine, column: childCol } = getPosition(child.start, lines);
+	// 			const { line: childLine, column: childCol } = getPosition(child.start, lines);
 
-				if (childCol > indent) {
-					return null;
-				}
+	// 			if (childCol > indent) {
+	// 				return null;
+	// 			}
 
-				const newChildren = child.getChildNodes()
-				const foundNode = findNode(newChildren)
+	// 			const newChildren = child.getChildNodes()
+	// 			const foundNode = findNode(newChildren)
 
-				if (foundNode) {
-					return foundNode;
-				}
+	// 			if (foundNode) {
+	// 				return foundNode;
+	// 			}
 
-				// We have the right indentation, need to return based on line
-				if (childLine == line) {
-					return child;
-				}
-				if (childLine > line) {
-					// Get previous
-					(idx - 1) >= 0 ? children[idx - 1] : child;
-				}
-				// Else continue loop to try next element
-			}
+	// 			// We have the right indentation, need to return based on line
+	// 			if (childLine == line) {
+	// 				return child;
+	// 			}
+	// 			if (childLine > line) {
+	// 				// Get previous
+	// 				(idx - 1) >= 0 ? children[idx - 1] : child;
+	// 			}
+	// 			// Else continue loop to try next element
+	// 		}
 
-			// Special case, we found the correct
-			return children[children.length - 1]
-		}
+	// 		// Special case, we found the correct
+	// 		return children[children.length - 1]
+	// 	}
 
-		return findNode(children) || node
-	}
+	// 	return findNode(children) || node
+	// }
 }
 
 
