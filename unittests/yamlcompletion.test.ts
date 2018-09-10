@@ -99,7 +99,7 @@ function getSchema(): JSONSchemaService.ResolvedSchema {
 // Given a file and a position, this test expects the task list to show as completion items.
 async function runTaskCompletionItemsTest(content: string, line: number, character: number, expectedTaskCount: number) {
     // Arrange
-    const schemaUri: string = "file:///d%3A/ExtensionLearning/azure-pipelines-language-server/unittests/schema.json";
+    const schemaUri: string = "file:///E%3A/ExtensionLearning/azure-pipelines-language-server/unittests/schema.json";
 
     let schemaService = new JSONSchemaService.JSONSchemaService(requestService, workspaceContext, null);
     schemaService.setSchemaContributions({ schemaAssociations: { '*.*': [schemaUri] } });

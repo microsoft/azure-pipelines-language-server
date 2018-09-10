@@ -78,7 +78,7 @@ export class YAMLCompletion {
 
 		// this is just getting the node from where the cursor is?
 		//let node = currentDoc.getNodeFromOffsetEndInclusive(offset);
-		let node = currentDoc.getNodeFromOffset(offset);
+		let node = currentDoc.getNodeFromOffsetEndInclusive(offset);
 
 		// logger.log('node in yaml completion: ' + util.inspect(node));
 
@@ -365,7 +365,7 @@ export class YAMLCompletion {
 			logger.log("doc: " + util.inspect(doc));
 			//logger.log("doc: " + JSON.stringify(doc));
 
-			const matchingSchemas: Parser.IApplicableSchema[] = doc.getMatchingSchemas(schema.schema);
+			let matchingSchemas: Parser.IApplicableSchema[] = doc.getMatchingSchemas(schema.schema);
 			logger.log(`matchingSchemas: ${util.inspect(matchingSchemas)}`);
 			logger.log(`matchingSchemas.length: ${util.inspect(matchingSchemas.length)}`);
 			logger.log(`schema.schema: ${util.inspect(schema.schema)}`);
