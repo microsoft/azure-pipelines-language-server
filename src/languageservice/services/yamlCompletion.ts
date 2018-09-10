@@ -251,7 +251,9 @@ export class YAMLCompletion {
 			// proposals for values
 			let types: { [type: string]: boolean } = {};
 
+			// Didn't we already verify above that schema is not null?
 			if (schema) {
+				// TODO: Need to recreate currentDoc
 				this.getValueCompletions(schema, currentDoc, node, offset, document, collector, types);
 			} 
 			// TODO: Comment this?
@@ -352,7 +354,6 @@ export class YAMLCompletion {
 		// Both have parentKey = "task", that seems good
 		//logger.log(`parentKey: ${util.inspect(parentKey)}`);
 
-
 		// Is this where we try to match to the schema? Simply, extract, unit test, if so.
 		const separatorAfter = this.evaluateSeparatorAfter(document, offsetForSeparator);
 		if (node && (parentKey !== null || node.type === 'array')) {
@@ -361,8 +362,14 @@ export class YAMLCompletion {
 
 			// I think this returns a pairing of nodes and their potential matching schemas? Probably needs to be tested too.
 			// Passing test has 8 items, failing test has 4
+			logger.log("doc: " + util.inspect(doc));
+			//logger.log("doc: " + JSON.stringify(doc));
+
 			const matchingSchemas: Parser.IApplicableSchema[] = doc.getMatchingSchemas(schema.schema);
-			//logger.log(`matchingSchemas: ${util.inspect(matchingSchemas)}`);
+			logger.log(`matchingSchemas: ${util.inspect(matchingSchemas)}`);
+			logger.log(`matchingSchemas.length: ${util.inspect(matchingSchemas.length)}`);
+			logger.log(`schema.schema: ${util.inspect(schema.schema)}`);
+			// TODO: Can we compare this across passing and failing unit tests?
 
 			// FOUND IT?
 			// There is a schema in the passing on where it's an anyOf that points to the task names. It maches a node of ObjectASTNode.
