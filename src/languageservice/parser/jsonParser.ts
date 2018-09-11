@@ -967,6 +967,13 @@ export interface ISchemaCollector {
 }
 
 class SchemaCollector implements ISchemaCollector {
+	// Before we return, the following gets called:
+	// SCHEMACOLLECTOR.MERGE
+	// SCHEMACOLLECTOR.newSub
+	// SCHEMACOLLECTOR.include
+	// SCHEMACOLLECTOR.include
+	// SCHEMACOLLECTOR.MERGE
+
 	schemas: IApplicableSchema[] = [];
 	constructor(private focusOffset = -1, private exclude: ASTNode = null) {
 	}
@@ -974,22 +981,33 @@ class SchemaCollector implements ISchemaCollector {
 		//logger.log('schemaCollector.add ' + util.inspect(schema));
 		this.schemas.push(schema);
 
-		if (schema.node.type === 'string' || schema.node.type === 'null'
+		if ((schema.node.type === 'string' || schema.node.type === 'null')
 			&& schema.schema.enum && schema.schema.enum.length > 20){
-				logger.log(`ADDING IN SCHEMA COLLECTOR, type: ${schema.node.type} schema.enum.length: ${schema.schema.enum.length}`)
+				// The null one does get added! It must be getting filtered somewhere...
+				logger.log(`SCHEMACOLLECTOR.ADD, type: ${schema.node.type} schema.enum.length: ${schema.schema.enum.length}`)
 			}
 	}
 	merge(other: ISchemaCollector) {
-		//logger.log('schemaCollector.merge');
+		logger.log('SCHEMACOLLECTOR.MERGE');
+		logger.log(`SCHEMACOLLECTOR.MERGE- length before: ${this.schemas.length}`);
 		this.schemas.push(...other.schemas);
+		logger.log(`SCHEMACOLLECTOR.MERGE- length after: ${this.schemas.length}`);
 	}
 	include(node: ASTNode) {
-		//logger.log('schemaCollector.include');
-		return (this.focusOffset === -1 || node.contains(this.focusOffset)) && (node !== this.exclude);
+		logger.log('SCHEMACOLLECTOR.include');
+
+		const result: boolean = (this.focusOffset === -1 || node.contains(this.focusOffset)) && (node !== this.exclude);
+
+		logger.log(`SCHEMACOLLECTOR.newSub- boolean result: ${result}`);
+
+		return result;
 	}
 	newSub(): ISchemaCollector {
-		//logger.log('schemaCollector.newSub');
-		return new SchemaCollector(-1, this.exclude);
+		logger.log('SCHEMACOLLECTOR.newSub');
+		logger.log(`SCHEMACOLLECTOR.newSub- length before: ${this.schemas.length}`);
+		const newSchemaCollector = new SchemaCollector(-1, this.exclude);
+		logger.log(`SCHEMACOLLECTOR.newSub- length before: ${newSchemaCollector.schemas.length}`);
+		return newSchemaCollector;
 	}
 }
 
