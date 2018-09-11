@@ -201,13 +201,13 @@ export class ASTNode {
 		// string vs null && parent.type == property && start == 14 or 15
 
 		if (this.type === 'null') {
-			logger.log(`Validating null node, this.start: ${this.start} ,matchingSchemas.schemas.length: ${matchingSchemas.schemas.length}`);
+			logger.log(`Validating null node, this.start: ${this.start} this.end: ${this.end} ,matchingSchemas.schemas.length: ${matchingSchemas.schemas.length}`);
 			//logger.log(util.inspect(matchingSchemas.schemas));
 			logger.log(util.inspect(schema));
 		}
 
-		if (this.type === 'object') {
-			logger.log(`Validating object node, this.start: ${this.start} ,matchingSchemas.schemas.length: ${matchingSchemas.schemas.length}`);
+		if (this.type === 'string') {
+			logger.log(`Validating object node, this.start: ${this.start} this.end: ${this.end} ,matchingSchemas.schemas.length: ${matchingSchemas.schemas.length}`);
 			//logger.log(util.inspect(matchingSchemas.schemas));
 			logger.log(util.inspect(schema));
 		}
