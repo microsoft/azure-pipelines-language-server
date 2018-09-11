@@ -414,7 +414,7 @@ export class ArrayASTNode extends ASTNode {
 				if (typeof schema.additionalItems === 'object') {
 					for (let i = subSchemas.length; i < this.items.length; i++) {
 						let itemValidationResult = new ValidationResult();
-						console.log('validate in ArrayASTNode-validate-2');
+						console.log(`validate in ArrayASTNode-validate-2 items.length = ${this.items.length}`);
 						this.items[i].validate(<any>schema.additionalItems, itemValidationResult, matchingSchemas);
 						validationResult.mergePropertyMatch(itemValidationResult);
 					}
@@ -430,7 +430,7 @@ export class ArrayASTNode extends ASTNode {
 		else if (schema.items) {
 			this.items.forEach((item) => {
 				let itemValidationResult = new ValidationResult();
-				console.log('validate in ArrayASTNode-validate-2');
+				console.log('validate in ArrayASTNode-validate-3 items.length = ' + this.items.length + "item.type = " + item.type);
 				item.validate(<JSONSchema>schema.items, itemValidationResult, matchingSchemas);
 				validationResult.mergePropertyMatch(itemValidationResult);
 			});
