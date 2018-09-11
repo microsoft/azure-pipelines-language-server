@@ -1,3 +1,6 @@
+#### 0.1.0
+Changed name to reflect fork
+
 #### 0.0.15
 
 Updated formatter to use prettier [#Commit](https://github.com/redhat-developer/yaml-language-server/commit/feb604c35b8fb11747dfcb79a5d8570bf81b8f67) 

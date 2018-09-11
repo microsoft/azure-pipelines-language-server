@@ -1,5 +1,5 @@
 {
-  "name": "pipelines-language-server",
+  "name": "azure-pipelines-language-server",
   "description": "Azure Pipelines language server",
   "version": "0.1.0",
   "author": "Microsoft",
@@ -23,7 +23,7 @@
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/Microsoft/pipelines-language-server.git"
+    "url": "https://github.com/Microsoft/azure-pipelines-language-server.git"
   },
   "dependencies": {
     "js-yaml": "^3.12.0",
