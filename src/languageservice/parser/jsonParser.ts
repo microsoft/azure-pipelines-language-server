@@ -342,6 +342,18 @@ export class ASTNode {
 		}
 
 		//console.log('adding in ASTNode.validate');
+		if (this.type === 'string' && schema.enum && schema.enum.length > 20) {
+			logger.log('THIS IS IT.');
+			// Details for it:
+			// Validating string node, this.start: 15 this.end: 32 ,matchingSchemas.schemas.length: 3
+		}
+
+		if (this.type !== 'string' && schema.enum && schema.enum.length > 20) {
+			logger.log('THIS IS IT. -- enum no string, type: ' + this.type);
+			// Details for it:
+			// Validating string node, this.start: 15 this.end: 32 ,matchingSchemas.schemas.length: 3
+		}
+
 		matchingSchemas.add({ node: this, schema: schema });
 	}
 }
@@ -961,6 +973,11 @@ class SchemaCollector implements ISchemaCollector {
 	add(schema: IApplicableSchema) {
 		//logger.log('schemaCollector.add ' + util.inspect(schema));
 		this.schemas.push(schema);
+
+		if (schema.node.type === 'string' || schema.node.type === 'null'
+			&& schema.schema.enum && schema.schema.enum.length > 20){
+				logger.log(`ADDING IN SCHEMA COLLECTOR, type: ${schema.node.type} schema.enum.length: ${schema.schema.enum.length}`)
+			}
 	}
 	merge(other: ISchemaCollector) {
 		//logger.log('schemaCollector.merge');

@@ -41,6 +41,10 @@ suite("Validate matching schemas for document", function() {
         // Act
         const matchingSchemas: IApplicableSchema[] = jsonDocument.getMatchingSchemas(schema.schema);
 
+        // There is a StringASTNode with schema that starts with enum that gets added to matching schemas, this is what we care about.
+        // This is what we want in the other test. We want NullASTNode to match to this enum.
+        // Also, the test with less content doesn't necessarily need 8 matching schemas, we would expect less. We just want them to be accurate.
+
         logger.log(`matchingSchemas: ${util.inspect(matchingSchemas, true, 5)}`);
 
         // Assert
