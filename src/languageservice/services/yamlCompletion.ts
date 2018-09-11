@@ -362,13 +362,14 @@ export class YAMLCompletion {
 
 			// I think this returns a pairing of nodes and their potential matching schemas? Probably needs to be tested too.
 			// Passing test has 8 items, failing test has 4
-			logger.log("doc: " + util.inspect(doc));
+			//logger.log("doc: " + util.inspect(doc));
 			//logger.log("doc: " + JSON.stringify(doc));
 
+			//logger.log('schema.schema: ' + util.inspect(schema.schema));
 			let matchingSchemas: Parser.IApplicableSchema[] = doc.getMatchingSchemas(schema.schema);
 			//logger.log(`matchingSchemas: ${util.inspect(matchingSchemas)}`);
 			logger.log(`matchingSchemas.length: ${util.inspect(matchingSchemas.length)}`);
-			//logger.log(`schema.schema: ${util.inspect(schema.schema)}`);
+			logger.log(`schema.schema: ${util.inspect(schema.schema)}`);
 			// TODO: Can we compare this across passing and failing unit tests?
 
 			// FOUND IT?
@@ -383,7 +384,7 @@ export class YAMLCompletion {
 
 				if (s.node === node && !s.inverted && s.schema) {
 					if (s.schema.items) {
-						logger.log('s.schema.items');
+						//logger.log('s.schema.items');
 
 						if (Array.isArray(s.schema.items)) {
 							let index = this.findItemAtOffset(node, document, offset);
@@ -395,7 +396,7 @@ export class YAMLCompletion {
 						}
 					}
 					if (s.schema.properties) {
-						logger.log('s.schema.properties');
+						//logger.log('s.schema.properties');
 
 						let propertySchema = s.schema.properties[parentKey];
 						if (propertySchema) {
@@ -460,7 +461,7 @@ export class YAMLCompletion {
 	}
 
 	private addSchemaValueCompletions(schema: JSONSchema, collector: CompletionsCollector, types: { [type: string]: boolean }, separatorAfter: string): void {
-		logger.log('addSchemaValueCompletions');
+		//logger.log('addSchemaValueCompletions');
 		
 		this.addDefaultValueCompletions(schema, collector, separatorAfter);
 		this.addEnumValueCompletions(schema, collector, separatorAfter);
@@ -481,7 +482,7 @@ export class YAMLCompletion {
 	}
 
 	private addDefaultValueCompletions(schema: JSONSchema, collector: CompletionsCollector, separatorAfter: string, arrayDepth = 0): void {
-		logger.log('addDefaultValueCompletions');
+		//logger.log('addDefaultValueCompletions');
 		
 		let hasProposals = false;
 		if (schema.default) {
@@ -506,7 +507,7 @@ export class YAMLCompletion {
 	}
 
 	private addEnumValueCompletions(schema: JSONSchema, collector: CompletionsCollector, separatorAfter: string): void {
-		logger.log('addEnumValueCompletions');
+		//logger.log('addEnumValueCompletions');
 		
 		if (Array.isArray(schema.enum)) {
 			for (let i = 0, length = schema.enum.length; i < length; i++) {

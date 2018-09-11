@@ -532,14 +532,14 @@ export class JSONSchemaService implements IJSONSchemaService {
 		};
 
 		if (this.customSchemaProvider) {
-			//console.log('this.customSchemaProvider: yes');
+			console.log('this.customSchemaProvider: yes');
 			return this.customSchemaProvider(resource).then(schemaUri => {
 				return this.loadSchema(schemaUri).then(unsolvedSchema => this.resolveSchemaContent(unsolvedSchema, schemaUri));
 			}).then(schema => schema, err => {
 				return resolveSchema();
 			});
 		} else {
-			//console.log('this.customSchemaProvider: no');
+			console.log('this.customSchemaProvider: no');
 			return resolveSchema();
 		}
 	}

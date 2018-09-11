@@ -310,7 +310,7 @@ export class ASTNode {
 			});
 		}
 
-		console.log('adding in ASTNode.validate');
+		//console.log('adding in ASTNode.validate');
 		matchingSchemas.add({ node: this, schema: schema });
 	}
 }
@@ -551,7 +551,7 @@ export class StringASTNode extends ASTNode {
 	}
 
 	public validate(schema: JSONSchema, validationResult: ValidationResult, matchingSchemas: ISchemaCollector): void {
-		console.log('validate in StringASTNode');
+		//console.log('validate in StringASTNode');
 		if (!matchingSchemas.include(this)) {
 			return;
 		}
@@ -889,15 +889,19 @@ class SchemaCollector implements ISchemaCollector {
 	constructor(private focusOffset = -1, private exclude: ASTNode = null) {
 	}
 	add(schema: IApplicableSchema) {
+		//logger.log('schemaCollector.add ' + util.inspect(schema));
 		this.schemas.push(schema);
 	}
 	merge(other: ISchemaCollector) {
+		//logger.log('schemaCollector.merge');
 		this.schemas.push(...other.schemas);
 	}
 	include(node: ASTNode) {
+		//logger.log('schemaCollector.include');
 		return (this.focusOffset === -1 || node.contains(this.focusOffset)) && (node !== this.exclude);
 	}
 	newSub(): ISchemaCollector {
+		//logger.log('schemaCollector.newSub');
 		return new SchemaCollector(-1, this.exclude);
 	}
 }
@@ -1044,8 +1048,9 @@ export class JSONDocument {
 	}
 
 	public getMatchingSchemas(schema: JSONSchema, focusOffset: number = -1, exclude: ASTNode = null): IApplicableSchema[] {
+		console.log('getMatchingSchemas');
 		// TODO: Test this properly.
-		console.log('getMatchingSchemas.schema: ' + util.inspect(schema));
+		//console.log('getMatchingSchemas.schema: ' + util.inspect(schema));
 		//console.log('getMatchingSchemas.schema.type: ' + util.inspect(schema.type));
 
 		let matchingSchemas = new SchemaCollector(focusOffset, exclude);

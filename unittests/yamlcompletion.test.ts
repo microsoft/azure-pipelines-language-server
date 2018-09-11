@@ -11,6 +11,7 @@ import { Thenable } from '../src/languageservice/yamlLanguageService';
 import * as assert from 'assert';
 import { JSONDocument, IApplicableSchema } from '../src/languageservice/parser/jsonParser';
 import * as arrayutils from '../src/languageservice/utils/arrUtils';
+import * as util from 'util';
 
 let workspaceContext = {
 	resolveRelativePath: (relativePath: string, resource: string) => {
@@ -46,11 +47,10 @@ suite("Yaml Completion Service Tests", function() {
     // });
 });
 
-
-
 function getJsonDocument(content: string): JSONDocument {
     // we are just copying the structure of his code for now, for simplicity
     const schemaUri: string = "file:///E%3A/ExtensionLearning/azure-pipelines-language-server/unittests/schema.json";
+
     const textDocument: TextDocument = TextDocument.create(schemaUri, "azure-pipelines", 1, content);
     const yamlDoc: yamlparser.YAMLDocument = yamlparser.parse(content);
 
@@ -67,25 +67,33 @@ suite("Validate matching schemas for document", function() {
     test ('When the document has a string final node, we should see matching schemas for tasks', async function() {
         // Arrange
         const jsonDocument: JSONDocument = getJsonDocument('steps:\n- task: npmAuthenticate@0');
-        const schema: JSONSchemaService.ResolvedSchema = getSchema();
+        //const jsonDocument: JSONDocument = getJsonDocument('steps:\n- task: ');
+
+
+        // We need to start with an unresolved schema(the way it's stored in a file) and resolve it(undo any references)
+        const jsonSchemaService = new JSONSchemaService.JSONSchemaService(null);
+        const schema: JSONSchemaService.ResolvedSchema = 
+            await jsonSchemaService.resolveSchemaContent(getSchema(), "file:///E%3A/ExtensionLearning/azure-pipelines-language-server/unittests/schema.json");
+
+        console.log('(granular test) schema.schema: ' + util.inspect(schema.schema));
 
         // Act
         const matchingSchemas: IApplicableSchema[] = jsonDocument.getMatchingSchemas(schema.schema);
 
         // Assert
+
+        // Both the passing and the failing content get 3 matching schemas.
+
+        //console.log('matchingSchemas: ' + util.inspect(matchingSchemas));
+
         assert.equal(matchingSchemas.length, 8);
     });
 
     // test ('When the document has a null final node, we should see matching schemas for tasks', async function() {
     //     // TODO: This is the one that currently fails downstream. We don't see matching schemas for tasks when we should.
-
-
-
-        
     // });
 
     // test ('', async function() {
-        
     // });
 });
 
