@@ -703,6 +703,14 @@ export class ObjectASTNode extends ASTNode {
 	}
 
 	public validate(schema: JSONSchema, validationResult: ValidationResult, matchingSchemas: ISchemaCollector): void {
+		if (this.start == 0){
+			logger.log(`ObjectASTNode.validate - start = 0`);
+		}
+
+		if (this.start == 9){
+			logger.log(`ObjectASTNode.validate - start = 9`);
+		}
+
 		//console.log('validate in ObjectASTNode');
 		if (!matchingSchemas.include(this)) {
 			return;
