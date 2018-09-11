@@ -69,24 +69,13 @@ suite("Validate matching schemas for document", function() {
     test ('When the document has a string final node, we should see matching schemas for tasks', async function() {
         // Arrange
         const jsonDocument: JSONDocument = getJsonDocument('steps:\n- task: npmAuthenticate@0');
-        //const jsonDocument: JSONDocument = getJsonDocument('steps:\n- task: ');
-
-        // We need to start with an unresolved schema(the way it's stored in a file) and resolve it(undo any references)
         const jsonSchemaService = new JSONSchemaService.JSONSchemaService(null);
-        const schema: JSONSchemaService.ResolvedSchema = 
-            await jsonSchemaService.resolveSchemaContent(getSchema(), schemaUri);
-
-        console.log('(granular test) schema.schema: ' + util.inspect(schema.schema));
+        const schema: JSONSchemaService.ResolvedSchema = await jsonSchemaService.resolveSchemaContent(getSchema(), schemaUri);
 
         // Act
         const matchingSchemas: IApplicableSchema[] = jsonDocument.getMatchingSchemas(schema.schema);
 
         // Assert
-
-        // Both the passing and the failing content get 3 matching schemas.
-
-        //console.log('matchingSchemas: ' + util.inspect(matchingSchemas));
-
         assert.equal(matchingSchemas.length, 8);
     });
 
