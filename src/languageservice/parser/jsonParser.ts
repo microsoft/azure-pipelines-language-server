@@ -640,6 +640,7 @@ export class PropertyASTNode extends ASTNode {
 			return;
 		}
 		if (this.value) {
+			logger.log('validating calue in PropertyASTNode');
 			this.value.validate(schema, validationResult, matchingSchemas);
 		}
 	}
@@ -791,7 +792,9 @@ export class ObjectASTNode extends ASTNode {
 
 		if (schema.properties) {
 			Object.keys(schema.properties).forEach((propertyName: string) => {
+				logger.log(`schema.properties: ${util.inspect(schema.properties)}`);
 				logger.log(`Processing property: ${propertyName}`);
+				// TODO: Write logs to file. Generate random number?
 
 				propertyProcessed(propertyName);
 				let prop = schema.properties[propertyName];
