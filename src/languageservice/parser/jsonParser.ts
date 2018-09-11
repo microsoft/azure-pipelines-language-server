@@ -191,16 +191,36 @@ export class ASTNode {
 	// TODO: This probably has the bug. TEST THIS NEXT.
 	// How does this behave if it's a NullASTNOde?
 	public validate(schema: JSONSchema, validationResult: ValidationResult, matchingSchemas: ISchemaCollector): void {
+		// The validation happens:
+		// in the passing test, on object/string
+		// in the failing test, on object/null
+		// so it's happening at the level of the object that contains the key/value under property and not on the property node itself?
+		// Why does it get called so many times? Aren't the inputs the same every time? Log the schema.
+
 		//console.log('validate in ASTNode ' + 'type = ' + this.type);
 		// string vs null && parent.type == property && start == 14 or 15
 
+		if (this.type === 'null') {
+			logger.log(`Validating null node, this.start: ${this.start} ,matchingSchemas.schemas.length: ${matchingSchemas.schemas.length}`);
+			//logger.log(util.inspect(matchingSchemas.schemas));
+			logger.log(util.inspect(schema));
+		}
+
+		if (this.type === 'object') {
+			logger.log(`Validating object node, this.start: ${this.start} ,matchingSchemas.schemas.length: ${matchingSchemas.schemas.length}`);
+			//logger.log(util.inspect(matchingSchemas.schemas));
+			logger.log(util.inspect(schema));
+		}
+
+		logger.log('\n\n\n\n');
 		
 		// Just log the final node for now...
 		if (this.parent != null 
 			&& this.parent.type == "property" 
 			&& (this.start == 14 || this.start == 15)
 			&& (this.type == "string" || this.type == "null")) {
-			logger.log('Validate');
+			// For some reason, this writes a tremendous amount of logs.
+			//logger.log('Validate');
 		}
 
 		if (!matchingSchemas.include(this)) {
@@ -634,7 +654,12 @@ export class PropertyASTNode extends ASTNode {
 	}
 
 	public validate(schema: JSONSchema, validationResult: ValidationResult, matchingSchemas: ISchemaCollector): void {
-		logger.log('validate in PropertyASTNode');
+		if (this.start === 9) {
+			logger.log('Validating final property node for task.')
+		}
+
+
+		//logger.log('validate in PropertyASTNode');
 
 		if (!matchingSchemas.include(this)) {
 			return;
@@ -710,13 +735,13 @@ export class ObjectASTNode extends ASTNode {
 			parentType = this.parent.type;
 		}
 
-		if (this.start == 0){
-			logger.log(`ObjectASTNode.validate - start = 0, this.type -> ${thisType} this.parent.type -> ${parentType}`);
-		}
+		// if (this.start == 0){
+		// 	logger.log(`ObjectASTNode.validate - start = 0, this.type -> ${thisType} this.parent.type -> ${parentType}`);
+		// }
 
-		if (this.start == 9){
-			logger.log(`ObjectASTNode.validate - start = 9, this.type -> ${thisType} this.parent.type -> ${parentType}`);
-		}
+		// if (this.start == 9){
+		// 	logger.log(`ObjectASTNode.validate - start = 9, this.type -> ${thisType} this.parent.type -> ${parentType}`);
+		// }
 
 		if (!matchingSchemas.include(this)) {
 			return;
@@ -729,7 +754,7 @@ export class ObjectASTNode extends ASTNode {
 		let seenKeys: { [key: string]: ASTNode } = Object.create(null);
 		let unprocessedProperties: string[] = [];
 
-		logger.log(`this.properties.length -> ${this.properties.length}`);
+		//logger.log(`this.properties.length -> ${this.properties.length}`);
 
 		this.properties.forEach((node) => {
 			
@@ -792,8 +817,8 @@ export class ObjectASTNode extends ASTNode {
 
 		if (schema.properties) {
 			Object.keys(schema.properties).forEach((propertyName: string) => {
-				logger.log(`schema.properties: ${util.inspect(schema.properties)}`);
-				logger.log(`Processing property: ${propertyName}`);
+				//logger.log(`schema.properties: ${util.inspect(schema.properties)}`);
+				//logger.log(`Processing property: ${propertyName}`);
 				// TODO: Write logs to file. Generate random number?
 
 				propertyProcessed(propertyName);
@@ -801,7 +826,8 @@ export class ObjectASTNode extends ASTNode {
 				let child = seenKeys[propertyName];
 				if (child) {
 					let propertyValidationResult = new ValidationResult();
-					logger.log('validate a');
+					//logger.log('validate a');
+					// This gets called a lot
 					child.validate(prop, propertyValidationResult, matchingSchemas);
 					validationResult.mergePropertyMatch(propertyValidationResult);
 				}
@@ -1092,7 +1118,7 @@ export class JSONDocument {
 	}
 
 	public getMatchingSchemas(schema: JSONSchema, focusOffset: number = -1, exclude: ASTNode = null): IApplicableSchema[] {
-		//logger.log(`getMatchingSchemas.this.root: ${util.inspect(this.root, true, 8)}`);
+		logger.log(`getMatchingSchemas.this.root: ${util.inspect(this.root, true, 8)}`);
 
 		let matchingSchemas = new SchemaCollector(focusOffset, exclude);
 		let validationResult = new ValidationResult();
