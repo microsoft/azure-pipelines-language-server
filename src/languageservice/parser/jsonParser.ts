@@ -189,8 +189,19 @@ export class ASTNode {
 	}
 
 	// TODO: This probably has the bug. TEST THIS NEXT.
+	// How does this behave if it's a NullASTNOde?
 	public validate(schema: JSONSchema, validationResult: ValidationResult, matchingSchemas: ISchemaCollector): void {
 		//console.log('validate in ASTNode ' + 'type = ' + this.type);
+		// string vs null && parent.type == property && start == 14 or 15
+
+		
+		// Just log the final node for now...
+		if (this.parent != null 
+			&& this.parent.type == "property" 
+			&& (this.start == 14 || this.start == 15)
+			&& (this.type == "string" || this.type == "null")) {
+			logger.log('Validate');
+		}
 
 		if (!matchingSchemas.include(this)) {
 			return;
@@ -383,6 +394,7 @@ export class ArrayASTNode extends ASTNode {
 		if (!matchingSchemas.include(this)) {
 			return;
 		}
+		console.log('validate in ArrayASTNode-super.validate');
 		super.validate(schema, validationResult, matchingSchemas);
 
 		if (Array.isArray(schema.items)) {
@@ -391,6 +403,7 @@ export class ArrayASTNode extends ASTNode {
 				let itemValidationResult = new ValidationResult();
 				let item = this.items[index];
 				if (item) {
+					console.log('validate in ArrayASTNode-validate-1');
 					item.validate(subSchema, itemValidationResult, matchingSchemas);
 					validationResult.mergePropertyMatch(itemValidationResult);
 				} else if (this.items.length >= subSchemas.length) {
@@ -401,6 +414,7 @@ export class ArrayASTNode extends ASTNode {
 				if (typeof schema.additionalItems === 'object') {
 					for (let i = subSchemas.length; i < this.items.length; i++) {
 						let itemValidationResult = new ValidationResult();
+						console.log('validate in ArrayASTNode-validate-2');
 						this.items[i].validate(<any>schema.additionalItems, itemValidationResult, matchingSchemas);
 						validationResult.mergePropertyMatch(itemValidationResult);
 					}
@@ -416,11 +430,13 @@ export class ArrayASTNode extends ASTNode {
 		else if (schema.items) {
 			this.items.forEach((item) => {
 				let itemValidationResult = new ValidationResult();
+				console.log('validate in ArrayASTNode-validate-2');
 				item.validate(<JSONSchema>schema.items, itemValidationResult, matchingSchemas);
 				validationResult.mergePropertyMatch(itemValidationResult);
 			});
 		}
 
+		// Add validation problems.
 		if (schema.minItems && this.items.length < schema.minItems) {
 			validationResult.problems.push({
 				location: { start: this.start, end: this.end },
@@ -618,7 +634,8 @@ export class PropertyASTNode extends ASTNode {
 	}
 
 	public validate(schema: JSONSchema, validationResult: ValidationResult, matchingSchemas: ISchemaCollector): void {
-		console.log('validate in PropertyASTNode');
+		logger.log('validate in PropertyASTNode');
+
 		if (!matchingSchemas.include(this)) {
 			return;
 		}
@@ -1048,10 +1065,7 @@ export class JSONDocument {
 	}
 
 	public getMatchingSchemas(schema: JSONSchema, focusOffset: number = -1, exclude: ASTNode = null): IApplicableSchema[] {
-		console.log('getMatchingSchemas');
-		// TODO: Test this properly.
-		//console.log('getMatchingSchemas.schema: ' + util.inspect(schema));
-		//console.log('getMatchingSchemas.schema.type: ' + util.inspect(schema.type));
+		//logger.log(`getMatchingSchemas.this.root: ${util.inspect(this.root, true, 8)}`);
 
 		let matchingSchemas = new SchemaCollector(focusOffset, exclude);
 		let validationResult = new ValidationResult();
