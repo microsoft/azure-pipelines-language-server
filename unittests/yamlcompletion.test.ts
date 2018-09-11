@@ -13,6 +13,8 @@ import { JSONDocument, IApplicableSchema } from '../src/languageservice/parser/j
 import * as arrayutils from '../src/languageservice/utils/arrUtils';
 import * as util from 'util';
 
+const schemaUri: string = "file:///E%3A/ExtensionLearning/azure-pipelines-language-server/unittests/schema.json";
+
 let workspaceContext = {
 	resolveRelativePath: (relativePath: string, resource: string) => {
 		return URL.resolve(resource, relativePath);
@@ -49,7 +51,7 @@ suite("Yaml Completion Service Tests", function() {
 
 function getJsonDocument(content: string): JSONDocument {
     // we are just copying the structure of his code for now, for simplicity
-    const schemaUri: string = "file:///E%3A/ExtensionLearning/azure-pipelines-language-server/unittests/schema.json";
+    
 
     const textDocument: TextDocument = TextDocument.create(schemaUri, "azure-pipelines", 1, content);
     const yamlDoc: yamlparser.YAMLDocument = yamlparser.parse(content);
@@ -69,11 +71,10 @@ suite("Validate matching schemas for document", function() {
         const jsonDocument: JSONDocument = getJsonDocument('steps:\n- task: npmAuthenticate@0');
         //const jsonDocument: JSONDocument = getJsonDocument('steps:\n- task: ');
 
-
         // We need to start with an unresolved schema(the way it's stored in a file) and resolve it(undo any references)
         const jsonSchemaService = new JSONSchemaService.JSONSchemaService(null);
         const schema: JSONSchemaService.ResolvedSchema = 
-            await jsonSchemaService.resolveSchemaContent(getSchema(), "file:///E%3A/ExtensionLearning/azure-pipelines-language-server/unittests/schema.json");
+            await jsonSchemaService.resolveSchemaContent(getSchema(), schemaUri);
 
         console.log('(granular test) schema.schema: ' + util.inspect(schema.schema));
 
@@ -107,8 +108,6 @@ function getSchema(): JSONSchemaService.ResolvedSchema {
 // Given a file and a position, this test expects the task list to show as completion items.
 async function runTaskCompletionItemsTest(content: string, line: number, character: number, expectedTaskCount: number) {
     // Arrange
-    const schemaUri: string = "file:///E%3A/ExtensionLearning/azure-pipelines-language-server/unittests/schema.json";
-
     let schemaService = new JSONSchemaService.JSONSchemaService(requestService, workspaceContext, null);
     schemaService.setSchemaContributions({ schemaAssociations: { '*.*': [schemaUri] } });
 
