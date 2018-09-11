@@ -41,6 +41,8 @@ suite("Validate matching schemas for document", function() {
         // Act
         const matchingSchemas: IApplicableSchema[] = jsonDocument.getMatchingSchemas(schema.schema);
 
+        logger.log(`matchingSchemas: ${util.inspect(matchingSchemas, true, 5)}`);
+
         // Assert
         assert.equal(matchingSchemas.length, 8);
     });
@@ -56,7 +58,7 @@ suite("Validate matching schemas for document", function() {
         // Act
         const matchingSchemas: IApplicableSchema[] = jsonDocument.getMatchingSchemas(schema.schema);
 
-        logger.log(`matchingSchemas: ${util.inspect(matchingSchemas)}`);
+        logger.log(`matchingSchemas: ${util.inspect(matchingSchemas, true, 5)}`);
 
         // Assert
         assert.equal(matchingSchemas.length, 8);
