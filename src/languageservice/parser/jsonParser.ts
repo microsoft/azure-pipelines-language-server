@@ -207,7 +207,7 @@ export class ASTNode {
 		}
 
 		if (this.type === 'string') {
-			logger.log(`Validating object node, this.start: ${this.start} this.end: ${this.end} ,matchingSchemas.schemas.length: ${matchingSchemas.schemas.length}`);
+			logger.log(`Validating string node, this.start: ${this.start} this.end: ${this.end} ,matchingSchemas.schemas.length: ${matchingSchemas.schemas.length}`);
 			//logger.log(util.inspect(matchingSchemas.schemas));
 			logger.log(util.inspect(schema));
 		}
