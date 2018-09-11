@@ -212,7 +212,7 @@ export class ASTNode {
 			logger.log(util.inspect(schema));
 		}
 
-		logger.log('\n\n\n\n');
+		logger.log('\n\n');
 		
 		// Just log the final node for now...
 		if (this.parent != null 

@@ -12,6 +12,7 @@ import * as assert from 'assert';
 import { JSONDocument, IApplicableSchema } from '../src/languageservice/parser/jsonParser';
 import * as arrayutils from '../src/languageservice/utils/arrUtils';
 import * as util from 'util';
+import * as logger from '../src/logger';
 
 const schemaUri: string = "file:///E%3A/ExtensionLearning/azure-pipelines-language-server/unittests/schema.json";
 
@@ -54,6 +55,8 @@ suite("Validate matching schemas for document", function() {
 
         // Act
         const matchingSchemas: IApplicableSchema[] = jsonDocument.getMatchingSchemas(schema.schema);
+
+        logger.log(`matchingSchemas: ${util.inspect(matchingSchemas)}`);
 
         // Assert
         assert.equal(matchingSchemas.length, 8);
