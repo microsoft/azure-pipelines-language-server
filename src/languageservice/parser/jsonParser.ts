@@ -703,22 +703,33 @@ export class ObjectASTNode extends ASTNode {
 	}
 
 	public validate(schema: JSONSchema, validationResult: ValidationResult, matchingSchemas: ISchemaCollector): void {
+		let thisType: string = this.type;
+		let parentType: string = "no parent";
+		if (this.parent){
+			parentType = this.parent.type;
+		}
+
 		if (this.start == 0){
-			logger.log(`ObjectASTNode.validate - start = 0`);
+			logger.log(`ObjectASTNode.validate - start = 0, this.type -> ${thisType} this.parent.type -> ${parentType}`);
 		}
 
 		if (this.start == 9){
-			logger.log(`ObjectASTNode.validate - start = 9`);
+			logger.log(`ObjectASTNode.validate - start = 9, this.type -> ${thisType} this.parent.type -> ${parentType}`);
 		}
 
-		//console.log('validate in ObjectASTNode');
 		if (!matchingSchemas.include(this)) {
 			return;
 		}
+		//logger.log("matchingSchemas.include(this) -> yes"); // both passing and failing test get here
+
+		//logger.log('1');
 
 		super.validate(schema, validationResult, matchingSchemas);
 		let seenKeys: { [key: string]: ASTNode } = Object.create(null);
 		let unprocessedProperties: string[] = [];
+
+		logger.log(`this.properties.length -> ${this.properties.length}`);
+
 		this.properties.forEach((node) => {
 			
 			let key = node.key.value;
@@ -780,11 +791,14 @@ export class ObjectASTNode extends ASTNode {
 
 		if (schema.properties) {
 			Object.keys(schema.properties).forEach((propertyName: string) => {
+				logger.log(`Processing property: ${propertyName}`);
+
 				propertyProcessed(propertyName);
 				let prop = schema.properties[propertyName];
 				let child = seenKeys[propertyName];
 				if (child) {
 					let propertyValidationResult = new ValidationResult();
+					logger.log('validate a');
 					child.validate(prop, propertyValidationResult, matchingSchemas);
 					validationResult.mergePropertyMatch(propertyValidationResult);
 				}
@@ -801,6 +815,7 @@ export class ObjectASTNode extends ASTNode {
 						let child = seenKeys[propertyName];
 						if (child) {
 							let propertyValidationResult = new ValidationResult();
+							logger.log('validate b');
 							child.validate(schema.patternProperties[propertyPattern], propertyValidationResult, matchingSchemas);
 							validationResult.mergePropertyMatch(propertyValidationResult);
 						}
@@ -815,6 +830,7 @@ export class ObjectASTNode extends ASTNode {
 				let child = seenKeys[propertyName];
 				if (child) {
 					let propertyValidationResult = new ValidationResult();
+					logger.log('validate c');
 					child.validate(<any>schema.additionalProperties, propertyValidationResult, matchingSchemas);
 					validationResult.mergePropertyMatch(propertyValidationResult);
 				}
