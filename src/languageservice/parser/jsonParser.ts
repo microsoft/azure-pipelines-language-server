@@ -1,8 +1,3 @@
-/*---------------------------------------------------------------------------------------------
- *  Copyright (c) Red Hat, Inc. All rights reserved.
- *  Copyright (c) Microsoft Corporation. All rights reserved.
- *  Licensed under the MIT License. See License.txt in the project root for license information.
- *--------------------------------------------------------------------------------------------*/
 'use strict';
 
 import Json = require('jsonc-parser');
@@ -12,9 +7,6 @@ import * as objects from '../utils/objects';
 import * as nls from 'vscode-nls';
 import { LanguageSettings } from '../yamlLanguageService';
 const localize = nls.loadMessageBundle();
-
-import * as logger from '../../logger';
-import * as util from 'util';
 
 export interface IRange {
 	start: number;

@@ -5,26 +5,23 @@
  *--------------------------------------------------------------------------------------------*/
 'use strict';
 
-import { ASTNode, ErrorCode, BooleanASTNode, NullASTNode, ArrayASTNode, NumberASTNode, ObjectASTNode, PropertyASTNode, StringASTNode, IApplicableSchema, JSONDocument } from './jsonParser';
+import { ASTNode, ErrorCode, BooleanASTNode, NullASTNode, ArrayASTNode, NumberASTNode, ObjectASTNode, PropertyASTNode, StringASTNode, JSONDocument } from './jsonParser';
 
 import * as nls from 'vscode-nls';
 const localize = nls.loadMessageBundle();
 
 import * as Yaml from 'yaml-ast-parser'
-import { Kind } from 'yaml-ast-parser'
 import { Schema, Type } from 'js-yaml';
 
-import { getLineStartPositions, getPosition } from '../utils/documentPositionCalculator'
+import { getLineStartPositions } from '../utils/documentPositionCalculator'
 
 export class SingleYAMLDocument extends JSONDocument {
-	private lines;
 	public root;
 	public errors;
 	public warnings;
 
-	constructor(lines: number[]) {
+	constructor() {
 		super(null, []);
-		this.lines = lines;
 		this.root = null;
 		this.errors = [];
 		this.warnings = [];
@@ -39,49 +36,7 @@ export class SingleYAMLDocument extends JSONDocument {
 	public getNodeFromOffset(offset: number): ASTNode {
 		return this.getNodeFromOffsetEndInclusive(offset);
 	}
-
-	// private getNodeByIndent = (lines: number[], offset: number, node: ASTNode) => {
-
-	// 	const { line, column: indent } = getPosition(offset, this.lines)
-
-	// 	const children = node.getChildNodes()
-
-	// 	function findNode(children) {
-	// 		for (var idx = 0; idx < children.length; idx++) {
-	// 			var child = children[idx];
-
-	// 			const { line: childLine, column: childCol } = getPosition(child.start, lines);
-
-	// 			if (childCol > indent) {
-	// 				return null;
-	// 			}
-
-	// 			const newChildren = child.getChildNodes()
-	// 			const foundNode = findNode(newChildren)
-
-	// 			if (foundNode) {
-	// 				return foundNode;
-	// 			}
-
-	// 			// We have the right indentation, need to return based on line
-	// 			if (childLine == line) {
-	// 				return child;
-	// 			}
-	// 			if (childLine > line) {
-	// 				// Get previous
-	// 				(idx - 1) >= 0 ? children[idx - 1] : child;
-	// 			}
-	// 			// Else continue loop to try next element
-	// 		}
-
-	// 		// Special case, we found the correct
-	// 		return children[children.length - 1]
-	// 	}
-
-	// 	return findNode(children) || node
-	// }
 }
-
 
 function recursivelyBuildAst(parent: ASTNode, node: Yaml.YAMLNode): ASTNode {
 
@@ -202,8 +157,8 @@ function convertError(e: Yaml.YAMLException) {
 	return { message: `${e.reason}`, location: { start: e.mark.position, end: e.mark.position + e.mark.column, code: ErrorCode.Undefined } }
 }
 
-function createJSONDocument(yamlDoc: Yaml.YAMLNode, startPositions: number[], text: string) {
-	let _doc = new SingleYAMLDocument(startPositions);
+function createJSONDocument(yamlDoc: Yaml.YAMLNode, text: string) {
+	let _doc = new SingleYAMLDocument();
 	_doc.root = recursivelyBuildAst(null, yamlDoc)
 
 	if (!_doc.root) {
@@ -234,23 +189,16 @@ function createJSONDocument(yamlDoc: Yaml.YAMLNode, startPositions: number[], te
 
 export class YAMLDocument {
 	public documents: JSONDocument[]
-	private errors;
-	private warnings;
 
 	constructor(documents: JSONDocument[]) {
 		this.documents = documents;
-		this.errors = [];
-		this.warnings = [];
 	}
-
 }
 
 export function parse(text: string, customTags = []): YAMLDocument {
-
-	const startPositions = getLineStartPositions(text)
 	// This is documented to return a YAMLNode even though the
 	// typing only returns a YAMLDocument
-	const yamlDocs = []
+	const yamlDocs = [];
 
 	let schemaWithAdditionalTags = Schema.create(customTags.map((tag) => {
 		const typeInfo = tag.split(' ');
@@ -263,11 +211,8 @@ export function parse(text: string, customTags = []): YAMLDocument {
 		schemaWithAdditionalTags.compiledTypeMap[typeInfo[0]] = new Type(typeInfo[0], { kind: typeInfo[1] || 'scalar' });
 	});
 
-	let additionalOptions: Yaml.LoadOptions = {
-		schema: schemaWithAdditionalTags
-	}
-
+	const additionalOptions: Yaml.LoadOptions = { schema: schemaWithAdditionalTags }
 	Yaml.loadAll(text, doc => yamlDocs.push(doc), additionalOptions);
 
-	return new YAMLDocument(yamlDocs.map(doc => createJSONDocument(doc, startPositions, text)));
+	return new YAMLDocument(yamlDocs.map(doc => createJSONDocument(doc, text)));
 }
