@@ -124,31 +124,6 @@ export class YAMLCompletion {
 			overwriteRange = Range.create(document.positionAt(overwriteStart), position);
 		}
 
-
-
-		// In the passing test its line 1 char 7, in failing its line 1 char 8... weird?
-		// Even replacing the character increment above doesn't give the result we want... break it down logic-ly? where is the flaw?
-		logger.log(`overwriteRange: ${util.inspect(overwriteRange)}`);
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 		let proposed: { [key: string]: CompletionItem } = {};
 		let collector: CompletionsCollector = {
 			add: (suggestion: CompletionItem) => {
@@ -177,10 +152,7 @@ export class YAMLCompletion {
 			}
 		};
 
-		//console.log('document.uri: ' + JSON.stringify(document.uri));
 		return this.schemaService.getSchemaForResource(document.uri).then((schema) => {
-			//console.log('post.getSchemaForResource');
-
 			if(!schema){
 				return Promise.resolve(result);
 			}
@@ -206,7 +178,6 @@ export class YAMLCompletion {
 			}
 
 			// proposals for properties
-			//console.log('node and node object');
 			if (node && node.type === 'object') {
 				console.log('post.getSchemaForResource-node and type is object');
 
@@ -236,7 +207,6 @@ export class YAMLCompletion {
 					}
 				});
 				if ((!schema && currentWord.length > 0 && document.getText().charAt(offset - currentWord.length - 1) !== '"')) {
-					//console.log('post.getSchemaForResource-complex add');
 
 					collector.add({
 						kind: CompletionItemKind.Property,

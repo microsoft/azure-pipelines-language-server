@@ -94,7 +94,6 @@ let workspaceContext = {
 };
 
 const requestService = (uri: string): Thenable<string> => {
-    console.log('uri: ' + uri);
     if (Strings.startsWith(uri, 'file://')) {
         let fsPath = URI.parse(uri).fsPath;
         

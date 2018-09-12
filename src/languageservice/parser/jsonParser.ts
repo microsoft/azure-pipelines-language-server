@@ -3,9 +3,9 @@
 import Json = require('jsonc-parser');
 import { JSONSchema } from '../jsonSchema';
 import * as objects from '../utils/objects';
-
 import * as nls from 'vscode-nls';
 import { LanguageSettings } from '../yamlLanguageService';
+
 const localize = nls.loadMessageBundle();
 
 export interface IRange {
@@ -194,7 +194,6 @@ export class ASTNode {
 			}
 			subMatchingSchemas.schemas.forEach((ms) => {
 				ms.inverted = !ms.inverted;
-				console.log('matchingSchemas.add(ms); in subMatchingSchemas.schemas.forEach');
 				matchingSchemas.add(ms);
 			});
 		}
