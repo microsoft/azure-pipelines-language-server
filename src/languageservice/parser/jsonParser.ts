@@ -987,21 +987,21 @@ class SchemaCollector implements ISchemaCollector {
 		if ((schema.node.type === 'string' || schema.node.type === 'null')
 			&& schema.schema.enum && schema.schema.enum.length > 20){
 				// The null one does get added! It must be getting filtered somewhere...
-				logger.log(`${this._internalId} SCHEMACOLLECTOR.ADD, type: ${schema.node.type} schema.enum.length: ${schema.schema.enum.length}, containsEnumList: ${this.containsEnumList()}`)
+				logger.log(`${this._internalId} SCHEMACOLLECTOR.ADD, type: ${schema.node.type} schema.enum.length: ${schema.schema.enum.length}, containsEnumList: ${this.containsEnumList()} stack: ${this.getCurrentStack()}`)
 			}
 	}
 	merge(other: ISchemaCollector) {
 		logger.log(`${this._internalId} SCHEMACOLLECTOR.MERGE, containsEnumList: ${this.containsEnumList()}`);
 		logger.log(`${this._internalId} SCHEMACOLLECTOR.MERGE- length before: ${this.schemas.length}, containsEnumList: ${this.containsEnumList()}`);
 		this.schemas.push(...other.schemas);
-		logger.log(`${this._internalId} SCHEMACOLLECTOR.MERGE- length after: ${this.schemas.length}, containsEnumList: ${this.containsEnumList()}`);
+		logger.log(`${this._internalId} SCHEMACOLLECTOR.MERGE- length after: ${this.schemas.length}, containsEnumList: ${this.containsEnumList()} stack: ${this.getCurrentStack()}`);
 	}
 	include(node: ASTNode) {
 		logger.log(`${this._internalId} SCHEMACOLLECTOR.include, containsEnumList: ${this.containsEnumList()}`);
 
 		const result: boolean = (this.focusOffset === -1 || node.contains(this.focusOffset)) && (node !== this.exclude);
 
-		logger.log(`${this._internalId} SCHEMACOLLECTOR.newSub- boolean result: ${result}, containsEnumList: ${this.containsEnumList()}`);
+		logger.log(`${this._internalId} SCHEMACOLLECTOR.newSub- boolean result: ${result}, containsEnumList: ${this.containsEnumList()} stack: ${this.getCurrentStack()}`);
 
 		return result;
 	}
@@ -1010,7 +1010,7 @@ class SchemaCollector implements ISchemaCollector {
 
 		logger.log(`${this._internalId} SCHEMACOLLECTOR.newSub- length before: ${this.schemas.length}, containsEnumList: ${this.containsEnumList()}`);
 		const newSchemaCollector = new SchemaCollector(-1, this.exclude);
-		logger.log(`${this._internalId} SCHEMACOLLECTOR.newSub- length before: ${newSchemaCollector.schemas.length}, containsEnumList: ${this.containsEnumList()}`);
+		logger.log(`${this._internalId} SCHEMACOLLECTOR.newSub- length before: ${newSchemaCollector.schemas.length}, containsEnumList: ${this.containsEnumList()} stack: ${this.getCurrentStack()}`);
 		return newSchemaCollector;
 	}
 
@@ -1023,6 +1023,10 @@ class SchemaCollector implements ISchemaCollector {
 		}
 
 		return false;
+	}
+
+	private getCurrentStack() {
+		return new Error().stack;
 	}
 }
 
