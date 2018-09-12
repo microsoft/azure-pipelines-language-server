@@ -960,6 +960,8 @@ export enum EnumMatch {
 
 export interface ISchemaCollector {
 	schemas: IApplicableSchema[];
+	_internalId: number;
+
 	add(schema: IApplicableSchema): void;
 	merge(other: ISchemaCollector): void;
 	include(node: ASTNode): void;
@@ -974,7 +976,7 @@ class SchemaCollector implements ISchemaCollector {
 	// SCHEMACOLLECTOR.include
 	// SCHEMACOLLECTOR.MERGE
 
-	_internalId: number;
+	public _internalId: number;
 
 	schemas: IApplicableSchema[] = [];
 	constructor(private focusOffset = -1, private exclude: ASTNode = null) {
@@ -991,10 +993,14 @@ class SchemaCollector implements ISchemaCollector {
 			}
 	}
 	merge(other: ISchemaCollector) {
-		logger.log(`${this._internalId} SCHEMACOLLECTOR.MERGE, containsEnumList: ${this.containsEnumList()}`);
+		logger.log(`${this._internalId} SCHEMACOLLECTOR.MERGE, containsEnumList: ${this.containsEnumList()} other._internalId: ${other._internalId}`);
 		logger.log(`${this._internalId} SCHEMACOLLECTOR.MERGE- length before: ${this.schemas.length}, containsEnumList: ${this.containsEnumList()}`);
 		this.schemas.push(...other.schemas);
 		logger.log(`${this._internalId} SCHEMACOLLECTOR.MERGE- length after: ${this.schemas.length}, containsEnumList: ${this.containsEnumList()} stack: ${this.getCurrentStack()}`);
+
+		if (this.schemas.length >= 4) {
+			logger.log('SCHEMACOLLECTOR.MERGE.schemas: ' + util.inspect(this.schemas, true, 5));
+		}
 	}
 	include(node: ASTNode) {
 		logger.log(`${this._internalId} SCHEMACOLLECTOR.include, containsEnumList: ${this.containsEnumList()}`);
@@ -1010,7 +1016,7 @@ class SchemaCollector implements ISchemaCollector {
 
 		logger.log(`${this._internalId} SCHEMACOLLECTOR.newSub- length before: ${this.schemas.length}, containsEnumList: ${this.containsEnumList()}`);
 		const newSchemaCollector = new SchemaCollector(-1, this.exclude);
-		logger.log(`${this._internalId} SCHEMACOLLECTOR.newSub- length before: ${newSchemaCollector.schemas.length}, containsEnumList: ${this.containsEnumList()} stack: ${this.getCurrentStack()}`);
+		logger.log(`${this._internalId} SCHEMACOLLECTOR.newSub- length before: ${newSchemaCollector.schemas.length}, containsEnumList: ${this.containsEnumList()} stack: ${this.getCurrentStack()} internalId: ${this._internalId}`);
 		return newSchemaCollector;
 	}
 
