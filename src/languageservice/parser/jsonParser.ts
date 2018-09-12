@@ -344,6 +344,7 @@ export class ASTNode {
 		//console.log('adding in ASTNode.validate');
 		if (this.type === 'string' && schema.enum && schema.enum.length > 20) {
 			logger.log('THIS IS IT.');
+			logger.log('DETAILS: ' + util.inspect({ node: this, schema: schema }, true, 6))
 			// Details for it:
 			// Validating string node, this.start: 15 this.end: 32 ,matchingSchemas.schemas.length: 3
 		}
@@ -997,7 +998,7 @@ class SchemaCollector implements ISchemaCollector {
 			}
 	}
 	merge(other: ISchemaCollector) {
-		logger.log(`${this._internalId} SCHEMACOLLECTOR.MERGE, containsEnumList: ${this.containsEnumList()} other._internalId: ${other._internalId}`);
+		logger.log(`${this._internalId} SCHEMACOLLECTOR.MERGE, containsEnumList: ${this.containsEnumList()} other._internalId: ${other._internalId}, other.schemas.length: ${other.schemas.length}`);
 		logger.log(`${this._internalId} SCHEMACOLLECTOR.MERGE- length before: ${this.schemas.length}, containsEnumList: ${this.containsEnumList()}`);
 		this.schemas.push(...other.schemas);
 		logger.log(`${this._internalId} SCHEMACOLLECTOR.MERGE- length after: ${this.schemas.length}, containsEnumList: ${this.containsEnumList()} stack: ${this.getCurrentStack()}`);

@@ -19,14 +19,14 @@ const schemaUri: string = "file:///E%3A/ExtensionLearning/azure-pipelines-langua
 suite("Yaml Completion Service Tests", function() {
     this.timeout(20000);
 
-    // test ('Given an already valid file with task name, autocomplete should give suggestions', async function() {
-    //     await runTaskCompletionItemsTest('steps:\n- task: npmAuthenticate@0', 1, 7, 160);
-    // });
+    test ('Given an already valid file with task name, autocomplete should give suggestions', async function() {
+        await runTaskCompletionItemsTest('steps:\n- task: npmAuthenticate@0', 1, 7, 160);
+    });
 
-    // test ('Given a new file with steps and task, autocomplete should give suggestions', async function() {
-    //     // TODO: We actually want expectedTaskCount to be 160, not 0. This is the bug.
-    //     await runTaskCompletionItemsTest('steps:\n- task: ', 1, 7, 0);
-    // });
+    test ('Given a new file with steps and task, autocomplete should give suggestions', async function() {
+        // TODO: We actually want expectedTaskCount to be 160, not 0. This is the bug.
+        await runTaskCompletionItemsTest('steps:\n- task: ', 1, 7, 160);
+    });
 });
 
 suite("Validate matching schemas for document", function() {
@@ -41,14 +41,19 @@ suite("Validate matching schemas for document", function() {
         // Act
         const matchingSchemas: IApplicableSchema[] = jsonDocument.getMatchingSchemas(schema.schema);
 
-        // There is a StringASTNode with schema that starts with enum that gets added to matching schemas, this is what we care about.
-        // This is what we want in the other test. We want NullASTNode to match to this enum.
-        // Also, the test with less content doesn't necessarily need 8 matching schemas, we would expect less. We just want them to be accurate.
-
-        logger.log(`matchingSchemas: ${util.inspect(matchingSchemas, true, 5)}`);
-
         // Assert
-        assert.equal(matchingSchemas.length, 8);
+        let matchFound: boolean = false;
+        for (var i = 0; i < matchingSchemas.length; i++) {
+            const applicableSchema: IApplicableSchema = matchingSchemas[i];
+
+            if (applicableSchema.node.type === 'string' 
+                && applicableSchema.schema.enum 
+                && applicableSchema.schema.enum.length === 160) {
+                matchFound = true;
+            }
+        }
+        
+        assert.equal(matchFound, true);
     });
 
     // This is the one that currently fails downstream. We don't see matching schemas for tasks when we should.
@@ -62,10 +67,19 @@ suite("Validate matching schemas for document", function() {
         // Act
         const matchingSchemas: IApplicableSchema[] = jsonDocument.getMatchingSchemas(schema.schema);
 
-        logger.log(`matchingSchemas: ${util.inspect(matchingSchemas, true, 5)}`);
-
         // Assert
-        assert.equal(matchingSchemas.length, 8);
+        let matchFound: boolean = false;
+        for (var i = 0; i < matchingSchemas.length; i++) {
+            const applicableSchema: IApplicableSchema = matchingSchemas[i];
+
+            if (applicableSchema.node.type === 'null' 
+                && applicableSchema.schema.enum 
+                && applicableSchema.schema.enum.length === 160) {
+                matchFound = true;
+            }
+        }
+        
+        assert.equal(matchFound, true);
     });
 });
 
