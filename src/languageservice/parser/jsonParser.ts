@@ -188,41 +188,7 @@ export class ASTNode {
 		return currMinNode || foundNode;
 	}
 
-	// TODO: This probably has the bug. TEST THIS NEXT.
-	// How does this behave if it's a NullASTNOde?
 	public validate(schema: JSONSchema, validationResult: ValidationResult, matchingSchemas: ISchemaCollector): void {
-		// The validation happens:
-		// in the passing test, on object/string
-		// in the failing test, on object/null
-		// so it's happening at the level of the object that contains the key/value under property and not on the property node itself?
-		// Why does it get called so many times? Aren't the inputs the same every time? Log the schema.
-
-		//console.log('validate in ASTNode ' + 'type = ' + this.type);
-		// string vs null && parent.type == property && start == 14 or 15
-
-		if (this.type === 'null') {
-			logger.log(`Validating null node, this.start: ${this.start} this.end: ${this.end} ,matchingSchemas.schemas.length: ${matchingSchemas.schemas.length}`);
-			//logger.log(util.inspect(matchingSchemas.schemas));
-			logger.log(util.inspect(schema));
-		}
-
-		if (this.type === 'string') {
-			logger.log(`Validating string node, this.start: ${this.start} this.end: ${this.end} ,matchingSchemas.schemas.length: ${matchingSchemas.schemas.length}`);
-			//logger.log(util.inspect(matchingSchemas.schemas));
-			logger.log(util.inspect(schema));
-		}
-
-		logger.log('\n\n');
-		
-		// Just log the final node for now...
-		if (this.parent != null 
-			&& this.parent.type == "property" 
-			&& (this.start == 14 || this.start == 15)
-			&& (this.type == "string" || this.type == "null")) {
-			// For some reason, this writes a tremendous amount of logs.
-			//logger.log('Validate');
-		}
-
 		if (!matchingSchemas.include(this)) {
 			return;
 		}
@@ -339,21 +305,6 @@ export class ASTNode {
 				severity: ProblemSeverity.Warning,
 				message: schema.deprecationMessage
 			});
-		}
-
-		//console.log('adding in ASTNode.validate');
-		if (this.type === 'string' && schema.enum && schema.enum.length > 20) {
-			logger.log('THIS IS IT.');
-			logger.log('DETAILS: ' + util.inspect({ node: this, schema: schema }, true, 6))
-			// Details for it:
-			// Validating string node, this.start: 15 this.end: 32 ,matchingSchemas.schemas.length: 3
-		}
-
-		if (this.type !== 'string' && schema.enum && schema.enum.length > 20) {
-			logger.log('THIS IS IT. -- enum no string, type: ' + this.type);
-			logger.log('DETAILS: ' + util.inspect({ node: this, schema: schema }, true, 6))
-			// Details for it:
-			// Validating string node, this.start: 15 this.end: 32 ,matchingSchemas.schemas.length: 3
 		}
 
 		matchingSchemas.add({ node: this, schema: schema });
@@ -962,8 +913,6 @@ export enum EnumMatch {
 
 export interface ISchemaCollector {
 	schemas: IApplicableSchema[];
-	_internalId: number;
-
 	add(schema: IApplicableSchema): void;
 	merge(other: ISchemaCollector): void;
 	include(node: ASTNode): void;
@@ -971,73 +920,22 @@ export interface ISchemaCollector {
 }
 
 class SchemaCollector implements ISchemaCollector {
-	// Before we return, the following gets called:
-	// SCHEMACOLLECTOR.MERGE
-	// SCHEMACOLLECTOR.newSub
-	// SCHEMACOLLECTOR.include
-	// SCHEMACOLLECTOR.include
-	// SCHEMACOLLECTOR.MERGE
-
-	public _internalId: number;
-
 	schemas: IApplicableSchema[] = [];
 	constructor(private focusOffset = -1, private exclude: ASTNode = null) {
-		this._internalId = Math.floor(Math.random() * Math.floor(10000000));
-
-		logger.log(`SCHEMACOLLECTOR.CREATE internalId: ${this._internalId}`);
-		logger.log(`SCHEMACOLLECTOR.CREATE call stack: ${this.getCurrentStack()}`);
 	}
 	add(schema: IApplicableSchema) {
-		//logger.log('schemaCollector.add ' + util.inspect(schema));
 		this.schemas.push(schema);
-
-		if ((schema.node.type === 'string' || schema.node.type === 'null')
-			&& schema.schema.enum && schema.schema.enum.length > 20){
-				// The null one does get added! It must be getting filtered somewhere...
-				logger.log(`${this._internalId} SCHEMACOLLECTOR.ADD, type: ${schema.node.type} schema.enum.length: ${schema.schema.enum.length}, containsEnumList: ${this.containsEnumList()} stack: ${this.getCurrentStack()}`)
-			}
 	}
 	merge(other: ISchemaCollector) {
-		logger.log(`${this._internalId} SCHEMACOLLECTOR.MERGE, containsEnumList: ${this.containsEnumList()} other._internalId: ${other._internalId}, other.schemas.length: ${other.schemas.length}`);
-		logger.log(`${this._internalId} SCHEMACOLLECTOR.MERGE- length before: ${this.schemas.length}, containsEnumList: ${this.containsEnumList()}`);
 		this.schemas.push(...other.schemas);
-		logger.log(`${this._internalId} SCHEMACOLLECTOR.MERGE- length after: ${this.schemas.length}, containsEnumList: ${this.containsEnumList()} stack: ${this.getCurrentStack()}`);
-
-		if (this.schemas.length >= 4) {
-			logger.log('SCHEMACOLLECTOR.MERGE.schemas: ' + util.inspect(this.schemas, true, 5));
-		}
 	}
 	include(node: ASTNode) {
-		logger.log(`${this._internalId} SCHEMACOLLECTOR.include, containsEnumList: ${this.containsEnumList()}`);
-
 		const result: boolean = (this.focusOffset === -1 || node.contains(this.focusOffset)) && (node !== this.exclude);
-
-		logger.log(`${this._internalId} SCHEMACOLLECTOR.newSub- boolean result: ${result}, containsEnumList: ${this.containsEnumList()} stack: ${this.getCurrentStack()}`);
-
 		return result;
 	}
 	newSub(): ISchemaCollector {
-		logger.log(`${this._internalId} SCHEMACOLLECTOR.newSub, containsEnumList: ${this.containsEnumList()}`);
-
-		logger.log(`${this._internalId} SCHEMACOLLECTOR.newSub- length before: ${this.schemas.length}, containsEnumList: ${this.containsEnumList()}`);
 		const newSchemaCollector = new SchemaCollector(-1, this.exclude);
-		logger.log(`${this._internalId} SCHEMACOLLECTOR.newSub- length before: ${newSchemaCollector.schemas.length}, containsEnumList: ${this.containsEnumList()} stack: ${this.getCurrentStack()} internalId: ${this._internalId}`);
 		return newSchemaCollector;
-	}
-
-	private containsEnumList(): boolean {
-		for (var i = 0; i < this.schemas.length; i++){
-			if ((this.schemas[i].node.type === 'string' || this.schemas[i].node.type === 'null')
-				&& this.schemas[i].schema.enum && this.schemas[i].schema.enum.length > 20) {
-				return true;
-			}
-		}
-
-		return false;
-	}
-
-	private getCurrentStack() {
-		return new Error().stack;
 	}
 }
 
@@ -1156,8 +1054,6 @@ export class JSONDocument {
 	}
 
 	public getNodeFromOffsetEndInclusive(offset: number): ASTNode {
-		// TODO: Possible it's combining?
-
 		return this.root && this.root.getNodeFromOffsetEndInclusive(offset);
 	}
 
