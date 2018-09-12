@@ -974,8 +974,11 @@ class SchemaCollector implements ISchemaCollector {
 	// SCHEMACOLLECTOR.include
 	// SCHEMACOLLECTOR.MERGE
 
+	_internalId: number;
+
 	schemas: IApplicableSchema[] = [];
 	constructor(private focusOffset = -1, private exclude: ASTNode = null) {
+		this._internalId = Math.floor(Math.random() * Math.floor(10000000));
 	}
 	add(schema: IApplicableSchema) {
 		//logger.log('schemaCollector.add ' + util.inspect(schema));
@@ -984,29 +987,30 @@ class SchemaCollector implements ISchemaCollector {
 		if ((schema.node.type === 'string' || schema.node.type === 'null')
 			&& schema.schema.enum && schema.schema.enum.length > 20){
 				// The null one does get added! It must be getting filtered somewhere...
-				logger.log(`SCHEMACOLLECTOR.ADD, type: ${schema.node.type} schema.enum.length: ${schema.schema.enum.length}, containsEnumList: ${this.containsEnumList()}`)
+				logger.log(`${this._internalId} SCHEMACOLLECTOR.ADD, type: ${schema.node.type} schema.enum.length: ${schema.schema.enum.length}, containsEnumList: ${this.containsEnumList()}`)
 			}
 	}
 	merge(other: ISchemaCollector) {
-		logger.log('SCHEMACOLLECTOR.MERGE, containsEnumList: ${this.containsEnumList()}');
-		logger.log(`SCHEMACOLLECTOR.MERGE- length before: ${this.schemas.length}, containsEnumList: ${this.containsEnumList()}`);
+		logger.log(`${this._internalId} SCHEMACOLLECTOR.MERGE, containsEnumList: ${this.containsEnumList()}`);
+		logger.log(`${this._internalId} SCHEMACOLLECTOR.MERGE- length before: ${this.schemas.length}, containsEnumList: ${this.containsEnumList()}`);
 		this.schemas.push(...other.schemas);
-		logger.log(`SCHEMACOLLECTOR.MERGE- length after: ${this.schemas.length}, containsEnumList: ${this.containsEnumList()}`);
+		logger.log(`${this._internalId} SCHEMACOLLECTOR.MERGE- length after: ${this.schemas.length}, containsEnumList: ${this.containsEnumList()}`);
 	}
 	include(node: ASTNode) {
-		logger.log('SCHEMACOLLECTOR.include, containsEnumList: ${this.containsEnumList()}');
+		logger.log(`${this._internalId} SCHEMACOLLECTOR.include, containsEnumList: ${this.containsEnumList()}`);
 
 		const result: boolean = (this.focusOffset === -1 || node.contains(this.focusOffset)) && (node !== this.exclude);
 
-		logger.log(`SCHEMACOLLECTOR.newSub- boolean result: ${result}, containsEnumList: ${this.containsEnumList()}`);
+		logger.log(`${this._internalId} SCHEMACOLLECTOR.newSub- boolean result: ${result}, containsEnumList: ${this.containsEnumList()}`);
 
 		return result;
 	}
 	newSub(): ISchemaCollector {
-		logger.log('SCHEMACOLLECTOR.newSub, containsEnumList: ${this.containsEnumList()}');
-		logger.log(`SCHEMACOLLECTOR.newSub- length before: ${this.schemas.length}, containsEnumList: ${this.containsEnumList()}`);
+		logger.log(`${this._internalId} SCHEMACOLLECTOR.newSub, containsEnumList: ${this.containsEnumList()}`);
+
+		logger.log(`${this._internalId} SCHEMACOLLECTOR.newSub- length before: ${this.schemas.length}, containsEnumList: ${this.containsEnumList()}`);
 		const newSchemaCollector = new SchemaCollector(-1, this.exclude);
-		logger.log(`SCHEMACOLLECTOR.newSub- length before: ${newSchemaCollector.schemas.length}, containsEnumList: ${this.containsEnumList()}`);
+		logger.log(`${this._internalId} SCHEMACOLLECTOR.newSub- length before: ${newSchemaCollector.schemas.length}, containsEnumList: ${this.containsEnumList()}`);
 		return newSchemaCollector;
 	}
 
