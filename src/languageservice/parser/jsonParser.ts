@@ -350,6 +350,7 @@ export class ASTNode {
 
 		if (this.type !== 'string' && schema.enum && schema.enum.length > 20) {
 			logger.log('THIS IS IT. -- enum no string, type: ' + this.type);
+			logger.log('DETAILS: ' + util.inspect({ node: this, schema: schema }, true, 6))
 			// Details for it:
 			// Validating string node, this.start: 15 this.end: 32 ,matchingSchemas.schemas.length: 3
 		}
