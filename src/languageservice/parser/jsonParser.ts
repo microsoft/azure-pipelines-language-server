@@ -129,8 +129,6 @@ export class ASTNode {
 	}
 
 	public getNodeFromOffsetEndInclusive(offset: number): ASTNode {
-		//logger.log('getNodeFromOffsetEndInclusive');
-
 		let collector = [];
 		let findNode = (node: ASTNode): ASTNode => {
 			if (offset >= node.start && offset <= node.end) {
@@ -150,40 +148,15 @@ export class ASTNode {
 		let currMinDist = Number.MAX_VALUE;
 		let currMinNode = null;
 
-		// logger.log('getNodeFromOffsetEndInclusive-collector(after findNode): ' + util.inspect(collector));
-
-		// The bug might be in here... compare collector first
-		// The passing test has a full node and is of type PropertyASTNode, the failing test root node type is NullASTNode
-
-
-		// For the failed test the first item is a NullAstNode, I don't think we want this. If we ignored it and took the second I think it would be right.
-		// I think the passing test returns the last node, we want the failing one to do the same?
 		for(let possibleNode in collector){
 			let currNode = collector[possibleNode];
-			//logger.log('\n\n\ncurrNode: ' + util.inspect(currNode));
 			let minDist = (currNode.end - offset) + (offset - currNode.start);
-			//logger.log(`currNode.start: ${currNode.start}, currNode.end: ${currNode.end}, offset: ${offset}`);
-			//logger.log('getNodeFromOffsetEndInclusive-collector iterator minDist(possibleNode: ' + possibleNode + ') -- minDist = ' + util.inspect(minDist));
-			
-			// If minDist === 0 we are at the end of the file, I don't think we want that null node?
+
 			if(minDist < currMinDist){
-				//logger.log('getNodeFromOffsetEndInclusive-collector iterator changing min node');
 				currMinNode = currNode;
 				currMinDist = minDist;
-
-				// TODO: We are now at least, I think, returning the right node. Now something downstream may also be broken?
-				// It could also be the calling code needs to call a different method, EndNotInclusive, instead of this one.
-				//logger.log('\n\n\nchange current mind node to: ' + util.inspect(currNode));
 			}
 		}
-
-		// except for the end length, which we expect to be different, this seems to be the same across tests
-		// foundNode appears to be the same, currMinNode is different and that's what we see in yamlCompletion since it's non null
-		// 
-		// 
-
-		// logger.log('getNodeFromOffsetEndInclusive-currMinNode: ' + util.inspect(currMinNode));
-		// logger.log('getNodeFromOffsetEndInclusive-foundNode: ' + util.inspect(foundNode));
 
 		return currMinNode || foundNode;
 	}
