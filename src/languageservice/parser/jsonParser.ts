@@ -348,11 +348,9 @@ export class ArrayASTNode extends ASTNode {
 	}
 
 	public validate(schema: JSONSchema, validationResult: ValidationResult, matchingSchemas: ISchemaCollector): void {
-		console.log('validate in ArrayASTNode');
 		if (!matchingSchemas.include(this)) {
 			return;
 		}
-		console.log('validate in ArrayASTNode-super.validate');
 		super.validate(schema, validationResult, matchingSchemas);
 
 		if (Array.isArray(schema.items)) {
@@ -361,7 +359,6 @@ export class ArrayASTNode extends ASTNode {
 				let itemValidationResult = new ValidationResult();
 				let item = this.items[index];
 				if (item) {
-					console.log('validate in ArrayASTNode-validate-1');
 					item.validate(subSchema, itemValidationResult, matchingSchemas);
 					validationResult.mergePropertyMatch(itemValidationResult);
 				} else if (this.items.length >= subSchemas.length) {
@@ -372,7 +369,6 @@ export class ArrayASTNode extends ASTNode {
 				if (typeof schema.additionalItems === 'object') {
 					for (let i = subSchemas.length; i < this.items.length; i++) {
 						let itemValidationResult = new ValidationResult();
-						console.log(`validate in ArrayASTNode-validate-2 items.length = ${this.items.length}`);
 						this.items[i].validate(<any>schema.additionalItems, itemValidationResult, matchingSchemas);
 						validationResult.mergePropertyMatch(itemValidationResult);
 					}
@@ -388,7 +384,6 @@ export class ArrayASTNode extends ASTNode {
 		else if (schema.items) {
 			this.items.forEach((item) => {
 				let itemValidationResult = new ValidationResult();
-				console.log('validate in ArrayASTNode-validate-3 items.length = ' + this.items.length + "item.type = " + item.type);
 				item.validate(<JSONSchema>schema.items, itemValidationResult, matchingSchemas);
 				validationResult.mergePropertyMatch(itemValidationResult);
 			});
@@ -445,7 +440,6 @@ export class NumberASTNode extends ASTNode {
 	}
 
 	public validate(schema: JSONSchema, validationResult: ValidationResult, matchingSchemas: ISchemaCollector): void {
-		console.log('validate in NumberASTNode');
 		if (!matchingSchemas.include(this)) {
 			return;
 		}
@@ -525,7 +519,6 @@ export class StringASTNode extends ASTNode {
 	}
 
 	public validate(schema: JSONSchema, validationResult: ValidationResult, matchingSchemas: ISchemaCollector): void {
-		//console.log('validate in StringASTNode');
 		if (!matchingSchemas.include(this)) {
 			return;
 		}
@@ -592,18 +585,10 @@ export class PropertyASTNode extends ASTNode {
 	}
 
 	public validate(schema: JSONSchema, validationResult: ValidationResult, matchingSchemas: ISchemaCollector): void {
-		if (this.start === 9) {
-			logger.log('Validating final property node for task.')
-		}
-
-
-		//logger.log('validate in PropertyASTNode');
-
 		if (!matchingSchemas.include(this)) {
 			return;
 		}
 		if (this.value) {
-			logger.log('validating calue in PropertyASTNode');
 			this.value.validate(schema, validationResult, matchingSchemas);
 		}
 	}
@@ -673,26 +658,13 @@ export class ObjectASTNode extends ASTNode {
 			parentType = this.parent.type;
 		}
 
-		// if (this.start == 0){
-		// 	logger.log(`ObjectASTNode.validate - start = 0, this.type -> ${thisType} this.parent.type -> ${parentType}`);
-		// }
-
-		// if (this.start == 9){
-		// 	logger.log(`ObjectASTNode.validate - start = 9, this.type -> ${thisType} this.parent.type -> ${parentType}`);
-		// }
-
 		if (!matchingSchemas.include(this)) {
 			return;
 		}
-		//logger.log("matchingSchemas.include(this) -> yes"); // both passing and failing test get here
-
-		//logger.log('1');
 
 		super.validate(schema, validationResult, matchingSchemas);
 		let seenKeys: { [key: string]: ASTNode } = Object.create(null);
 		let unprocessedProperties: string[] = [];
-
-		//logger.log(`this.properties.length -> ${this.properties.length}`);
 
 		this.properties.forEach((node) => {
 			
@@ -755,17 +727,11 @@ export class ObjectASTNode extends ASTNode {
 
 		if (schema.properties) {
 			Object.keys(schema.properties).forEach((propertyName: string) => {
-				//logger.log(`schema.properties: ${util.inspect(schema.properties)}`);
-				//logger.log(`Processing property: ${propertyName}`);
-				// TODO: Write logs to file. Generate random number?
-
 				propertyProcessed(propertyName);
 				let prop = schema.properties[propertyName];
 				let child = seenKeys[propertyName];
 				if (child) {
 					let propertyValidationResult = new ValidationResult();
-					//logger.log('validate a');
-					// This gets called a lot
 					child.validate(prop, propertyValidationResult, matchingSchemas);
 					validationResult.mergePropertyMatch(propertyValidationResult);
 				}
@@ -782,7 +748,6 @@ export class ObjectASTNode extends ASTNode {
 						let child = seenKeys[propertyName];
 						if (child) {
 							let propertyValidationResult = new ValidationResult();
-							logger.log('validate b');
 							child.validate(schema.patternProperties[propertyPattern], propertyValidationResult, matchingSchemas);
 							validationResult.mergePropertyMatch(propertyValidationResult);
 						}
@@ -797,7 +762,6 @@ export class ObjectASTNode extends ASTNode {
 				let child = seenKeys[propertyName];
 				if (child) {
 					let propertyValidationResult = new ValidationResult();
-					logger.log('validate c');
 					child.validate(<any>schema.additionalProperties, propertyValidationResult, matchingSchemas);
 					validationResult.mergePropertyMatch(propertyValidationResult);
 				}
@@ -1052,8 +1016,6 @@ export class JSONDocument {
 	}
 
 	public getMatchingSchemas(schema: JSONSchema, focusOffset: number = -1, exclude: ASTNode = null): IApplicableSchema[] {
-		logger.log(`getMatchingSchemas.this.root: ${util.inspect(this.root, true, 8)}`);
-
 		let matchingSchemas = new SchemaCollector(focusOffset, exclude);
 		let validationResult = new ValidationResult();
 
