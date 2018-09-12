@@ -981,6 +981,9 @@ class SchemaCollector implements ISchemaCollector {
 	schemas: IApplicableSchema[] = [];
 	constructor(private focusOffset = -1, private exclude: ASTNode = null) {
 		this._internalId = Math.floor(Math.random() * Math.floor(10000000));
+
+		logger.log(`SCHEMACOLLECTOR.CREATE internalId: ${this._internalId}`);
+		logger.log(`SCHEMACOLLECTOR.CREATE call stack: ${this.getCurrentStack()}`);
 	}
 	add(schema: IApplicableSchema) {
 		//logger.log('schemaCollector.add ' + util.inspect(schema));
