@@ -3,15 +3,18 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
-import { JSONSchemaService } from './services/jsonSchemaService'
+import { JSONSchemaService, CustomSchemaProvider } from './services/jsonSchemaService'
 import { TextDocument, Position, CompletionList, FormattingOptions, Diagnostic } from 'vscode-languageserver-types';
 import { JSONSchema } from './jsonSchema';
 import { YAMLDocumentSymbols } from './services/documentSymbols';
 import { YAMLCompletion } from "./services/yamlCompletion";
-import { JSONDocument } from 'vscode-json-languageservice';
 import { YAMLHover } from "./services/yamlHover";
 import { YAMLValidation } from "./services/yamlValidation";
 import { format } from './services/yamlFormatter';
+
+import { JSONWorkerContribution } from './jsonContributions';
+
+import { CompletionItem, Hover } from 'vscode-languageserver-types';
 
 export interface LanguageSettings {
   validate?: boolean; //Setting for whether we want to validate the schema
@@ -92,16 +95,22 @@ export interface SchemaConfiguration {
 
 export interface LanguageService {
   configure(settings): void;
-	doComplete(document: TextDocument, position: Position, doc): Thenable<CompletionList>;
+  doComplete(document: TextDocument, position: Position, doc): Thenable<CompletionList>;
   doValidation(document: TextDocument, yamlDocument): Thenable<Diagnostic[]>;
-  doHover(document: TextDocument, position: Position, doc);
+  doHover(document: TextDocument, position: Position, doc): Thenable<Hover>;
   findDocumentSymbols(document: TextDocument, doc);
-  doResolve(completionItem);
+  doResolve(completionItem): Thenable<CompletionItem>;
   resetSchema(uri: string): boolean;
   doFormat(document: TextDocument, options: FormattingOptions, customTags: Array<String>);
 }
 
-export function getLanguageService(schemaRequestService, workspaceContext, contributions, customSchemaProvider, promiseConstructor?): LanguageService {
+export function getLanguageService(
+  schemaRequestService: SchemaRequestService,
+  workspaceContext: WorkspaceContextService,
+  contributions: JSONWorkerContribution[],
+  customSchemaProvider?: CustomSchemaProvider,
+  promiseConstructor?: PromiseConstructor): LanguageService {
+
   let promise = promiseConstructor || Promise;
 
   let schemaService = new JSONSchemaService(schemaRequestService, workspaceContext, customSchemaProvider);

@@ -54,7 +54,7 @@ suite("Hover Tests", () => {
 				let content = "authors:\n  - name: Josh";
 				let hover = parseSetup(content, 14);
 				hover.then(function(result){
-                    assert.notEqual(result.contents.length, 0);				
+                    assert.notEqual((result.contents as string).length, 0);				
 				}).then(done, done);
             });
             
@@ -62,7 +62,7 @@ suite("Hover Tests", () => {
 				let content = "authors:\n  - name: Josh\n  - email: jp";
 				let hover = parseSetup(content, 28);
 				hover.then(function(result){
-                    assert.notEqual(result.contents.length, 0);				
+                    assert.notEqual((result.contents as string).length, 0);				
 				}).then(done, done);
             });
 		});

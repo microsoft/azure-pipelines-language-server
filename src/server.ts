@@ -20,7 +20,7 @@ import URI from './languageservice/utils/uri';
 import * as URL from 'url';
 import Strings = require('./languageservice/utils/strings');
 import { getLineOffsets, removeDuplicatesObj } from './languageservice/utils/arrUtils';
-import { getLanguageService as getCustomLanguageService, LanguageSettings } from './languageservice/yamlLanguageService';
+import { getLanguageService as getCustomLanguageService, LanguageSettings, LanguageService } from './languageservice/yamlLanguageService';
 import * as nls from 'vscode-nls';
 import { FilePatternAssociation } from './languageservice/services/jsonSchemaService';
 import { parse as parseYAML } from './languageservice/parser/yamlParser';
@@ -112,14 +112,14 @@ let workspaceContext = {
 
 let schemaRequestService = (uri: string): Thenable<string> => {
 	//For the case when we are multi root and specify a workspace location
-	if(hasWorkspaceFolderCapability){
-		for(let folder in workspaceFolders){
+	if (hasWorkspaceFolderCapability) {
+		for (let folder in workspaceFolders) {
 			let currFolder = workspaceFolders[folder];
 			let currFolderUri = currFolder["uri"];
 			let currFolderName = currFolder["name"];
 
 			let isUriRegex = new RegExp('^(?:[a-z]+:)?//', 'i');
-			if(uri.indexOf(currFolderName) !== -1 && !uri.match(isUriRegex)){
+			if (uri.indexOf(currFolderName) !== -1 && !uri.match(isUriRegex)) {
 				let beforeFolderName = currFolderUri.split(currFolderName)[0];
 				let uriSplit = uri.split(currFolderName);
 				uriSplit.shift()
@@ -167,8 +167,11 @@ let schemaRequestService = (uri: string): Thenable<string> => {
 
 export let KUBERNETES_SCHEMA_URL = "https://gist.githubusercontent.com/JPinkney/ccaf3909ef811e5657ca2e2e1fa05d76/raw/f85e51bfb67fdb99ab7653c2953b60087cc871ea/openshift_schema_all.json";
 export let KEDGE_SCHEMA_URL = "https://raw.githubusercontent.com/kedgeproject/json-schema/master/master/kedge-json-schema.json";
-export let customLanguageService = getCustomLanguageService(schemaRequestService, workspaceContext, [],
-	(resource) => connection.sendRequest(CustomSchemaRequest.type, resource));
+export let customLanguageService = getCustomLanguageService(
+	schemaRequestService,
+	workspaceContext,
+	[],
+	(resource) => <Thenable<string>>connection.sendRequest(CustomSchemaRequest.type, resource));
 
 // The settings interface describes the server relevant settings part
 interface Settings {
@@ -207,7 +210,7 @@ connection.onDidChangeConfiguration((change) => {
 	schemaConfigurationSettings = [];
 	customTags = settings.yaml && settings.yaml.customTags ? settings.yaml.customTags : [];
 
-	for(let url in yamlConfigurationSettings){
+	for (let url in yamlConfigurationSettings) {
 		let globPattern = yamlConfigurationSettings[url];
 		let schemaObj = {
 			"fileMatch": Array.isArray(globPattern) ? globPattern : [globPattern],
@@ -232,24 +235,24 @@ connection.onDidChangeConfiguration((change) => {
 	}
 });
 
-function getSchemaStoreMatchingSchemas(){
+function getSchemaStoreMatchingSchemas() {
 
 	return xhr({ url: "http://schemastore.org/api/json/catalog.json" }).then(response => {
 
-		let languageSettings= {
+		let languageSettings = {
 			schemas: []
 		};
 
 		let schemas = JSON.parse(response.responseText);
-		for(let schemaIndex in schemas.schemas){
+		for (let schemaIndex in schemas.schemas) {
 
 			let schema = schemas.schemas[schemaIndex];
-			if(schema && schema.fileMatch){
+			if (schema && schema.fileMatch) {
 
-				for(let fileMatch in schema.fileMatch){
+				for (let fileMatch in schema.fileMatch) {
 					let currFileMatch = schema.fileMatch[fileMatch];
 
-					if(currFileMatch.indexOf('.yml') !== -1 || currFileMatch.indexOf('.yaml') !== -1){
+					if (currFileMatch.indexOf('.yml') !== -1 || currFileMatch.indexOf('.yaml') !== -1) {
 						languageSettings.schemas.push({ uri: schema.url, fileMatch: [currFileMatch] });
 					}
 
@@ -307,7 +310,7 @@ function updateConfiguration() {
 			}
 		});
 	}
-	if(schemaStoreSettings){
+	if (schemaStoreSettings) {
 		languageSettings.schemas = languageSettings.schemas.concat(schemaStoreSettings);
 	}
 	customLanguageService.configure(languageSettings);
@@ -316,45 +319,45 @@ function updateConfiguration() {
 	documents.all().forEach(triggerValidation);
 }
 
-function configureSchemas(uri, fileMatch, schema, languageSettings){
+function configureSchemas(uri, fileMatch, schema, languageSettings) {
 
-	if(uri.toLowerCase().trim() === "kubernetes"){
+	if (uri.toLowerCase().trim() === "kubernetes") {
 		uri = KUBERNETES_SCHEMA_URL;
 	}
-	if(uri.toLowerCase().trim() === "kedge"){
+	if (uri.toLowerCase().trim() === "kedge") {
 		uri = KEDGE_SCHEMA_URL;
 	}
 
-	if(schema === null){
+	if (schema === null) {
 		languageSettings.schemas.push({ uri, fileMatch: fileMatch });
-	}else{
+	} else {
 		languageSettings.schemas.push({ uri, fileMatch: fileMatch, schema: schema });
 	}
 
-	if(fileMatch.constructor === Array && uri === KUBERNETES_SCHEMA_URL){
+	if (fileMatch.constructor === Array && uri === KUBERNETES_SCHEMA_URL) {
 		fileMatch.forEach((url) => {
 			specificValidatorPaths.push(url);
 		});
-	}else if(uri === KUBERNETES_SCHEMA_URL){
+	} else if (uri === KUBERNETES_SCHEMA_URL) {
 		specificValidatorPaths.push(fileMatch);
 	}
 
 	return languageSettings;
 }
 
-function setKubernetesParserOption(jsonDocuments: JSONDocument[], option: boolean){
-	for(let jsonDoc in jsonDocuments){
+function setKubernetesParserOption(jsonDocuments: JSONDocument[], option: boolean) {
+	for (let jsonDoc in jsonDocuments) {
 		jsonDocuments[jsonDoc].configureSettings({
 			isKubernetes: option
 		});
 	}
 }
 
-function isKubernetes(textDocument){
-	for(let path in specificValidatorPaths){
+function isKubernetes(textDocument) {
+	for (let path in specificValidatorPaths) {
 		let globPath = specificValidatorPaths[path];
 		let fpa = new FilePatternAssociation(globPath);
-		if(fpa.matchesPattern(textDocument.uri)){
+		if (fpa.matchesPattern(textDocument.uri)) {
 			return true;
 		}
 	}
@@ -391,7 +394,7 @@ function triggerValidation(textDocument: TextDocument): void {
 
 function validateTextDocument(textDocument: TextDocument): void {
 
-	if(!textDocument){
+	if (!textDocument) {
 		return;
 	}
 
@@ -402,16 +405,16 @@ function validateTextDocument(textDocument: TextDocument): void {
 
 	let yamlDocument = parseYAML(textDocument.getText(), customTags);
 	isKubernetes(textDocument) ? setKubernetesParserOption(yamlDocument.documents, true) : setKubernetesParserOption(yamlDocument.documents, false);
-	customLanguageService.doValidation(textDocument, yamlDocument).then(function(diagnosticResults){
+	customLanguageService.doValidation(textDocument, yamlDocument).then(function (diagnosticResults) {
 
 		let diagnostics = [];
-		for(let diagnosticItem in diagnosticResults){
+		for (let diagnosticItem in diagnosticResults) {
 			diagnosticResults[diagnosticItem].severity = 1; //Convert all warnings to errors
 			diagnostics.push(diagnosticResults[diagnosticItem]);
 		}
 
 		connection.sendDiagnostics({ uri: textDocument.uri, diagnostics: removeDuplicatesObj(diagnostics) });
-	}, function(error){});
+	}, function (error) { });
 }
 
 connection.onDidChangeWatchedFiles((change) => {
@@ -427,30 +430,33 @@ connection.onDidChangeWatchedFiles((change) => {
 	}
 });
 
-connection.onCompletion(textDocumentPosition =>  {
+connection.onCompletion(textDocumentPosition => {
 	let textDocument = documents.get(textDocumentPosition.textDocument.uri);
-	
+
 	let result: CompletionList = {
 		items: [],
 		isIncomplete: false
 	};
 
-	if(!textDocument){
-		return Promise.resolve(result);
-	}
-	
-	let completionFix = completionHelper(textDocument, textDocumentPosition.position);
-	let newText = completionFix.newText;
-	let jsonDocument = parseYAML(newText);
-	isKubernetes(textDocument) ? setKubernetesParserOption(jsonDocument.documents, true) : setKubernetesParserOption(jsonDocument.documents, false);
-	return customLanguageService.doComplete(textDocument, textDocumentPosition.position, jsonDocument);
+    if (!textDocument) {
+       Promise.resolve(result);
+   }
+
+    return doComplete(textDocument, textDocumentPosition.position);
 });
 
+export function doComplete(textDocument: TextDocument,  position: Position): Thenable<CompletionList> {
+    const completionFix = completionHelper(textDocument, position);
+    const newText = completionFix.newText;
+    const jsonDocument = parseYAML(newText);
+    isKubernetes(textDocument) ? setKubernetesParserOption(jsonDocument.documents, true) : setKubernetesParserOption(jsonDocument.documents, false);
+    return customLanguageService.doComplete(textDocument, position, jsonDocument);
+}
 function is_EOL(c) {
 	return (c === 0x0A/* LF */) || (c === 0x0D/* CR */);
 }
 
-function completionHelper(document: TextDocument, textDocumentPosition: Position){
+function completionHelper(document: TextDocument, textDocumentPosition: Position) {
 
 	//Get the string we are looking at via a substring
 	let linePos = textDocumentPosition.line;
@@ -458,9 +464,9 @@ function completionHelper(document: TextDocument, textDocumentPosition: Position
 	let lineOffset = getLineOffsets(document.getText());
 	let start = lineOffset[linePos]; //Start of where the autocompletion is happening
 	let end = 0; //End of where the autocompletion is happening
-	if(lineOffset[linePos+1]){
-		end = lineOffset[linePos+1];
-	}else{
+	if (lineOffset[linePos + 1]) {
+		end = lineOffset[linePos + 1];
+	} else {
 		end = document.getText().length;
 	}
 
@@ -471,21 +477,21 @@ function completionHelper(document: TextDocument, textDocumentPosition: Position
 	let textLine = document.getText().substring(start, end);
 
 	//Check if the string we are looking at is a node
-	if(textLine.indexOf(":") === -1){
+	if (textLine.indexOf(":") === -1) {
 		//We need to add the ":" to load the nodes
 
 		let newText = "";
 
 		//This is for the empty line case
 		let trimmedText = textLine.trim();
-		if(trimmedText.length === 0 || (trimmedText.length === 1 && trimmedText[0] === '-')){
+		if (trimmedText.length === 0 || (trimmedText.length === 1 && trimmedText[0] === '-')) {
 			//Add a temp node that is in the document but we don't use at all.
-			newText = document.getText().substring(0, start+textLine.length) + "h:\r\n" + document.getText().substr(lineOffset[linePos+1] || document.getText().length);
+			newText = document.getText().substring(0, start + textLine.length) + "h:\r\n" + document.getText().substr(lineOffset[linePos + 1] || document.getText().length);
 
-		//For when missing semi colon case
-		}else{
+			//For when missing semi colon case
+		} else {
 			//Add a semicolon to the end of the current line so we can validate the node
-			newText = document.getText().substring(0, start+textLine.length) + ":\r\n" + document.getText().substr(lineOffset[linePos+1] || document.getText().length);
+			newText = document.getText().substring(0, start + textLine.length) + ":\r\n" + document.getText().substr(lineOffset[linePos + 1] || document.getText().length);
 		}
 
 		return {
@@ -493,7 +499,7 @@ function completionHelper(document: TextDocument, textDocumentPosition: Position
 			"newPosition": textDocumentPosition
 		}
 
-	}else{
+	} else {
 
 		//All the nodes are loaded
 		position.character = position.character - 1;
@@ -511,8 +517,8 @@ connection.onCompletionResolve(completionItem => {
 
 connection.onHover(textDocumentPositionParams => {
 	let document = documents.get(textDocumentPositionParams.textDocument.uri);
-	
-	if(!document){
+
+	if (!document) {
 		return Promise.resolve(void 0);
 	}
 
@@ -524,7 +530,7 @@ connection.onHover(textDocumentPositionParams => {
 connection.onDocumentSymbol(documentSymbolParams => {
 	let document = documents.get(documentSymbolParams.textDocument.uri);
 
-	if(!document){
+	if (!document) {
 		return;
 	}
 
@@ -535,7 +541,7 @@ connection.onDocumentSymbol(documentSymbolParams => {
 connection.onDocumentFormatting(formatParams => {
 	let document = documents.get(formatParams.textDocument.uri);
 
-	if(!document){
+	if (!document) {
 		return;
 	}
 

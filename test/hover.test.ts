@@ -54,7 +54,7 @@ suite("Hover Tests", () => {
 				let content = "cwd: test";
 				let hover = parseSetup(content, 1);
 				hover.then(function(result){
-                    assert.notEqual(result.contents.length, 0);				
+                    assert.notEqual((result.contents as string).length, 0);				
 				}).then(done, done);
             });
             
@@ -62,7 +62,7 @@ suite("Hover Tests", () => {
 				let content = "cwd: test";
 				let hover = parseSetup(content, 6);
 				hover.then(function(result){
-                    assert.notEqual(result.contents.length, 0);				
+                    assert.notEqual((result.contents as string).length, 0);				
 				}).then(done, done);
             });
 
@@ -70,7 +70,7 @@ suite("Hover Tests", () => {
 				let content = "scripts:\n  postinstall: test";
 				let hover = parseSetup(content, 15);
 				hover.then(function(result){
-                    assert.notEqual(result.contents.length, 0);				
+                    assert.notEqual((result.contents as string).length, 0);				
 				}).then(done, done);
             });
 
@@ -78,7 +78,7 @@ suite("Hover Tests", () => {
 				let content = "scripts:\n  postinstall: test";
 				let hover = parseSetup(content, 26);
 				hover.then(function(result){
-                    assert.notEqual(result.contents.length, 0);				
+                    assert.notEqual((result.contents as string).length, 0);				
 				}).then(done, done);
             });
 
@@ -87,12 +87,12 @@ suite("Hover Tests", () => {
                 
                 let firstHover = parseSetup(content, 3);
                 firstHover.then(function(result){
-                    assert.notEqual(result.contents.length, 0);
+                    assert.notEqual((result.contents as string).length, 0);
                 });
                 
                 let secondHover = parseSetup(content, 15);
 				secondHover.then(function(result){
-                    assert.notEqual(result.contents.length, 0);				
+                    assert.notEqual((result.contents as string).length, 0);				
 				}).then(done, done);
             });
 
@@ -100,7 +100,7 @@ suite("Hover Tests", () => {
 				let content = "analytics: true";
 				let hover = parseSetup(content, 3);
 				hover.then(function(result){
-                    assert.notEqual(result.contents.length, 0);				
+                    assert.notEqual((result.contents as string).length, 0);				
 				}).then(done, done);
 			});
 			
@@ -108,7 +108,7 @@ suite("Hover Tests", () => {
 				let content = '---\nanalytics: true\n...\n---\njson: test\n...';
 				let hover = parseSetup(content, 30);
 				hover.then(function(result){
-                    assert.notEqual(result.contents.length, 0);				
+                    assert.notEqual((result.contents as string).length, 0);				
 				}).then(done, done);
             });
 		});

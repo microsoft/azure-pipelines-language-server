@@ -48,7 +48,7 @@
     "typescript": "^2.7.2"
   },
   "scripts": {
-    "compile": "tsc -p .",
+    "compile": "tsc -d -p .",
     "watch": "tsc -watch -p .",
     "test": "mocha --require ts-node/register --ui tdd ./test/*.test.ts",
     "coverage": "nyc mocha --require ts-node/register --require source-map-support/register --recursive --ui tdd ./test/*.test.ts",
