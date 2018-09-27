@@ -520,7 +520,9 @@ export class JSONSchemaService implements IJSONSchemaService {
 			// check for matching file names, last to first
 
 			// TODO: We want this to return the contents of the unittest/schema.json file
-			console.log(`filePatternAssociations: ${JSON.stringify(this.filePatternAssociations)}`);
+
+			// Next line should be commented out in order for tests to pass:
+			// console.log(`filePatternAssociations: ${JSON.stringify(this.filePatternAssociations)}`);
 
 			for (let i = this.filePatternAssociations.length - 1; i >= 0; i--) {
 				let entry = this.filePatternAssociations[i];
