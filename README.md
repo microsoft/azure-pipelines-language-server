@@ -1,5 +1,27 @@
 # Azure Pipelines Language Server
 
+This repo consists of 2 separate projects/packages:
+1. azure-pipelines-language-service - language service implementation for azure-pipelines
+2. azure-pipelines-language-server - language server implementation that dependes on azure-pipelines-language-service
+
+## Dev loop
+In order to tighten the dev loop you can utilize `npm link` that will sync changes to service package without re-installing.
+ 
+ 1. First install dependencies for both service and server:
+    * `cd languageservice`
+    * `npm install`
+    * `npm run build`
+    * `cd ../languageserver`
+    * `npm install`
+2. Link languageservice/out/src to the global folder and connect it to the languageserver's node_modules
+    * `cd ../languageservice/out/src`
+    * `npm link`
+    * `npm ls -g` - to check it is added
+    * `cd ../languageserver`
+    * `npm link azure-pipelines-language-service`
+3. Now you can make changes to the service compile and your changes will be awailable in the server
+    * Run `npm run watch` to auto detect changes and compile
+
 ## Features
 
 1. YAML validation:
