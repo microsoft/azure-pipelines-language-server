@@ -8,16 +8,16 @@ This repo consists of 2 separate projects/packages:
 In order to tighten the dev loop you can utilize `npm link` that will sync changes to service package without re-installing.
  
  1. First install dependencies for both service and server:
-    * `cd languageservice`
+    * `cd language-service`
     * `npm install`
     * `npm run build`
-    * `cd ../languageserver`
+    * `cd ../language-server`
     * `npm install`
-2. Link languageservice/out/src to the global folder and connect it to the languageserver's node_modules
-    * `cd ../languageservice/out/src`
+2. Link languageservice/out/src to the global folder and connect it to the language-server's node_modules
+    * `cd ../language-service/out/src`
     * `npm link`
     * `npm ls -g` - to check it is added
-    * `cd ../languageserver`
+    * `cd ../language-server`
     * `npm link azure-pipelines-language-service`
 3. Now you can make changes to the service compile and your changes will be awailable in the server
     * Run `npm run watch` to auto detect changes and compile

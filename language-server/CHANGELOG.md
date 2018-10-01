@@ -1,3 +1,6 @@
+#### 0.2.0
+Split the package into azure-pipelines-language-server and azure-pipelines-language-service to promote reusability [#PR-4](https://github.com/Microsoft/azure-pipelines-language-server/pull/4)
+
 #### 0.1.0
 Changed name to reflect fork
 
