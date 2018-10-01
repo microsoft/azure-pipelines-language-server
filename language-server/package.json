@@ -6,12 +6,16 @@
   "license": "MIT",
   "contributors": [
     {
-      "name": "Gorkem Ercan",
-      "email": "gorkem.ercan@gmail.com"
+      "name": "Stephen Franceschelli",
+      "email": "Stephen.Franceschelli@microsoft.com"
     },
     {
-      "name": "Joshua Pinkney",
-      "email": "joshpinkney@gmail.com"
+      "name": "Matt Cooper",
+      "email": "vtbassmatt@gmail.com"
+    },
+    {
+      "name": "Ruslan Semenov",
+      "email": "ruslan@rsemenov.com"
     }
   ],
   "engines": {
