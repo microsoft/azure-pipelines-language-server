@@ -50,7 +50,7 @@
     "build": "npm run compile && npm run preppackage && cd out/src && npm pack",
     "compile": "tsc -p .",
     "watch": "tsc -watch -p .",
-    "preppackage": "shx cp package.json out/src && shx cp CHANGELOG.md out/src && shx cp LICENSE out/src",
+    "preppackage": "shx cp package.json out/src && shx cp CHANGELOG.md out/src && shx cp LICENSE out/src && shx cp README.md out/src",
     "test": "mocha --require ts-node/register --ui tdd ./test/*.test.ts",
     "unittest": "mocha --require ts-node/register --ui tdd ./unittests/*.test.ts",
     "coverage": "nyc mocha --require ts-node/register --require source-map-support/register --recursive --ui tdd ./test/*.test.ts",

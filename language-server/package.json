@@ -47,7 +47,7 @@
   },
   "scripts": {
     "build": "npm run compile && npm run preppackage",
-    "preppackage": "shx cp package.json out/src && shx cp CHANGELOG.md out/src && shx cp LICENSE out/src",
+    "preppackage": "shx cp package.json out/src && shx cp CHANGELOG.md out/src && shx cp LICENSE out/src && shx cp README.md out/src",
     "compile": "tsc -p .",
     "watch": "tsc -watch -p .",
     "test": "mocha --require ts-node/register --ui tdd ./test/*.test.ts",
