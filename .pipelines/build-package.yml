@@ -27,15 +27,22 @@ jobs:
         parameters:
           root: ${{ parameters.root }}
 
+    # Install dependecies
     - script: npm install
       displayName: npm install
       workingDirectory: ${{ parameters.root }}
 
+    # Build
     - script: npm run build
       displayName: Build and generate a package
       workingDirectory: ${{ parameters.root }}
 
-    # Copy tarball into ArtifactStagingDirectory
+    # Run tests
+    - script: npm run test
+      displayName: Run tests
+      workingDirectory: ${{ parameters.root }}
+
+    # Copy package tarball into ArtifactStagingDirectory
     - task: CopyFiles@2
       displayName: Stage the npm module
       inputs:
