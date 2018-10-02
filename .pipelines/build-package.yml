@@ -38,15 +38,16 @@ jobs:
       workingDirectory: ${{ parameters.root }}
 
     # Run tests and generate ./test-results.xml in JUnit format
-    - script: mocha --require ts-node/register --ui tdd ./test/*.test.ts --reporter mocha-junit-reporter
+    - script: npx mocha --require ts-node/register --ui tdd ./test/*.test.ts --reporter mocha-junit-reporter
       displayName: Run tests
       workingDirectory: ${{ parameters.root }}
     
     # Publish test results
     - task: PublishTestResults@2
+      displayName: Publish test results
       inputs:
         testRunner: JUnit
-        testResultsFile: ./test-results.xml
+        testResultsFiles: ${{ format('./{0}/test-results.xml', parameters.root) }}
 
     # Copy package tarball into ArtifactStagingDirectory
     - task: CopyFiles@2
