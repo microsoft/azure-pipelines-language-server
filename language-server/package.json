@@ -47,7 +47,8 @@
     "source-map-support": "0.5.5",
     "ts-node": "5.0.1",
     "typescript": "2.7.2",
-    "shx": "0.3.2"
+    "shx": "0.3.2",
+    "mocha-junit-reporter": "1.18.0"
   },
   "scripts": {
     "build": "npm run compile && npm run preppackage && cd out/src && npm pack",

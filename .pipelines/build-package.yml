@@ -37,10 +37,16 @@ jobs:
       displayName: Build and generate a package
       workingDirectory: ${{ parameters.root }}
 
-    # Run tests
-    - script: npm run test
+    # Run tests and generate ./test-results.xml in JUnit format
+    - script: mocha --require ts-node/register --ui tdd ./test/*.test.ts --reporter mocha-junit-reporter
       displayName: Run tests
       workingDirectory: ${{ parameters.root }}
+    
+    # Publish test results
+    - task: PublishTestResults@2
+      inputs:
+        testRunner: JUnit
+        testResultsFile: ./test-results.xml
 
     # Copy package tarball into ArtifactStagingDirectory
     - task: CopyFiles@2
