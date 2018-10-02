@@ -1,5 +1,9 @@
 # for convenience, we tag CI-produced packages with a version number
 # pointing to the commit which was built. for PRs, also include the PR #.
+
+parameters:
+  root: '' # root folder of the package
+
 steps:
 - bash: |
     PACKAGE_VERSION=$(node -p "require('./package.json').version")
@@ -12,4 +16,5 @@ steps:
 
     npm --no-git-tag-version version $VERSION_STRING
     echo "##vso[build.updatebuildnumber]${VERSION_STRING}_${BUILD_BUILDID}"
+  workingDirectory: ${{ parameters.root }}
   displayName: Set version number of package and build

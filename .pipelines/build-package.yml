@@ -1,0 +1,51 @@
+# CI and PR build script
+#
+# There should be no deep magic here. The developer experience and CI experience
+# must remain as close to one another as possible.
+#
+# Developer experience:
+#   npm install
+#   (make changes)
+#   npm run compile
+#   npm run test <-- TODO
+
+parameters:
+  name: ''            # job name
+  root: ''            # root folder of the package
+  packagename: ''     # name of the package
+
+jobs:
+- job: ${{ parameters.name }}
+  steps:
+    # Set version number for PR/CI or release
+    - ${{ if startsWith(variables['Build.SourceBranch'], 'refs/heads/releases/') }}:
+      - template: version-release.yml
+        parameters:
+          root: ${{ parameters.root }}
+    - ${{ if not(startsWith(variables['Build.SourceBranch'], 'refs/heads/releases/')) }}:
+      - template: version-ci.yml
+        parameters:
+          root: ${{ parameters.root }}
+
+    - script: npm install
+      displayName: npm install
+      workingDirectory: ${{ parameters.root }}
+
+    - script: npm run build
+      displayName: Build and generate a package
+      workingDirectory: ${{ parameters.root }}
+
+    # Copy tarball into ArtifactStagingDirectory
+    - task: CopyFiles@2
+      displayName: Stage the npm module
+      inputs:
+        sourceFolder: ${{ format('{0}/out/src', parameters.root) }}
+        contents: '*.tgz' 
+        targetFolder: ${{ format('$(Build.ArtifactStagingDirectory)/{0}', parameters.packageName) }}
+
+    # Publish artifacts
+    - task: PublishBuildArtifacts@1
+      displayName: Save the npm module
+      inputs:
+        pathToPublish: ${{ format('$(Build.ArtifactStagingDirectory)/{0}', parameters.packageName) }}
+        artifactName: ${{ parameters.packagename }}

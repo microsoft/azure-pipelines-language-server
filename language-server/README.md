@@ -73,3 +73,7 @@ This repository only contains the server implementation. Here are some known cli
 * [Eclipse Che](https://www.eclipse.org/che/)
 * [vscode-yaml](https://marketplace.visualstudio.com/items?itemName=redhat.vscode-yaml) for VSCode
 * [ide-yaml](https://atom.io/packages/ide-yaml) for Atom editor
+
+## Thanks
+
+This project was forked from the [YAML Language Server](https://github.com/redhat-developer/yaml-language-server) by Red Hat.

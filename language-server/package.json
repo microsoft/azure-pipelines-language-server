@@ -30,7 +30,7 @@
     "url": "https://github.com/Microsoft/azure-pipelines-language-server.git"
   },
   "dependencies": {
-    "azure-pipelines-language-service": "file:/../language-service/out/src/azure-pipelines-language-service-0.2.0.tgz",
+    "azure-pipelines-language-service": "0.2.0",
     "request-light": "0.2.3",
     "vscode-languageserver": "4.1.2",
     "vscode-languageserver-types": "3.6.1",
@@ -50,7 +50,7 @@
     "shx": "0.3.2"
   },
   "scripts": {
-    "build": "npm run compile && npm run preppackage",
+    "build": "npm run compile && npm run preppackage && cd out/src && npm pack",
     "preppackage": "shx cp package.json out/src && shx cp CHANGELOG.md out/src && shx cp LICENSE out/src && shx cp README.md out/src",
     "compile": "tsc -p .",
     "watch": "tsc -watch -p .",

@@ -79,3 +79,7 @@ yaml.schemas: {
 This repository only contains the server implementation. Here are some known clients consuming this server:
 
 * [azure-pipelines-language-server](https://github.com/Microsoft/azure-pipelines-language-server/tree/master/language-server)
+
+## Thanks
+
+This project was forked from the [YAML Language Server](https://github.com/redhat-developer/yaml-language-server) by Red Hat.

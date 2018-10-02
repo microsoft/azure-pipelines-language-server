@@ -1,43 +1,18 @@
-# CI and PR build script
-#
-# There should be no deep magic here. The developer experience and CI experience
-# must remain as close to one another as possible.
-#
-# Developer experience:
-#   npm install
-#   (make changes)
-#   npm run compile
-#   npm run test <-- TODO
+# CI and PR build script for language-service and language-server
+
 trigger:
 - master
 - releases/*
 
-steps:
-# Set version number for PR/CI or release
-- ${{ if startsWith(variables['Build.SourceBranch'], 'refs/heads/releases/') }}:
-  - template: version-release.yml
-- ${{ if not(startsWith(variables['Build.SourceBranch'], 'refs/heads/releases/')) }}:
-  - template: version-ci.yml
+jobs:
+- template: build-package.yml
+  parameters:
+    name: 'build_language_service'
+    root: 'language-service'
+    packagename: 'azure-pipelines-language-service'
 
-- script: npm install
-  displayName: npm install
-
-- script: npm run compile
-  displayName: Build language server
-
-- script: npm pack
-  displayName: Package language server as module
-
-# This is how the CI system knows what to publish...
-- task: CopyFiles@2
-  displayName: Stage npm module
-  inputs:
-    contents: '*.tgz' 
-    targetFolder: $(Build.ArtifactStagingDirectory)
-
-# ...and this is the CI system publishing it.
-- task: PublishBuildArtifacts@1
-  displayName: Save the npm module
-  inputs:
-    pathToPublish: $(Build.ArtifactStagingDirectory)
-    artifactName: azure-pipelines-language-server
+- template: build-package.yml
+  parameters:
+    name: 'build_language_server'
+    root: 'language-server'
+    packagename: 'azure-pipelines-language-server'
