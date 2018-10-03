@@ -1,0 +1,16 @@
+{
+	"compilerOptions": {
+		"forceConsistentCasingInFileNames": true,
+		"target": "es6",
+		"module": "commonjs",
+		"moduleResolution": "node",
+		"sourceMap": true,
+		"declaration": true,
+		"lib" : [ "es2016" ],
+		"outDir": "./out"
+	},
+	"exclude": [
+		"node_modules",
+		"out"
+	]
+}

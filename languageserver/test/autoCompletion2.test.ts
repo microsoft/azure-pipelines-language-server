@@ -4,10 +4,10 @@
  *--------------------------------------------------------------------------------------------*/
 import {
 	TextDocument} from 'vscode-languageserver';
-import {getLanguageService} from '../src/languageservice/yamlLanguageService'
+import {getLanguageService} from 'azure-pipelines-language-service/yamlLanguageService'
 import {schemaRequestService, workspaceContext}  from './testHelper';
-import { parse as parseYAML } from '../src/languageservice/parser/yamlParser';
-import { getLineOffsets } from "../src/languageservice/utils/arrUtils";
+import { parse as parseYAML } from 'azure-pipelines-language-service/parser/yamlParser';
+import { getLineOffsets } from "azure-pipelines-language-service/utils/arrUtils";
 var assert = require('assert');
 
 let languageService = getLanguageService(schemaRequestService, workspaceContext, [], null);

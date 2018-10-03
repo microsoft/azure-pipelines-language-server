@@ -1,8 +1,8 @@
 'use strict';
 
 import assert = require('assert');
-import * as SchemaService from '../src/languageservice/services/jsonSchemaService';
-import * as JsonSchema from '../src/languageservice/jsonSchema';
+import * as SchemaService from '../src/services/jsonSchemaService';
+import * as JsonSchema from '../src/jsonSchema';
 import fs = require('fs');
 import url = require('url');
 import path = require('path');

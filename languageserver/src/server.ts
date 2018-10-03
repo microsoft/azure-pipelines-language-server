@@ -11,21 +11,26 @@ import {
 	TextDocuments, TextDocument, InitializeParams, InitializeResult, NotificationType, RequestType,
 	DocumentFormattingRequest, Disposable, Range, IPCMessageReader, IPCMessageWriter, DiagnosticSeverity, Position,
 	Proposed, ProposedFeatures, CompletionList
-} from 'vscode-languageserver';
+} from "vscode-languageserver";
 
-import { xhr, XHRResponse, configure as configureHttpRequests, getErrorStatusDescription } from 'request-light';
-import path = require('path');
-import fs = require('fs');
-import URI from 'vscode-uri';
-import * as URL from 'url';
-import Strings = require('./languageservice/utils/strings');
-import { getLineOffsets, removeDuplicatesObj } from './languageservice/utils/arrUtils';
-import { getLanguageService as getCustomLanguageService, LanguageSettings } from './languageservice/yamlLanguageService';
-import * as nls from 'vscode-nls';
-import { FilePatternAssociation } from './languageservice/services/jsonSchemaService';
-import { parse as parseYAML } from './languageservice/parser/yamlParser';
-import { JSONDocument } from './languageservice/parser/jsonParser';
-import { JSONSchema } from './languageservice/jsonSchema';
+import { xhr, XHRResponse, configure as configureHttpRequests, getErrorStatusDescription } from "request-light";
+import * as path from "path";
+import * as fs from "fs";
+import URI from "vscode-uri";
+import * as URL from "url";
+import * as nls from "vscode-nls";
+
+import * as Strings from "azure-pipelines-language-service/utils/strings";
+
+import { getLineOffsets, removeDuplicatesObj } from "azure-pipelines-language-service/utils/arrUtils";
+
+import { getLanguageService as getCustomLanguageService, LanguageSettings } from "azure-pipelines-language-service/yamlLanguageService";
+
+import { FilePatternAssociation } from "azure-pipelines-language-service/services/jsonSchemaService";
+import { parse as parseYAML } from "azure-pipelines-language-service/parser/yamlParser";
+import { JSONDocument } from "azure-pipelines-language-service/parser/jsonParser";
+import { JSONSchema } from "azure-pipelines-language-service/jsonSchema";
+
 nls.config(<any>process.env['VSCODE_NLS_CONFIG']);
 
 interface ISchemaAssociations {

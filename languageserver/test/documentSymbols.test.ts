@@ -3,9 +3,9 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 import { TextDocument} from 'vscode-languageserver';
-import {getLanguageService} from '../src/languageservice/yamlLanguageService'
+import {getLanguageService} from 'azure-pipelines-language-service/yamlLanguageService'
 import {schemaRequestService, workspaceContext}  from './testHelper';
-import { parse as parseYAML } from '../src/languageservice/parser/yamlParser';
+import { parse as parseYAML } from 'azure-pipelines-language-service/parser/yamlParser';
 var assert = require('assert');
 
 let languageService = getLanguageService(schemaRequestService, workspaceContext, [], null);

@@ -2,28 +2,15 @@
  *  Copyright (c) Red Hat. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
-import {
-	IPCMessageReader, IPCMessageWriter,
-	createConnection, IConnection, TextDocumentSyncKind,
-	TextDocuments, TextDocument, Diagnostic, DiagnosticSeverity,
-	InitializeParams, InitializeResult, TextDocumentPositionParams,
-	CompletionItem, CompletionItemKind, RequestType
-} from 'vscode-languageserver';
-import { xhr, XHRResponse, configure as configureHttpRequests, getErrorStatusDescription } from 'request-light';
-import {getLanguageService} from '../src/languageservice/yamlLanguageService'
-import Strings = require( '../src/languageservice/utils/strings');
-import URI from 'vscode-uri';
-import * as URL from 'url';
-import fs = require('fs');
-import {JSONSchemaService} from '../src/languageservice/services/jsonSchemaService'
+import { TextDocument } from 'vscode-languageserver-types';
+import {getLanguageService} from 'azure-pipelines-language-service/yamlLanguageService'
+
 import {schemaRequestService, workspaceContext}  from './testHelper';
-import { parse as parseYAML } from '../src/languageservice/parser/yamlParser';
-import { getLineOffsets } from "../src/languageservice/utils/arrUtils";
+import { parse as parseYAML } from 'azure-pipelines-language-service/parser/yamlParser';
+import { getLineOffsets } from "azure-pipelines-language-service/utils/arrUtils";
 var assert = require('assert');
 
 let languageService = getLanguageService(schemaRequestService, workspaceContext, [], null);
-
-let schemaService = new JSONSchemaService(schemaRequestService, workspaceContext);
 
 let uri = "https://gist.githubusercontent.com/JPinkney/ccaf3909ef811e5657ca2e2e1fa05d76/raw/f85e51bfb67fdb99ab7653c2953b60087cc871ea/openshift_schema_all.json";
 let languageSettings = {

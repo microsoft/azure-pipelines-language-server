@@ -1,13 +1,13 @@
 
-import Strings = require( '../src/languageservice/utils/strings');
+import Strings = require( '../src/utils/strings');
 import URI from 'vscode-uri';
 import fs = require('fs');
-import { YAMLCompletion } from '../src/languageservice/services/yamlCompletion';
-import * as JSONSchemaService from '../src/languageservice/services/jsonSchemaService';
+import { YAMLCompletion } from '../src/services/yamlCompletion';
+import * as JSONSchemaService from '../src/services/jsonSchemaService';
 import * as URL from 'url';
 import { TextDocument, Position } from 'vscode-languageserver-types';
-import * as yamlparser from '../src/languageservice/parser/yamlParser'
-import { Thenable } from '../src/languageservice/yamlLanguageService';
+import * as yamlparser from '../src/parser/yamlParser'
+import { Thenable } from '../src/yamlLanguageService';
 import * as assert from 'assert';
 
 let workspaceContext = {
