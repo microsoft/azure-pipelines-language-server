@@ -1,0 +1,65 @@
+# CI and PR build script
+#
+# There should be no deep magic here. The developer experience and CI experience
+# must remain as close to one another as possible.
+#
+# Developer experience:
+#   npm install
+#   (make changes)
+#   npm run compile
+#   npm run test <-- TODO
+
+parameters:
+  name: ''            # job name
+  root: ''            # root folder of the package
+  packagename: ''     # name of the package
+
+jobs:
+- job: ${{ parameters.name }}
+  steps:
+    # Set version number for PR/CI or release
+    - ${{ if startsWith(variables['Build.SourceBranch'], 'refs/heads/releases/') }}:
+      - template: version-release.yml
+        parameters:
+          root: ${{ parameters.root }}
+    - ${{ if not(startsWith(variables['Build.SourceBranch'], 'refs/heads/releases/')) }}:
+      - template: version-ci.yml
+        parameters:
+          root: ${{ parameters.root }}
+
+    # Install dependecies
+    - script: npm install
+      displayName: npm install
+      workingDirectory: ${{ parameters.root }}
+
+    # Build
+    - script: npm run build
+      displayName: Build and generate a package
+      workingDirectory: ${{ parameters.root }}
+
+    # Run tests and generate ./test-results.xml in JUnit format
+    - script: npx mocha --require ts-node/register --ui tdd ./test/*.test.ts --reporter mocha-junit-reporter
+      displayName: Run tests
+      workingDirectory: ${{ parameters.root }}
+    
+    # Publish test results
+    - task: PublishTestResults@2
+      displayName: Publish test results
+      inputs:
+        testRunner: JUnit
+        testResultsFiles: ${{ format('./{0}/test-results.xml', parameters.root) }}
+
+    # Copy package tarball into ArtifactStagingDirectory
+    - task: CopyFiles@2
+      displayName: Stage the npm module
+      inputs:
+        sourceFolder: ${{ format('{0}/out/src', parameters.root) }}
+        contents: '*.tgz' 
+        targetFolder: ${{ format('$(Build.ArtifactStagingDirectory)/{0}', parameters.packageName) }}
+
+    # Publish artifacts
+    - task: PublishBuildArtifacts@1
+      displayName: Save the npm module
+      inputs:
+        pathToPublish: ${{ format('$(Build.ArtifactStagingDirectory)/{0}', parameters.packageName) }}
+        artifactName: ${{ parameters.packagename }}
