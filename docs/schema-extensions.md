@@ -61,6 +61,44 @@ Its behavior is identical to `enum` except that on validation, any casing of the
 When Intellisense is requested, "Foo@1" and "Bar@1" will be suggested.
 For validation, "foo@1", "Foo@1", "FOO@1", "fOo@1", and any other capitalization are accepted.
 
+## Case-insensitive keywords
+
+In Azure Pipelines YAML, inputs to tasks are case-insensitive.
+Like `enum`s, it's convenient to represent these in a canonical form used for suggestion, but accept any casing for validation.
+
+```yaml
+# In Azure Pipelines, the two steps are equivalent:
+steps:
+- task: Foo@1
+  inputs:
+    Bar: Baz
+- task: Foo@1
+  inputs:
+    bar: Baz
+```
+
+We introduce a new validation keyword, `ignoreCase`.
+
+```json
+{
+    "properties": {
+        "foo": {
+            "type": "string",
+            "ignoreCase": true
+        },
+        "bar": {
+            "type": "int",
+            "ignoreCase": true
+        }
+    },
+    "additionalProperties": false,
+    ...
+}
+```
+
+For validation purposes, any of "foo", "FOO", "Foo", "fOo", etc. are accepted as keywords.
+For Intellisense suggestion purposes, only the canonical form is suggested.
+
 ## Initial key in a mapping
 
 YAML mappings are unordered.
