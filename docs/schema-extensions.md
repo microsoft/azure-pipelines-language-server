@@ -31,6 +31,36 @@ In order to retain validation but suppress Intellisense suggestions, we introduc
 If not present, `suggest` defaults to `true`.
 If present and set to `false`, the marked keyword is never suggested in Intellisense.
 
+## Case-insensitive enums
+
+Azure Pipelines YAML has several places where values are case-insensitive.
+It's convenient to represent them with an enum which describes their canonical case for purposes of Intellisense / auto-complete.
+Regardless of case, though, they should validate.
+
+```yaml
+# In Azure Pipelines, the steps are all equivalent:
+steps:
+- task: Foo@1
+- task: FOO@1
+- task: foo@1
+```
+
+We introduce a new type, `enumCaseInsensitive`.
+Its behavior is identical to `enum` except that on validation, any casing of the word is accepted.
+
+```json
+{
+    "properties": {
+        "task": {
+            "enum": ["Foo@1", "Bar@1"]
+        },
+        ...
+    }
+```
+
+When Intellisense is requested, "Foo@1" and "Bar@1" will be suggested.
+For validation, "foo@1", "Foo@1", "FOO@1", "fOo@1", and any other capitalization are accepted.
+
 ## Initial key in a mapping
 
 YAML mappings are unordered.
