@@ -1,8 +1,35 @@
 # Proposed schema extensions
 
-The Azure Pipelines YAML format includes 3 non-standard features of YAML.
+The Azure Pipelines YAML format includes several non-standard features of YAML.
 With appropriate schema support, they should be possible to support in this language server.
 Fortunately, JSON Schema allows extension.
+
+## Obsolete items
+
+Some constructions in Azure Pipelines YAML are valid but no longer preferred.
+They should not be suggested by Intellisense, but should be validated if present.
+
+```yaml
+# In Azure Pipelines YAML, the below is valid but not preferred:
+queue: Hosted VS2017
+```
+
+In order to retain validation but suppress Intellisense suggestions, we introduce the `suggest` extension.
+
+```json
+{
+    "properties": {
+        "queue": {
+            "type": "string",
+            "suggest": false,
+            ...
+        }
+    }
+}
+```
+
+If not present, `suggest` defaults to `true`.
+If present and set to `false`, the marked keyword is never suggested in Intellisense.
 
 ## Initial key in a mapping
 
