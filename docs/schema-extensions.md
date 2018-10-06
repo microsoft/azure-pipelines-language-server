@@ -97,7 +97,7 @@ This schema only validates if the `firstProperty` keyword appears first.
 For Intellisense suggestions, if the `firstProperty` keyword hasn't already been recognized at this level, only it will be suggested.
 This latter behavior aggregates: if an `anyOf` construct includes several schema branches with `firstProperty` indicators, the set of those will be offered for Intellisense.
 
-## Multiple keys
+## Duplicate keys
 
 In standard YAML, keys may not be duplicated.
 In Azure Pipelines YAML, we allow identical keys if they are template expressions beginning with `if`.
