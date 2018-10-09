@@ -2,12 +2,12 @@
 	"compilerOptions": {
 		"forceConsistentCasingInFileNames": true,
 		"target": "es5",
-		"module": "umd",
+		"module": "commonjs",
 		"moduleResolution": "node",
 		"sourceMap": true,
-		"declaration": true,
+		"declaration": false,
 		"lib" : [ "es2015", "dom" ],
-		"outDir": "./out"
+		"outDir": "./lib"
 	},
 	"exclude": [
 		"node_modules",

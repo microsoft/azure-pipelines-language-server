@@ -1,6 +1,8 @@
-src/
-test/
-unittests/
-.editorconfig
-Jenkinsfile
+/src
+**/test
+**/unittests
+node_modules
+.gitignore
 tsconfig.json
+webpack.config.js
+*.tgz
