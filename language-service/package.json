@@ -1,7 +1,7 @@
 {
   "name": "azure-pipelines-language-service",
   "description": "Azure Pipelines language service",
-  "version": "0.2.1-alpha.7",
+  "version": "0.2.1",
   "author": "Microsoft",
   "license": "MIT",
   "contributors": [
@@ -55,9 +55,10 @@
     "ts-loader": "5.2.1"
   },
   "scripts": {
-    "build": "npm run compile && webpack && npm pack",
+    "build": "npm run clean && npm run compile && webpack && npm pack",
     "compile": "tsc -p .",
     "watch": "tsc -watch -p .",
+    "clean": "shx rm -r lib",
     "test": "mocha --require ts-node/register --ui tdd ./test/*.test.ts",
     "unittest": "mocha --require ts-node/register --ui tdd ./unittests/*.test.ts",
     "coverage": "nyc mocha --require ts-node/register --require source-map-support/register --recursive --ui tdd ./test/*.test.ts",

@@ -13,8 +13,8 @@ import { YAMLCompletion } from "./services/yamlCompletion";
 import { YAMLHover } from "./services/yamlHover";
 import { YAMLValidation } from "./services/yamlValidation";
 import { format } from './services/yamlFormatter';
-import { JSONDocument } from "./parser/jsonParser";
 import { JSONWorkerContribution } from './jsonContributions';
+import { YAMLDocument } from './parser/yamlParser';
 
 export interface LanguageSettings {
   validate?: boolean; //Setting for whether we want to validate the schema
@@ -97,8 +97,8 @@ export interface LanguageService {
   configure(settings: LanguageSettings): void;
 	doComplete(document: TextDocument, position: Position, doc): Thenable<CompletionList>;
   doValidation(document: TextDocument, yamlDocument): Thenable<Diagnostic[]>;
-  doHover(document: TextDocument, position: Position, doc: JSONDocument): Thenable<Hover>;
-  findDocumentSymbols(document: TextDocument, doc: JSONDocument): SymbolInformation[];
+  doHover(document: TextDocument, position: Position, doc: YAMLDocument): Thenable<Hover>;
+  findDocumentSymbols(document: TextDocument, doc: YAMLDocument): SymbolInformation[];
   doResolve(completionItem: CompletionItem): Thenable<CompletionItem>;
   resetSchema(uri: string): boolean;
   doFormat(document: TextDocument, options: FormattingOptions, customTags: Array<String>): TextEdit[];
@@ -106,9 +106,9 @@ export interface LanguageService {
 
 export function getLanguageService(
   schemaRequestService: SchemaRequestService,
-  workspaceContext: WorkspaceContextService,
   contributions: JSONWorkerContribution[],
   customSchemaProvider: CustomSchemaProvider,
+  workspaceContext?: WorkspaceContextService,
   promiseConstructor?: PromiseConstructor): LanguageService {
 
   let promise = promiseConstructor || Promise;

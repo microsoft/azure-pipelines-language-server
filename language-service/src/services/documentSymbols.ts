@@ -5,18 +5,16 @@
  *--------------------------------------------------------------------------------------------*/
 'use strict';
 
-import Parser = require('../parser/jsonParser');
-import Strings = require('../utils/strings');
+import * as Parser from "../parser/jsonParser";
+import { YAMLDocument } from "../parser/yamlParser";
 
 import { SymbolInformation, SymbolKind, TextDocument, Range, Location } from 'vscode-languageserver-types';
-import { Thenable } from "../yamlLanguageService";
-import { IJSONSchemaService } from "./jsonSchemaService";
 
 export class YAMLDocumentSymbols {
 
-	public findDocumentSymbols(document: TextDocument, doc: Parser.JSONDocument): SymbolInformation[] {
+	public findDocumentSymbols(document: TextDocument, doc: YAMLDocument): SymbolInformation[] {
 
-		if(!doc || doc["documents"].length === 0){
+		if (!doc || !doc.documents || doc.documents.length === 0) {
 			return null;
 		}
 	
@@ -42,13 +40,13 @@ export class YAMLDocumentSymbols {
 		};
 
 		let results = [];
-		for(let yamlDoc in doc["documents"]){
-			let currentYAMLDoc = doc["documents"][yamlDoc];
-			if(currentYAMLDoc.root){
-				let result = collectOutlineEntries([], currentYAMLDoc.root, void 0);
+
+		doc.documents.forEach(yamlDocument => {
+			if (yamlDocument.root) {
+				let result = collectOutlineEntries([], yamlDocument.root, void 0);
 				results = results.concat(result);
 			}
-		}
+		});
 		
 		return results;
 	}

@@ -5,11 +5,11 @@
  *--------------------------------------------------------------------------------------------*/
 'use strict';
 
-
-import Parser = require('../parser/jsonParser');
-import SchemaService = require('./jsonSchemaService');
-import {JSONWorkerContribution} from '../jsonContributions';
-import {PromiseConstructor, Thenable} from 'vscode-json-languageservice';
+import * as Parser from "../parser/jsonParser";
+import { YAMLDocument } from "../parser/yamlParser";
+import * as SchemaService from "./jsonSchemaService";
+import { JSONWorkerContribution } from "../jsonContributions";
+import { PromiseConstructor, Thenable } from "vscode-json-languageservice";
 
 import {Hover, TextDocument, Position, Range, MarkedString} from 'vscode-languageserver-types';
 import { matchOffsetToDocument } from '../utils/arrUtils';
@@ -26,7 +26,7 @@ export class YAMLHover {
 		this.promise = promiseConstructor || Promise;
 	}
 
-	public doHover(document: TextDocument, position: Position, doc: Parser.JSONDocument): Thenable<Hover> {
+	public doHover(document: TextDocument, position: Position, doc: YAMLDocument): Thenable<Hover> {
 
 		if(!document){
 			this.promise.resolve(void 0);
