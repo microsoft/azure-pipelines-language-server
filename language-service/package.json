@@ -58,7 +58,7 @@
     "build": "npm run clean && npm run compile && webpack && npm pack",
     "compile": "tsc -p .",
     "watch": "tsc -watch -p .",
-    "clean": "shx rm -r lib",
+    "clean": "shx rm -rf lib",
     "test": "mocha --require ts-node/register --ui tdd ./test/*.test.ts",
     "unittest": "mocha --require ts-node/register --ui tdd ./unittests/*.test.ts",
     "coverage": "nyc mocha --require ts-node/register --require source-map-support/register --recursive --ui tdd ./test/*.test.ts",
