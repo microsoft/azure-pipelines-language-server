@@ -7,10 +7,11 @@
 		"sourceMap": true,
 		"declaration": true,
 		"lib" : [ "es2015", "dom" ],
-		"outDir": "./lib"
+		"outDir": "./lib",
+		"noUnusedLocals": true
 	},
 	"exclude": [
 		"node_modules",
-		"out"
+		"lib"
 	]
 }

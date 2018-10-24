@@ -109,7 +109,7 @@ export class ASTNode {
 		return findNode(this);
 	}
 
-	public getNodeCollectorCount(offset: number): Number {
+	public getNodeCollectorCount(): Number {
 		let collector = [];
 		let findNode = (node: ASTNode): ASTNode => {
 			let children = node.getChildNodes();
@@ -119,9 +119,8 @@ export class ASTNode {
 					collector.push(item);
 				}
 			}
-			return node;	
+			return node;
 		};
-		let foundNode = findNode(this);
 		return collector.length;
 	}
 

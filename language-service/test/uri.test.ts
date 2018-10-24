@@ -1,7 +1,6 @@
-
-import URI from 'vscode-uri';
-var path = require('path');
-var assert = require('assert');
+// import URI from 'vscode-uri';
+// var path = require('path');
+// var assert = require('assert');
 
 suite("URI Tests", () => {
 

@@ -1,8 +1,8 @@
-/src
+.gitignore
+*.tgz
 **/test
 **/unittests
+/src
 node_modules
-.gitignore
 tsconfig.json
 webpack.config.js
-*.tgz
