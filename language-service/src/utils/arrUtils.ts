@@ -3,6 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 import * as yamlParser from "../parser/yamlParser";
+import { JSONDocument } from "../parser/jsonParser";
 
 export function removeDuplicates(arr, prop) {
     var new_arr = [];
@@ -63,7 +64,7 @@ export function removeDuplicatesObj(objArray){
 
 // YAMLDocument
 // This method takes "jsonDocuments" but above it passes a single object, I think it's getting implicitly converted to an array
-export function matchOffsetToDocument(offset: number, jsonDocuments: any /*yamlParser.YAMLDocument*/): yamlParser.SingleYAMLDocument {
+export function matchOffsetToDocument(offset: number, jsonDocuments: yamlParser.YAMLDocument): JSONDocument {
 	
 	for(let jsonDoc in jsonDocuments.documents){
 		let currJsonDoc = jsonDocuments.documents[jsonDoc];

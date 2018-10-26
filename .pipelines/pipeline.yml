@@ -10,9 +10,11 @@ jobs:
     name: 'build_language_service'
     root: 'language-service'
     packagename: 'azure-pipelines-language-service'
+    tarballPath: 'language-service'
 
 - template: build-package.yml
   parameters:
     name: 'build_language_server'
     root: 'language-server'
     packagename: 'azure-pipelines-language-server'
+    tarballPath: 'language-server/out/src'

@@ -137,7 +137,6 @@ export class YAMLCompletion {
 			let collectionPromises: Thenable<any>[] = [];
 
 			let addValue = true;
-			let currentKey = '';
 
 			let currentProperty: Parser.PropertyASTNode = null;
 			if (node) {
@@ -147,7 +146,7 @@ export class YAMLCompletion {
 					if (stringNode.isKey) {
 						addValue = !(node.parent && ((<Parser.PropertyASTNode>node.parent).value));
 						currentProperty = node.parent ? <Parser.PropertyASTNode>node.parent : null;
-						currentKey = document.getText().substring(node.start + 1, node.end - 1);
+						// currentKey = document.getText().substring(node.start + 1, node.end - 1);
 						if (node.parent) {
 							node = node.parent.parent;
 						}
@@ -241,11 +240,9 @@ export class YAMLCompletion {
 
 		let offsetForSeparator = offset;
 		let parentKey: string = null;
-		let valueNode: Parser.ASTNode = null;
 		
 		if (node && (node.type === 'string' || node.type === 'number' || node.type === 'boolean')) {
 			offsetForSeparator = node.end;
-			valueNode = node;
 			node = node.parent;
 		}
 

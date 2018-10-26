@@ -13,6 +13,7 @@ parameters:
   name: ''            # job name
   root: ''            # root folder of the package
   packagename: ''     # name of the package
+  tarballPath: ''     # path to the tarball folder
 
 jobs:
 - job: ${{ parameters.name }}
@@ -53,7 +54,7 @@ jobs:
     - task: CopyFiles@2
       displayName: Stage the npm module
       inputs:
-        sourceFolder: ${{ format('{0}/out/src', parameters.root) }}
+        sourceFolder: ${{ parameters.tarballPath }}
         contents: '*.tgz' 
         targetFolder: ${{ format('$(Build.ArtifactStagingDirectory)/{0}', parameters.packageName) }}
 

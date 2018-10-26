@@ -1,7 +1,7 @@
 {
   "name": "azure-pipelines-language-service",
   "description": "Azure Pipelines language service",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "author": "Microsoft",
   "license": "MIT",
   "contributors": [
@@ -31,7 +31,7 @@
   },
   "dependencies": {
     "js-yaml": "3.12.0",
-    "jsonc-parser": "1.0.3",
+    "jsonc-parser": "2.0.2",
     "vscode-json-languageservice": "3.0.12",
     "vscode-languageserver-types": "3.6.1",
     "vscode-nls": "3.2.2",
@@ -49,13 +49,16 @@
     "ts-node": "5.0.1",
     "typescript": "2.7.2",
     "shx": "0.3.2",
-    "mocha-junit-reporter": "1.18.0"
+    "mocha-junit-reporter": "1.18.0",
+    "webpack": "4.20.2",
+    "webpack-cli": "3.1.2",
+    "ts-loader": "5.2.1"
   },
   "scripts": {
-    "build": "npm run compile && npm run preppackage && cd out/src && npm pack",
+    "build": "npm run clean && npm run compile && webpack && npm pack",
     "compile": "tsc -p .",
     "watch": "tsc -watch -p .",
-    "preppackage": "shx cp package.json out/src && shx cp CHANGELOG.md out/src && shx cp LICENSE out/src && shx cp README.md out/src",
+    "clean": "shx rm -rf lib",
     "test": "mocha --require ts-node/register --ui tdd ./test/*.test.ts",
     "unittest": "mocha --require ts-node/register --ui tdd ./unittests/*.test.ts",
     "coverage": "nyc mocha --require ts-node/register --require source-map-support/register --recursive --ui tdd ./test/*.test.ts",

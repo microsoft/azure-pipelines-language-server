@@ -1,7 +1,9 @@
-npm-debug.log
+_bundles/
+.nyc_output
 .vscode
+*.tgz
+lib/
 node_modules/
 npm-debug.log
-.nyc_output
+npm-debug.log
 out/
-/*.tgz

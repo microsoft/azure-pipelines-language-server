@@ -5,13 +5,12 @@
  *--------------------------------------------------------------------------------------------*/
 'use strict';
 
-import { ASTNode, ErrorCode, BooleanASTNode, NullASTNode, ArrayASTNode, NumberASTNode, ObjectASTNode, PropertyASTNode, StringASTNode, IApplicableSchema, JSONDocument } from './jsonParser';
+import { ASTNode, ErrorCode, BooleanASTNode, NullASTNode, ArrayASTNode, NumberASTNode, ObjectASTNode, PropertyASTNode, StringASTNode, JSONDocument } from './jsonParser';
 
 import * as nls from 'vscode-nls';
 const localize = nls.loadMessageBundle();
 
 import * as Yaml from 'yaml-ast-parser'
-import { Kind } from 'yaml-ast-parser'
 import { Schema, Type } from 'js-yaml';
 
 import { getLineStartPositions, getPosition } from '../utils/documentPositionCalculator'
@@ -40,7 +39,7 @@ export class SingleYAMLDocument extends JSONDocument {
 		return this.getNodeFromOffsetEndInclusive(offset);
 	}
 
-	private getNodeByIndent = (lines: number[], offset: number, node: ASTNode) => {
+	public getNodeByIndent = (lines: number[], offset: number, node: ASTNode) => {
 
 		const { line, column: indent } = getPosition(offset, this.lines)
 
@@ -234,8 +233,8 @@ function createJSONDocument(yamlDoc: Yaml.YAMLNode, startPositions: number[], te
 
 export class YAMLDocument {
 	public documents: JSONDocument[]
-	private errors;
-	private warnings;
+	public errors;
+	public warnings;
 
 	constructor(documents: JSONDocument[]) {
 		this.documents = documents;

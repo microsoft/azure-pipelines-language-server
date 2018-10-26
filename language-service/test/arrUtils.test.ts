@@ -130,7 +130,6 @@ suite("Array Utils Tests", () => {
                 }
 
                 var arr = [obj1, obj2];
-                var prop = "test_key";
 
                 var result = removeDuplicatesObj(arr);
                 assert.equal(result.length, 2);

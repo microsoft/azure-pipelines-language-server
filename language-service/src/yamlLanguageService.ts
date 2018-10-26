@@ -3,15 +3,18 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
-import { JSONSchemaService } from './services/jsonSchemaService'
-import { TextDocument, Position, CompletionList, FormattingOptions, Diagnostic } from 'vscode-languageserver-types';
+import { JSONSchemaService, CustomSchemaProvider } from './services/jsonSchemaService'
+import { TextDocument, Position, CompletionList, FormattingOptions, Diagnostic,
+  CompletionItem, TextEdit, Hover, SymbolInformation
+} from 'vscode-languageserver-types';
 import { JSONSchema } from './jsonSchema';
 import { YAMLDocumentSymbols } from './services/documentSymbols';
 import { YAMLCompletion } from "./services/yamlCompletion";
-import { JSONDocument } from 'vscode-json-languageservice';
 import { YAMLHover } from "./services/yamlHover";
 import { YAMLValidation } from "./services/yamlValidation";
 import { format } from './services/yamlFormatter';
+import { JSONWorkerContribution } from './jsonContributions';
+import { YAMLDocument } from './parser/yamlParser';
 
 export interface LanguageSettings {
   validate?: boolean; //Setting for whether we want to validate the schema
@@ -91,17 +94,23 @@ export interface SchemaConfiguration {
 }
 
 export interface LanguageService {
-  configure(settings): void;
+  configure(settings: LanguageSettings): void;
 	doComplete(document: TextDocument, position: Position, doc): Thenable<CompletionList>;
   doValidation(document: TextDocument, yamlDocument): Thenable<Diagnostic[]>;
-  doHover(document: TextDocument, position: Position, doc);
-  findDocumentSymbols(document: TextDocument, doc);
-  doResolve(completionItem);
+  doHover(document: TextDocument, position: Position, doc: YAMLDocument): Thenable<Hover>;
+  findDocumentSymbols(document: TextDocument, doc: YAMLDocument): SymbolInformation[];
+  doResolve(completionItem: CompletionItem): Thenable<CompletionItem>;
   resetSchema(uri: string): boolean;
-  doFormat(document: TextDocument, options: FormattingOptions, customTags: Array<String>);
+  doFormat(document: TextDocument, options: FormattingOptions, customTags: Array<String>): TextEdit[];
 }
 
-export function getLanguageService(schemaRequestService, workspaceContext, contributions, customSchemaProvider, promiseConstructor?): LanguageService {
+export function getLanguageService(
+  schemaRequestService: SchemaRequestService,
+  contributions: JSONWorkerContribution[],
+  customSchemaProvider: CustomSchemaProvider,
+  workspaceContext?: WorkspaceContextService,
+  promiseConstructor?: PromiseConstructor): LanguageService {
+
   let promise = promiseConstructor || Promise;
 
   let schemaService = new JSONSchemaService(schemaRequestService, workspaceContext, customSchemaProvider);

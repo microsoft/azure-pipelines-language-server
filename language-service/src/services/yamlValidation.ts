@@ -6,15 +6,13 @@
 'use strict';
 
 import { JSONSchemaService } from './jsonSchemaService';
-import { JSONDocument, ObjectASTNode, IProblem, ProblemSeverity } from '../parser/jsonParser';
-import { TextDocument, Diagnostic, DiagnosticSeverity } from 'vscode-languageserver-types';
+import { Diagnostic, DiagnosticSeverity } from 'vscode-languageserver-types';
 import { PromiseConstructor, Thenable, LanguageSettings} from '../yamlLanguageService';
 
 export class YAMLValidation {
 	
 	private jsonSchemaService: JSONSchemaService;
 	private promise: PromiseConstructor;
-	private comments: boolean;
 	private validationEnabled: boolean;
 
 	public constructor(jsonSchemaService, promiseConstructor) {
@@ -29,15 +27,15 @@ export class YAMLValidation {
 		}
 	}
 	
-	public doValidation(textDocument, yamlDocument) {
+	public doValidation(textDocument, yamlDocument): Thenable<Diagnostic[]> {
 
 		if(!this.validationEnabled){
 			return this.promise.resolve([]);
 		}
 
 		return this.jsonSchemaService.getSchemaForResource(textDocument.uri).then(function (schema) {
-			var diagnostics = [];
-			var added = {};
+			var diagnostics: Diagnostic[] = [];
+			var added: {[key:string]: boolean} = {};
 
 			if (schema) {
 				
