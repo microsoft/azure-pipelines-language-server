@@ -30,7 +30,7 @@
     "url": "https://github.com/Microsoft/azure-pipelines-language-server.git"
   },
   "dependencies": {
-    "azure-pipelines-language-service": "0.2.0",
+    "azure-pipelines-language-service": "0.2.1",
     "request-light": "0.2.3",
     "vscode-languageserver": "4.1.2",
     "vscode-languageserver-types": "3.6.1",

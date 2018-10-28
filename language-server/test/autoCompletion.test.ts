@@ -5,12 +5,12 @@
 import {
 	TextDocument} from 'vscode-languageserver-types';
 import {getLanguageService} from 'azure-pipelines-language-service/yamlLanguageService'
-import {schemaRequestService, workspaceContext}  from './testHelper';
+import {schemaRequestService}  from './testHelper';
 import { parse as parseYAML } from 'azure-pipelines-language-service/parser/yamlParser';
 import { getLineOffsets } from 'azure-pipelines-language-service/utils/arrUtils';
 var assert = require('assert');
 
-let languageService = getLanguageService(schemaRequestService, workspaceContext, [], null);
+let languageService = getLanguageService(schemaRequestService, [], null);
 
 
 let uri = 'http://json.schemastore.org/bowerrc';

@@ -50,7 +50,7 @@ namespace CustomSchemaContentRequest {
 }
 
 namespace CustomSchemaRequest {
-	export const type: RequestType<{}, {}, {}, {}> = new RequestType('custom/schema/request');
+	export const type: RequestType<{}, string, {}, {}> = new RequestType('custom/schema/request');
 }
 
 namespace ColorSymbolRequest {
@@ -172,7 +172,7 @@ let schemaRequestService = (uri: string): Thenable<string> => {
 
 export let KUBERNETES_SCHEMA_URL = "https://gist.githubusercontent.com/JPinkney/ccaf3909ef811e5657ca2e2e1fa05d76/raw/f85e51bfb67fdb99ab7653c2953b60087cc871ea/openshift_schema_all.json";
 export let KEDGE_SCHEMA_URL = "https://raw.githubusercontent.com/kedgeproject/json-schema/master/master/kedge-json-schema.json";
-export let customLanguageService = getCustomLanguageService(schemaRequestService, workspaceContext, [],
+export let customLanguageService = getCustomLanguageService(schemaRequestService, [],
 	(resource) => connection.sendRequest(CustomSchemaRequest.type, resource));
 
 // The settings interface describes the server relevant settings part

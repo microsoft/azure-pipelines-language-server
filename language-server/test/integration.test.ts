@@ -5,12 +5,12 @@
 import { TextDocument } from 'vscode-languageserver-types';
 import {getLanguageService} from 'azure-pipelines-language-service/yamlLanguageService'
 
-import {schemaRequestService, workspaceContext}  from './testHelper';
+import {schemaRequestService}  from './testHelper';
 import { parse as parseYAML } from 'azure-pipelines-language-service/parser/yamlParser';
 import { getLineOffsets } from "azure-pipelines-language-service/utils/arrUtils";
 var assert = require('assert');
 
-let languageService = getLanguageService(schemaRequestService, workspaceContext, [], null);
+let languageService = getLanguageService(schemaRequestService, [], null);
 
 let uri = "https://gist.githubusercontent.com/JPinkney/ccaf3909ef811e5657ca2e2e1fa05d76/raw/f85e51bfb67fdb99ab7653c2953b60087cc871ea/openshift_schema_all.json";
 let languageSettings = {

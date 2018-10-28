@@ -5,11 +5,12 @@
 import {
 	TextDocument} from 'vscode-languageserver';
 import {getLanguageService} from 'azure-pipelines-language-service/yamlLanguageService'
-import {schemaRequestService, workspaceContext}  from './testHelper';
+import {schemaRequestService}  from './testHelper';
+import {assertHasContents} from './hover.test';
 import { parse as parseYAML } from 'azure-pipelines-language-service/parser/yamlParser';
 var assert = require('assert');
 
-let languageService = getLanguageService(schemaRequestService, workspaceContext, [], null);
+let languageService = getLanguageService(schemaRequestService, [], null);
 
 
 let uri = 'http://json.schemastore.org/composer';
@@ -41,7 +42,7 @@ suite("Hover Tests", () => {
 				let content = "authors:\n  - name: Josh";
 				let hover = parseSetup(content, 14);
 				hover.then(function(result){
-                    assert.notEqual(result.contents.length, 0);				
+					assertHasContents(result);
 				}).then(done, done);
             });
             
@@ -49,7 +50,7 @@ suite("Hover Tests", () => {
 				let content = "authors:\n  - name: Josh\n  - email: jp";
 				let hover = parseSetup(content, 28);
 				hover.then(function(result){
-                    assert.notEqual(result.contents.length, 0);				
+					assertHasContents(result);
 				}).then(done, done);
             });
 		});

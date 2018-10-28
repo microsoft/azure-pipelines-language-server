@@ -5,10 +5,10 @@
 import {
     TextDocument} from 'vscode-languageserver';
 import { getLanguageService } from 'azure-pipelines-language-service/yamlLanguageService'
-import { schemaRequestService, workspaceContext } from './testHelper';
+import { schemaRequestService } from './testHelper';
 var assert = require('assert');
 
-let languageService = getLanguageService(schemaRequestService, workspaceContext, [], null);
+let languageService = getLanguageService(schemaRequestService, [], null);
 
 
 let uri = 'http://json.schemastore.org/bowerrc';
