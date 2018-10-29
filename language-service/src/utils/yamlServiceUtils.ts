@@ -18,7 +18,7 @@ export function completionHelper(document: TextDocument, textDocumentPosition: P
         end = document.getText().length;
     }
 
-    while (end - 1 >= start && is_EOL(document.getText().charCodeAt(end - 1))) {
+    while (end - 1 >= 0 && is_EOL(document.getText().charCodeAt(end - 1))) {
         end--;
     }
 
