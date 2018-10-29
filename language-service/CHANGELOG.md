@@ -1,3 +1,6 @@
+#### 0.2.2
+Fix the completion suggestions on empty line bug [#PR-12](https://github.com/Microsoft/azure-pipelines-language-server/pull/12)
+
 #### 0.2.1
 Fixes to use consistent types in language-service, added webpack to generate UMD bundle [#PR-9](https://github.com/Microsoft/azure-pipelines-language-server/pull/9)
 
