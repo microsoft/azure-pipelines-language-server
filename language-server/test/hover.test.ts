@@ -4,12 +4,12 @@
  *--------------------------------------------------------------------------------------------*/
 import { TextDocument, Hover, MarkupContent, MarkedString} from 'vscode-languageserver';
 import {getLanguageService} from 'azure-pipelines-language-service/yamlLanguageService'
-import {schemaRequestService}  from './testHelper';
+import {schemaRequestService, workspaceContext}  from './testHelper';
 import { parse as parseYAML } from 'azure-pipelines-language-service/parser/yamlParser';
 import { type } from 'os';
 var assert = require('assert');
 
-let languageService = getLanguageService(schemaRequestService, [], null);
+let languageService = getLanguageService(schemaRequestService, [], null, workspaceContext);
 
 
 let uri = 'http://json.schemastore.org/bowerrc';
@@ -82,55 +82,55 @@ suite("Hover Tests", () => {
             });
             
             it('Hover on value on root', (done) => {
-				let content = "cwd: test";
-				let hover = parseSetup(content, 6);
-				hover.then(function(result){
+				let content: string = "cwd: test";
+				let hover: Thenable<Hover> = parseSetup(content, 6);
+				hover.then(function(result: Hover){
 					assertHasContents(result);
 				}).then(done, done);
             });
 
             it('Hover on key with depth', (done) => {
-				let content = "scripts:\n  postinstall: test";
-				let hover = parseSetup(content, 15);
-				hover.then(function(result){
+				let content: string = "scripts:\n  postinstall: test";
+				let hover: Thenable<Hover> = parseSetup(content, 15);
+				hover.then(function(result: Hover){
 					assertHasContents(result);
 				}).then(done, done);
             });
 
             it('Hover on value with depth', (done) => {
-				let content = "scripts:\n  postinstall: test";
-				let hover = parseSetup(content, 26);
-				hover.then(function(result){
+				let content: string = "scripts:\n  postinstall: test";
+				let hover: Thenable<Hover> = parseSetup(content, 26);
+				hover.then(function(result: Hover){
 					assertHasContents(result);
 				}).then(done, done);
             });
 
             it('Hover works on both root node and child nodes works', (done) => {
-				let content = "scripts:\n  postinstall: test";
+				let content: string = "scripts:\n  postinstall: test";
                 
-                let firstHover = parseSetup(content, 3);
-                firstHover.then(function(result){
+                let firstHover: Thenable<Hover> = parseSetup(content, 3);
+                firstHover.then(function(result: Hover){
 					assertHasContents(result);
                 });
                 
-                let secondHover = parseSetup(content, 15);
-				secondHover.then(function(result){
+                let secondHover: Thenable<Hover> = parseSetup(content, 15);
+				secondHover.then(function(result: Hover){
 					assertHasContents(result);
 				}).then(done, done);
             });
 
             it('Hover does not show results when there isnt description field', (done) => {
-				let content = "analytics: true";
-				let hover = parseSetup(content, 3);
-				hover.then(function(result){
+				let content: string = "analytics: true";
+				let hover: Thenable<Hover> = parseSetup(content, 3);
+				hover.then(function(result: Hover){
 					assertHasContents(result);
 				}).then(done, done);
 			});
 			
 			it('Hover on multi document', (done) => {
-				let content = '---\nanalytics: true\n...\n---\njson: test\n...';
-				let hover = parseSetup(content, 30);
-				hover.then(function(result){
+				let content: string = '---\nanalytics: true\n...\n---\njson: test\n...';
+				let hover: Thenable<Hover> = parseSetup(content, 30);
+				hover.then(function(result: Hover){
 					assertHasContents(result);
 				}).then(done, done);
             });

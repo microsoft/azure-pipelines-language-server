@@ -5,12 +5,12 @@
 import {
 	TextDocument} from 'vscode-languageserver';
 import {getLanguageService} from 'azure-pipelines-language-service/yamlLanguageService'
-import {schemaRequestService}  from './testHelper';
-import {assertHasContents} from './hover.test';
+import {schemaRequestService, workspaceContext}  from './testHelper';
+import {assertHasContents} from './hover.test'
 import { parse as parseYAML } from 'azure-pipelines-language-service/parser/yamlParser';
 var assert = require('assert');
 
-let languageService = getLanguageService(schemaRequestService, [], null);
+let languageService = getLanguageService(schemaRequestService, [], null, workspaceContext);
 
 
 let uri = 'http://json.schemastore.org/composer';
