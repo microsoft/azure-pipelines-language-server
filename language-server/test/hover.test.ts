@@ -21,18 +21,14 @@ languageSettings.schemas.push({ uri, fileMatch: fileMatch });
 languageService.configure(languageSettings);
 
 export function assertHasContents(result: Hover): void {
-	assert.true(result.contents);
+	assert.ok(result.contents);
 	if (typeof(result.contents) == "string") {
-		assert.true(result.contents.length > 0);
+		assert.notEqual(result.contents.length, 0);
 	}
 	else if (result.contents.hasOwnProperty('value')) {
 		let resultValue: any = result.contents['value'];
-		if (typeof(resultValue) == "string") {
-			assert.true(resultValue.length > 0)
-		}
-		else {
-			assert.true(false);
-		}
+		assert.ok(typeof(resultValue) == "string");
+		assert.notEqual(resultValue.length, 0);
 	}
 	else {
 		let hasAnyContent: boolean = false;
@@ -43,16 +39,12 @@ export function assertHasContents(result: Hover): void {
 			}
 			else {
 				let contentLineValue: any = contentLine['value'];
-				if (typeof(contentLineValue) == "string") {
-					hasAnyContent = contentLineValue.length > 0;
-				}
-				else {
-					assert.true(false);
-				}
+				assert.ok(typeof(contentLineValue) == "string");
+				hasAnyContent = contentLineValue.length > 0;
 			}
 		}
 
-		assert.true(hasAnyContent);
+		assert.ok(hasAnyContent);
 	}
 }
 
