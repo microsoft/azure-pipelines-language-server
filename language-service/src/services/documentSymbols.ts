@@ -39,12 +39,12 @@ export class YAMLDocumentSymbols {
             return result;
         };
 
-        const results = [];
+        const results: SymbolInformation[] = [];
 
         doc.documents.forEach((yamlDocument: Parser.JSONDocument) => {
             if (yamlDocument.root) {
                 const result = collectOutlineEntries([], yamlDocument.root, void 0);
-                results.push(result);
+                results.push(...result);
             }
         });
         
