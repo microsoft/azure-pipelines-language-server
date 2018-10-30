@@ -4,13 +4,13 @@
  *--------------------------------------------------------------------------------------------*/
 import {
 	TextDocument} from 'vscode-languageserver';
-import {getLanguageService} from 'azure-pipelines-language-service/yamlLanguageService'
+import {getLanguageService} from 'azure-pipelines-language-service'
 import {schemaRequestService, workspaceContext}  from './testHelper';
-import { parse as parseYAML } from 'azure-pipelines-language-service/parser/yamlParser';
-import { getLineOffsets } from "azure-pipelines-language-service/utils/arrUtils";
+import { parse as parseYAML } from 'azure-pipelines-language-service';
+import { getLineOffsets } from 'azure-pipelines-language-service';
 var assert = require('assert');
 
-let languageService = getLanguageService(schemaRequestService, workspaceContext, [], null);
+let languageService = getLanguageService(schemaRequestService, [], null, workspaceContext);
 
 
 let uri = 'http://json.schemastore.org/composer';

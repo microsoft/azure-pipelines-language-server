@@ -20,16 +20,16 @@ import URI from "vscode-uri";
 import * as URL from "url";
 import * as nls from "vscode-nls";
 
-import * as Strings from "azure-pipelines-language-service/utils/strings";
+import * as Strings from "azure-pipelines-language-service";
 
-import { getLineOffsets, removeDuplicatesObj } from "azure-pipelines-language-service/utils/arrUtils";
+import { getLineOffsets, removeDuplicatesObj } from "azure-pipelines-language-service";
 
-import { getLanguageService as getCustomLanguageService, LanguageSettings } from "azure-pipelines-language-service/yamlLanguageService";
+import { getLanguageService as getCustomLanguageService, LanguageSettings } from "azure-pipelines-language-service";
 
-import { FilePatternAssociation } from "azure-pipelines-language-service/services/jsonSchemaService";
-import { parse as parseYAML } from "azure-pipelines-language-service/parser/yamlParser";
-import { JSONDocument } from "azure-pipelines-language-service/parser/jsonParser";
-import { JSONSchema } from "azure-pipelines-language-service/jsonSchema";
+import { FilePatternAssociation } from "azure-pipelines-language-service";
+import { parse as parseYAML } from "azure-pipelines-language-service";
+import { JSONDocument } from "azure-pipelines-language-service";
+import { JSONSchema } from "azure-pipelines-language-service";
 
 nls.config(<any>process.env['VSCODE_NLS_CONFIG']);
 
@@ -50,7 +50,7 @@ namespace CustomSchemaContentRequest {
 }
 
 namespace CustomSchemaRequest {
-	export const type: RequestType<{}, {}, {}, {}> = new RequestType('custom/schema/request');
+	export const type: RequestType<{}, string, {}, {}> = new RequestType('custom/schema/request');
 }
 
 namespace ColorSymbolRequest {
@@ -172,8 +172,11 @@ let schemaRequestService = (uri: string): Thenable<string> => {
 
 export let KUBERNETES_SCHEMA_URL = "https://gist.githubusercontent.com/JPinkney/ccaf3909ef811e5657ca2e2e1fa05d76/raw/f85e51bfb67fdb99ab7653c2953b60087cc871ea/openshift_schema_all.json";
 export let KEDGE_SCHEMA_URL = "https://raw.githubusercontent.com/kedgeproject/json-schema/master/master/kedge-json-schema.json";
-export let customLanguageService = getCustomLanguageService(schemaRequestService, workspaceContext, [],
-	(resource) => connection.sendRequest(CustomSchemaRequest.type, resource));
+export let customLanguageService = getCustomLanguageService(
+	schemaRequestService,
+	[], //contributions
+	(resource) => connection.sendRequest(CustomSchemaRequest.type, resource),
+	workspaceContext);
 
 // The settings interface describes the server relevant settings part
 interface Settings {
