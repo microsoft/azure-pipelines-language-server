@@ -1,6 +1,10 @@
 import { getLineOffsets } from "./arrUtils";
 import { TextDocument, Position } from "vscode-languageserver-types";
 
+export const nodeHolder = "h";
+const nodeLineEnding = ":\r\n";
+const nodeHolderWithEnding = nodeHolder + nodeLineEnding;
+
 function is_EOL(c: number) {
     return (c === 0x0A/* LF */) || (c === 0x0D/* CR */);
 }
@@ -18,7 +22,7 @@ export function completionHelper(document: TextDocument, textDocumentPosition: P
         end = document.getText().length;
     }
 
-    while (end - 1 >= 0 && is_EOL(document.getText().charCodeAt(end - 1))) {
+    while (end - 1 >= start && is_EOL(document.getText().charCodeAt(end - 1))) {
         end--;
     }
 
@@ -33,10 +37,10 @@ export function completionHelper(document: TextDocument, textDocumentPosition: P
         const trimmedText = textLine.trim();
         if (trimmedText.length === 0 || (trimmedText.length === 1 && trimmedText[0] === '-')) {
             // Add a temp node that is in the document but we don't use at all.
-            newText = document.getText().substring(0, start + textLine.length) + "h:\r\n" + document.getText().substr(lineOffsets[lineNumber + 1] || document.getText().length);
+            newText = document.getText().substring(0, start + textLine.length) + nodeHolderWithEnding + document.getText().substr(lineOffsets[lineNumber + 1] || document.getText().length);
         } else {
             // Add a semicolon to the end of the current line so we can validate the node
-            newText = document.getText().substring(0, start + textLine.length) + ":\r\n" + document.getText().substr(lineOffsets[lineNumber + 1] || document.getText().length);
+            newText = document.getText().substring(0, start + textLine.length) + nodeLineEnding + document.getText().substr(lineOffsets[lineNumber + 1] || document.getText().length);
         }
 
         return {
