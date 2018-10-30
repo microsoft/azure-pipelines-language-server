@@ -12,12 +12,14 @@ import SchemaService = require('./jsonSchemaService');
 import { JSONSchema } from '../jsonSchema';
 import { JSONWorkerContribution, CompletionsCollector } from '../jsonContributions';
 import { PromiseConstructor, Thenable } from 'vscode-json-languageservice';
+import { nodeHolder } from "../utils/yamlServiceUtils";
 
 import { CompletionItem, CompletionItemKind, CompletionList, TextDocument, Position, Range, TextEdit, InsertTextFormat } from 'vscode-languageserver-types';
 
 import * as nls from 'vscode-nls';
 import { matchOffsetToDocument } from '../utils/arrUtils';
 import { YAMLDocument } from '../parser/yamlParser';
+
 const localize = nls.loadMessageBundle();
 
 export class YAMLCompletion {
@@ -76,7 +78,7 @@ export class YAMLCompletion {
 
 		let currentWord = this.getCurrentWord(document, offset);
 
-		let overwriteRange = null;
+		let overwriteRange: Range = null;
 		if(node && node.type === 'null'){
 			//console.log('type = null');
 			let nodeStartPos = document.positionAt(node.start);
@@ -85,8 +87,17 @@ export class YAMLCompletion {
 			nodeEndPos.character += 1;
 			overwriteRange = Range.create(nodeStartPos, nodeEndPos);
 		}else if (node && (node.type === 'string' || node.type === 'number' || node.type === 'boolean')) {
-			//console.log('type = string | nuber | boolean');
-			overwriteRange = Range.create(document.positionAt(node.start), document.positionAt(node.end));
+            //console.log('type = string | nuber | boolean');
+            const startPosition = document.positionAt(node.start);
+            let endPosition = document.positionAt(node.end);
+
+            // when start and end positions are not on the same line and node is a temporary holder then
+            // we must have misplaced the end of the range one line below the start of the range
+            // because of the mismatch in line length between the temporary currentDoc with holder and actual document.
+            if (startPosition.line + 1 === endPosition.line && endPosition.character === 0 && node.location === nodeHolder) {
+                endPosition = document.positionAt(node.end - 1);
+            }
+            overwriteRange = Range.create(startPosition, endPosition);
 		} else {
 			//console.log('else');
 			let overwriteStart = offset - currentWord.length;
