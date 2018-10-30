@@ -3,9 +3,9 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 import { TextDocument, Hover, MarkupContent, MarkedString} from 'vscode-languageserver';
-import {getLanguageService} from 'azure-pipelines-language-service/yamlLanguageService'
+import {getLanguageService} from 'azure-pipelines-language-service'
 import {schemaRequestService, workspaceContext}  from './testHelper';
-import { parse as parseYAML } from 'azure-pipelines-language-service/parser/yamlParser';
+import { parse as parseYAML } from 'azure-pipelines-language-service';
 import { type } from 'os';
 var assert = require('assert');
 

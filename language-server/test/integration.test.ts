@@ -3,11 +3,11 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 import { TextDocument } from 'vscode-languageserver-types';
-import {getLanguageService} from 'azure-pipelines-language-service/yamlLanguageService'
+import {getLanguageService} from 'azure-pipelines-language-service'
 
 import {schemaRequestService, workspaceContext}  from './testHelper';
-import { parse as parseYAML } from 'azure-pipelines-language-service/parser/yamlParser';
-import { getLineOffsets } from "azure-pipelines-language-service/utils/arrUtils";
+import { parse as parseYAML } from 'azure-pipelines-language-service';
+import { getLineOffsets } from 'azure-pipelines-language-service';
 var assert = require('assert');
 
 let languageService = getLanguageService(schemaRequestService, [], null, workspaceContext);

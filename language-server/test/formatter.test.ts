@@ -4,7 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 import {
     TextDocument} from 'vscode-languageserver';
-import { getLanguageService } from 'azure-pipelines-language-service/yamlLanguageService'
+import { getLanguageService } from 'azure-pipelines-language-service'
 import { schemaRequestService, workspaceContext } from './testHelper';
 var assert = require('assert');
 

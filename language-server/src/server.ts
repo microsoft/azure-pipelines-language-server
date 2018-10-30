@@ -20,16 +20,16 @@ import URI from "vscode-uri";
 import * as URL from "url";
 import * as nls from "vscode-nls";
 
-import * as Strings from "azure-pipelines-language-service/utils/strings";
+import * as Strings from "azure-pipelines-language-service";
 
-import { getLineOffsets, removeDuplicatesObj } from "azure-pipelines-language-service/utils/arrUtils";
+import { getLineOffsets, removeDuplicatesObj } from "azure-pipelines-language-service";
 
-import { getLanguageService as getCustomLanguageService, LanguageSettings } from "azure-pipelines-language-service/yamlLanguageService";
+import { getLanguageService as getCustomLanguageService, LanguageSettings } from "azure-pipelines-language-service";
 
-import { FilePatternAssociation } from "azure-pipelines-language-service/services/jsonSchemaService";
-import { parse as parseYAML } from "azure-pipelines-language-service/parser/yamlParser";
-import { JSONDocument } from "azure-pipelines-language-service/parser/jsonParser";
-import { JSONSchema } from "azure-pipelines-language-service/jsonSchema";
+import { FilePatternAssociation } from "azure-pipelines-language-service";
+import { parse as parseYAML } from "azure-pipelines-language-service";
+import { JSONDocument } from "azure-pipelines-language-service";
+import { JSONSchema } from "azure-pipelines-language-service";
 
 nls.config(<any>process.env['VSCODE_NLS_CONFIG']);
 

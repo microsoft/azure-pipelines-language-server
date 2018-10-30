@@ -7,7 +7,7 @@ import {
 	InitializeResult, RequestType
 } from 'vscode-languageserver';
 import { xhr, XHRResponse, getErrorStatusDescription } from 'request-light';
-import Strings = require( 'azure-pipelines-language-service/utils/strings');
+import Strings = require( 'azure-pipelines-language-service');
 import URI from 'vscode-uri';
 import * as URL from 'url';
 import fs = require('fs');
