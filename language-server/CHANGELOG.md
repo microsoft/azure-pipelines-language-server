@@ -1,3 +1,6 @@
+#### 0.2.1
+Update to coveralls@3.0.2 to get rid of [cryptiles vulenerability](https://github.com/hapijs/cryptiles/issues/34)
+
 #### 0.2.0
 Split the package into azure-pipelines-language-server and azure-pipelines-language-service to promote reusability [#PR-4](https://github.com/Microsoft/azure-pipelines-language-server/pull/4)
 
