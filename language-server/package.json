@@ -1,7 +1,7 @@
 {
   "name": "azure-pipelines-language-server",
   "description": "Azure Pipelines language server",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "author": "Microsoft",
   "license": "MIT",
   "contributors": [
@@ -40,15 +40,15 @@
   "devDependencies": {
     "@types/mocha": "5.2.5",
     "@types/node": "9.6.6",
-    "coveralls": "3.0.0",
+    "coveralls": "^3.0.2",
     "mocha": "5.2.0",
+    "mocha-junit-reporter": "1.18.0",
     "mocha-lcov-reporter": "1.3.0",
     "nyc": "13.0.1",
+    "shx": "0.3.2",
     "source-map-support": "0.5.5",
     "ts-node": "5.0.1",
-    "typescript": "2.7.2",
-    "shx": "0.3.2",
-    "mocha-junit-reporter": "1.18.0"
+    "typescript": "2.7.2"
   },
   "scripts": {
     "build": "npm run compile && npm run preppackage && cd out/src && npm pack",
