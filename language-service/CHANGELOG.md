@@ -1,3 +1,6 @@
+#### 0.2.3
+Fix data returned by findDocumentSymbols [#PR-14](https://github.com/Microsoft/azure-pipelines-language-server/pull/14)
+
 #### 0.2.2
 Fix the completion suggestions on empty line bug [#PR-12](https://github.com/Microsoft/azure-pipelines-language-server/pull/12)
 
