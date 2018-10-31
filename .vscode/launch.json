@@ -15,8 +15,8 @@
 		{
 			"type": "node",
 			"request": "launch",
-			"name": "Launch Tests",
-			"program": "${workspaceRoot}/node_modules/mocha/bin/_mocha",
+			"name": "Launch Serivce Tests",
+			"program": "${workspaceRoot}/language-service/node_modules/mocha/bin/_mocha",
 			"args": [
 				"-u",
 				"tdd",
@@ -25,7 +25,24 @@
 				"--colors",
 				"-r",
 				"ts-node/register",
-				"${workspaceRoot}/test/autoCompletion.test.ts"
+				"${workspaceRoot}/language-service/test/*.test.ts"
+			],
+			"preLaunchTask": "npm"
+		},
+		{
+			"type": "node",
+			"request": "launch",
+			"name": "Launch Server Tests",
+			"program": "${workspaceRoot}/language-server/node_modules/mocha/bin/_mocha",
+			"args": [
+				"-u",
+				"tdd",
+				"--timeout",
+				"999999",
+				"--colors",
+				"-r",
+				"ts-node/register",
+				"${workspaceRoot}/language-server/test/*.test.ts"
 			],
 			"preLaunchTask": "npm"
 		}
