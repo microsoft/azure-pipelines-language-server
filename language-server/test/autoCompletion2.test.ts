@@ -2,12 +2,11 @@
  *  Copyright (c) Red Hat. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
-import {
-	TextDocument} from 'vscode-languageserver';
-import {getLanguageService} from 'azure-pipelines-language-service'
-import {schemaRequestService, workspaceContext}  from './testHelper';
+import { TextDocument } from 'vscode-languageserver';
+import { LanguageService, getLanguageService } from 'azure-pipelines-language-service'
+import { schemaRequestService, workspaceContext }  from './testHelper';
 import { parse as parseYAML } from 'azure-pipelines-language-service';
-import { getLineOffsets } from 'azure-pipelines-language-service';
+import { completionHelper } from 'azure-pipelines-language-service';
 var assert = require('assert');
 
 let languageService = getLanguageService(schemaRequestService, [], null, workspaceContext);
@@ -23,20 +22,16 @@ languageService.configure(languageSettings);
 
 suite("Auto Completion Tests", () => {
 
-	function setup(content: string){
-		return TextDocument.create("file://~/Desktop/vscode-k8s/test.yaml", "yaml", 0, content);
-	}
-
 	function parseSetup(content: string, position){
-		let testTextDocument = setup(content);
-		return completionHelper(testTextDocument, testTextDocument.positionAt(position));
+		let document = TextDocument.create("file://~/Desktop/vscode-k8s/test.yaml", "yaml", 0, content);
+		let completion = completionHelper(document, document.positionAt(position));
+		let jsonDocument = parseYAML(completion.newText);
+		return languageService.doComplete(document, completion.newPosition, jsonDocument);
 	}
 
 	describe('yamlCompletion with composer', function(){
 
 		describe('doComplete', function(){
-
-
 
 			it('Array autocomplete without word', (done) => {
 				let content = "authors:\n  - ";
@@ -126,56 +121,3 @@ suite("Auto Completion Tests", () => {
 
 	});
 });
-
-
-function is_EOL(c) {
-	return (c === 0x0A/* LF */) || (c === 0x0D/* CR */);
-}
-
-function completionHelper(document: TextDocument, textDocumentPosition){
-
-	//Get the string we are looking at via a substring
-	let linePos = textDocumentPosition.line;
-	let position = textDocumentPosition;
-	let lineOffset = getLineOffsets(document.getText());
-	let start = lineOffset[linePos]; //Start of where the autocompletion is happening
-	let end = 0; //End of where the autocompletion is happening
-	if(lineOffset[linePos+1]){
-		end = lineOffset[linePos+1];
-	}else{
-		end = document.getText().length;
-	}
-
-	while (end - 1 >= 0 && is_EOL(document.getText().charCodeAt(end - 1))) {
-		end--;
-	}
-
-	let textLine = document.getText().substring(start, end);
-
-	//Check if the string we are looking at is a node
-	if(textLine.indexOf(":") === -1){
-		//We need to add the ":" to load the nodes
-
-		let newText = "";
-
-		//This is for the empty line case
-		let trimmedText = textLine.trim();
-		if(trimmedText.length === 0 || (trimmedText.length === 1 && trimmedText[0] === '-')){
-			//Add a temp node that is in the document but we don't use at all.
-			newText = document.getText().substring(0, start+textLine.length) + "h:\r\n" + document.getText().substr(lineOffset[linePos+1] || document.getText().length);
-			//For when missing semi colon case
-		}else{
-			//Add a semicolon to the end of the current line so we can validate the node
-			newText = document.getText().substring(0, start+textLine.length) + ":\r\n" + document.getText().substr(lineOffset[linePos+1] || document.getText().length);
-		}
-		let jsonDocument = parseYAML(newText);
-		return languageService.doComplete(document, position, jsonDocument);
-	}else{
-
-		//All the nodes are loaded
-		position.character = position.character - 1;
-		let jsonDocument = parseYAML(document.getText());
-		return languageService.doComplete(document, position, jsonDocument);
-	}
-
-}

@@ -3,14 +3,13 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 import { TextDocument } from 'vscode-languageserver-types';
-import {getLanguageService} from 'azure-pipelines-language-service'
-
-import {schemaRequestService, workspaceContext}  from './testHelper';
+import { LanguageService, getLanguageService } from 'azure-pipelines-language-service'
+import { schemaRequestService, workspaceContext }  from './testHelper';
 import { parse as parseYAML } from 'azure-pipelines-language-service';
-import { getLineOffsets } from 'azure-pipelines-language-service';
+import { completionHelper } from 'azure-pipelines-language-service';
 var assert = require('assert');
 
-let languageService = getLanguageService(schemaRequestService, [], null, workspaceContext);
+let languageService: LanguageService = getLanguageService(schemaRequestService, [], null, workspaceContext);
 
 let uri = "https://gist.githubusercontent.com/JPinkney/ccaf3909ef811e5657ca2e2e1fa05d76/raw/f85e51bfb67fdb99ab7653c2953b60087cc871ea/openshift_schema_all.json";
 let languageSettings = {
@@ -189,19 +188,17 @@ suite("Kubernetes Integration Tests", () => {
 
 		describe('doComplete', function(){
 
-			function setup(content: string){
-				return TextDocument.create("file://~/Desktop/vscode-k8s/test.yaml", "yaml", 0, content);
-			}
-
 			function parseSetup(content: string, position){
-				let testTextDocument = setup(content);
+				let testTextDocument = TextDocument.create("file://~/Desktop/vscode-k8s/test.yaml", "yaml", 0, content);
 				let yDoc = parseYAML(testTextDocument.getText());
 				for(let jsonDoc in yDoc.documents){
 					yDoc.documents[jsonDoc].configureSettings({
 						isKubernetes: true
 					});
 				}
-				return completionHelper(testTextDocument, testTextDocument.positionAt(position));
+				let completion = completionHelper(testTextDocument, testTextDocument.positionAt(position));
+				let jsonDocument = parseYAML(completion.newText);
+				return languageService.doComplete(testTextDocument, completion.newPosition, jsonDocument);
 			}
 
 			it('Autocomplete on root node without word', (done) => {
@@ -269,58 +266,4 @@ suite("Kubernetes Integration Tests", () => {
 			});
 		});
 	});
-
 });
-
-
-function is_EOL(c) {
-	return (c === 0x0A/* LF */) || (c === 0x0D/* CR */);
-}
-
-function completionHelper(document: TextDocument, textDocumentPosition){
-
-		//Get the string we are looking at via a substring
-		let linePos = textDocumentPosition.line;
-		let position = textDocumentPosition;
-		let lineOffset = getLineOffsets(document.getText());
-		let start = lineOffset[linePos]; //Start of where the autocompletion is happening
-		let end = 0; //End of where the autocompletion is happening
-		if(lineOffset[linePos+1]){
-			end = lineOffset[linePos+1];
-		}else{
-			end = document.getText().length;
-		}
-
-		while (end - 1 >= 0 && is_EOL(document.getText().charCodeAt(end - 1))) {
-			end--;
-		}
-
-		let textLine = document.getText().substring(start, end);
-
-		//Check if the string we are looking at is a node
-		if(textLine.indexOf(":") === -1){
-			//We need to add the ":" to load the nodes
-
-			let newText = "";
-
-			//This is for the empty line case
-			let trimmedText = textLine.trim();
-			if(trimmedText.length === 0 || (trimmedText.length === 1 && trimmedText[0] === '-')){
-				//Add a temp node that is in the document but we don't use at all.
-				newText = document.getText().substring(0, start+textLine.length) + "h:\r\n" + document.getText().substr(lineOffset[linePos+1] || document.getText().length);
-				//For when missing semi colon case
-			}else{
-				//Add a semicolon to the end of the current line so we can validate the node
-				newText = document.getText().substring(0, start+textLine.length) + ":\r\n" + document.getText().substr(lineOffset[linePos+1] || document.getText().length);
-			}
-			let jsonDocument = parseYAML(newText);
-			return languageService.doComplete(document, position, jsonDocument);
-		}else{
-
-			//All the nodes are loaded
-			position.character = position.character - 1;
-			let jsonDocument = parseYAML(document.getText());
-			return languageService.doComplete(document, position, jsonDocument);
-		}
-
-}
