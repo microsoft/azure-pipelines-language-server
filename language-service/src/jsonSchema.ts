@@ -33,6 +33,7 @@ export interface JSONSchema {
 	exclusiveMaximum?: boolean;
 	multipleOf?: number;
 	required?: string[];
+	firstProperty?: string[];
 	$ref?: string;
 	anyOf?: JSONSchema[];
 	allOf?: JSONSchema[];

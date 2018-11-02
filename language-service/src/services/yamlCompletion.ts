@@ -223,6 +223,21 @@ export class YAMLCompletion {
 		});
 	}
 
+	private checkPropertyArray(properties: string[], property: string): boolean {
+		if (!properties || !properties.length) {
+			return true;
+		}
+
+		let contained: boolean = false;
+		properties.forEach(listProperty => {
+			if (listProperty == property) {
+				contained = true;
+			}
+		});
+
+		return contained;
+	}
+
 	private getPropertyCompletions(schema: SchemaService.ResolvedSchema, doc, node: Parser.ASTNode, addValue: boolean, collector: CompletionsCollector, separatorAfter: string): void {
 		let matchingSchemas = doc.getMatchingSchemas(schema.schema);
 		matchingSchemas.forEach((s) => {
@@ -230,15 +245,18 @@ export class YAMLCompletion {
 				let schemaProperties = s.schema.properties;
 				if (schemaProperties) {
 					Object.keys(schemaProperties).forEach((key: string) => {
-						let propertySchema = schemaProperties[key];
-						if (!propertySchema.deprecationMessage && !propertySchema["doNotSuggest"]) {
-							collector.add({
-								kind: CompletionItemKind.Property,
-								label: key,
-								insertText: this.getInsertTextForProperty(key, propertySchema, addValue, separatorAfter),
-								insertTextFormat: InsertTextFormat.Snippet,
-								documentation: propertySchema.description || ''
-							});
+						//check for more than one propery because the placeholder will always be in the list
+						if (s.node.properties.length > 1 || this.checkPropertyArray(s.schema.firstProperty, key)) {
+							let propertySchema = schemaProperties[key];
+							if (!propertySchema.deprecationMessage && !propertySchema["doNotSuggest"]) {
+								collector.add({
+									kind: CompletionItemKind.Property,
+									label: key,
+									insertText: this.getInsertTextForProperty(key, propertySchema, addValue, separatorAfter),
+									insertTextFormat: InsertTextFormat.Snippet,
+									documentation: propertySchema.description || ''
+								});
+							}
 						}
 					});
 				}

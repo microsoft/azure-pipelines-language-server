@@ -227,7 +227,10 @@ export class ASTNode {
 					message: localize('oneOfWarning', "Matches multiple schemas when only one must validate.")
 				});
 			}
+
 			if (bestMatch !== null) {
+				this.validateBestMatch(bestMatch.schema, validationResult);
+
 				validationResult.merge(bestMatch.validationResult);
 				validationResult.propertiesMatches += bestMatch.validationResult.propertiesMatches;
 				validationResult.propertiesValueMatches += bestMatch.validationResult.propertiesValueMatches;
@@ -263,6 +266,9 @@ export class ASTNode {
 			}
 		}
 
+		//TODO find a way to soften the appearance of validation warnings
+		//they look like errors.  For now, disable them completely
+		/*
 		if (schema.deprecationMessage && this.parent) {
 			validationResult.problems.push({
 				location: { start: this.parent.start, end: this.parent.end },
@@ -270,7 +276,12 @@ export class ASTNode {
 				message: schema.deprecationMessage
 			});
 		}
+		*/
+
 		matchingSchemas.add({ node: this, schema: schema });
+	}
+
+	protected validateBestMatch(schema: JSONSchema, validationResult: ValidationResult): void {
 	}
 }
 
@@ -818,6 +829,31 @@ export class ObjectASTNode extends ASTNode {
 			});
 		}
 	}
+
+	protected validateBestMatch(schema: JSONSchema, validationResult: ValidationResult): void {
+		if (schema.firstProperty && schema.firstProperty.length) {
+			if (this.properties && this.properties.length) {
+				let firstProperty = this.properties[0];
+				let firstPropKey: string = firstProperty.key.value;
+				let contained: boolean = false;
+				schema.firstProperty.forEach(listProperty => {
+					if (listProperty == firstPropKey) {
+						contained = true;
+					}
+				});
+
+				if (!contained) {
+					validationResult.problems.push({
+						location: { start: firstProperty.start, end: firstProperty.end },
+						severity: ProblemSeverity.Error,
+						//TODO update message to allow for multiple options in firstProperty
+						message: localize('firstPropertyError', "The first property must be {0}", schema.firstProperty[0])
+					});
+				}
+			}
+		}
+	}
+
 }
 
 export interface IApplicableSchema {
