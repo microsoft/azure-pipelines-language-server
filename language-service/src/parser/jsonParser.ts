@@ -227,7 +227,10 @@ export class ASTNode {
 					message: localize('oneOfWarning', "Matches multiple schemas when only one must validate.")
 				});
 			}
+
 			if (bestMatch !== null) {
+				this.validateBestMatch(bestMatch.schema, validationResult);
+
 				validationResult.merge(bestMatch.validationResult);
 				validationResult.propertiesMatches += bestMatch.validationResult.propertiesMatches;
 				validationResult.propertiesValueMatches += bestMatch.validationResult.propertiesValueMatches;
@@ -263,6 +266,9 @@ export class ASTNode {
 			}
 		}
 
+		//validation warnings look like errors in VS code
+		//For now, disable them completely
+		/*
 		if (schema.deprecationMessage && this.parent) {
 			validationResult.problems.push({
 				location: { start: this.parent.start, end: this.parent.end },
@@ -270,7 +276,12 @@ export class ASTNode {
 				message: schema.deprecationMessage
 			});
 		}
+		*/
+
 		matchingSchemas.add({ node: this, schema: schema });
+	}
+
+	protected validateBestMatch(schema: JSONSchema, validationResult: ValidationResult): void {
 	}
 }
 
@@ -816,6 +827,40 @@ export class ObjectASTNode extends ASTNode {
 					}
 				}
 			});
+		}
+	}
+
+	protected validateBestMatch(schema: JSONSchema, validationResult: ValidationResult): void {
+		if (schema.firstProperty &&
+		  schema.firstProperty.length &&
+		  this.properties &&
+		  this.properties.length) {
+			const firstProperty: PropertyASTNode = this.properties[0];
+			let contained: boolean = false;
+
+			if (firstProperty.key && firstProperty.key.value) {
+				let firstPropKey: string = firstProperty.key.value;
+
+				contained = !!schema.firstProperty.find(listProperty => listProperty === firstPropKey);
+			}
+
+			if (!contained) {
+				if (schema.firstProperty.length == 1) {
+					validationResult.problems.push({
+						location: { start: firstProperty.start, end: firstProperty.end },
+						severity: ProblemSeverity.Error,
+						message: localize('firstPropertyError', "The first property must be {0}", schema.firstProperty[0])
+					});
+				}
+				else {
+					const separator: string = localize('listSeparator', ",");
+					validationResult.problems.push({
+						location: { start: firstProperty.start, end: firstProperty.end },
+						severity: ProblemSeverity.Error,
+						message: localize('firstPropertyErrorList', "The first property must be one of: {0}", schema.firstProperty.join(separator))
+					});
+				}
+			}
 		}
 	}
 }
