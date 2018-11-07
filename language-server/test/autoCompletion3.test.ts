@@ -11,7 +11,11 @@ var assert = require('assert');
 
 let languageService = getLanguageService(schemaRequestService, [], null, workspaceContext);
 
-let uri = 'file:///' + __dirname.replace("\\", "/") + '/autoCompletion3.schema.json';
+let dirName = __dirname.replace("\\", "/");
+if (!dirName.startsWith("/")) {
+	dirName = "/" + dirName;
+}
+let uri = 'file://' + dirName + '/autoCompletion3.schema.json';
 let languageSettings = {
 	schemas: []
 };
