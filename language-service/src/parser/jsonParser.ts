@@ -854,14 +854,11 @@ export class ObjectASTNode extends ASTNode {
 				}
 				else {
 					const separator: string = localize('listSeparator', ",");
-
-					if (schema.firstProperty.length == 1) {
-						validationResult.problems.push({
-							location: { start: firstProperty.start, end: firstProperty.end },
-							severity: ProblemSeverity.Error,
-							message: localize('firstPropertyErrorList', "The first property must be one of: {0}", schema.firstProperty.join(separator))
-						});
-					}
+					validationResult.problems.push({
+						location: { start: firstProperty.start, end: firstProperty.end },
+						severity: ProblemSeverity.Error,
+						message: localize('firstPropertyErrorList', "The first property must be one of: {0}", schema.firstProperty.join(separator))
+					});
 				}
 			}
 		}
