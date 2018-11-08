@@ -80,11 +80,14 @@ export class YAMLHover {
 
                 let title: string = null;
                 let markdownDescription: string = null;
-                let markdownEnumValueDescription = null, enumValue = null;
+                let markdownEnumValueDescription: string = null;
+                let enumValue: string = null;
+                let deprectatedDescription: string = null;
                 matchingSchemas.every((s) => {
                     if (s.node === node && !s.inverted && s.schema) {
                         title = title || s.schema.title;
                         markdownDescription = markdownDescription || s.schema["markdownDescription"] || toMarkdown(s.schema.description);
+                        deprectatedDescription = deprectatedDescription || s.schema["deprecationMessage"];
                         if (s.schema.enum)  {
                             let idx = s.schema.enum.indexOf(node.getValue());
                             if (s.schema["markdownEnumDescriptions"]) {
@@ -102,22 +105,33 @@ export class YAMLHover {
                     }
                     return true;
                 });
+
                 let result = '';
+                if (deprectatedDescription) {
+                    result = toMarkdown(deprectatedDescription);
+                }
+
                 if (title) {
+                    if (result.length > 0) {
+                        result += "\n\n";
+                    }
                     result = toMarkdown(title);
                 }
+
                 if (markdownDescription) {
                     if (result.length > 0) {
                         result += "\n\n";
                     }
                     result += markdownDescription;
                 }
+
                 if (markdownEnumValueDescription) {
                     if (result.length > 0) {
                         result += "\n\n";
                     }
                     result += `\`${toMarkdown(enumValue)}\`: ${markdownEnumValueDescription}`;
                 }
+
                 return createHover([result]);
             }
             return void 0;
