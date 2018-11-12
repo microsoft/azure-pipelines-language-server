@@ -93,7 +93,7 @@
       "additionalProperties": true
     },
     "objectWithDeprecatedSubObject": {
-      "description": "Test object that has a property with a deprecation message",
+      "description": "Test object that has a property with a do not suggest",
       "type": "object",
       "required": [ "req1", "req2" ],
       "firstProperty": [],
