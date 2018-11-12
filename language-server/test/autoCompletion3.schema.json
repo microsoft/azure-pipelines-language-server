@@ -1,0 +1,142 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "name": "AutoCompleteTest",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "objectWithSingleFirstProperty": {
+      "description": "Test object that has a single firstProperty",
+      "type": "object",
+      "required": [ "req1", "req2" ],
+      "firstProperty": [ "mustBeFirst1" ],
+      "properties": {
+        "req1": { "type": "string" },
+        "req2": { "type": "string" },
+        "mustBeFirst1": { "type": "string" },
+        "otherProperty": { "type": "string" }
+      },
+      "additionalProperties": true
+    },
+    "objectWithMultipleFirstProperty": {
+      "description": "Test object that has a more than one firstProperty",
+      "type": "object",
+      "required": [ "req1", "req2" ],
+      "firstProperty": [ "mustBeFirst1", "mustBeFirst2" ],
+      "properties": {
+        "req1": { "type": "string" },
+        "req2": { "type": "string" },
+        "mustBeFirst1": { "type": "string" },
+        "mustBeFirst2": { "type": "string" },
+        "otherProperty": { "type": "string" }
+      },
+      "additionalProperties": true
+    },
+    "objectWithEmptyFirstProperty": {
+      "description": "Test object that has an empty firstProperty",
+      "type": "object",
+      "required": [ "req1", "req2" ],
+      "firstProperty": [],
+      "properties": {
+        "req1": { "type": "string" },
+        "req2": { "type": "string" },
+        "canBeFirst1": { "type": "string" },
+        "canBeFirst2": { "type": "string" },
+        "otherProperty": { "type": "string" }
+      },
+      "additionalProperties": true
+    },
+    "deprecatedObject": {
+      "description": "Test object that has a deprecation message",
+      "type": "object",
+      "required": [ "req1", "req2" ],
+      "firstProperty": [],
+      "properties": {
+        "req1": { "type": "string" },
+        "req2": { "type": "string" },
+        "canBeFirst1": { "type": "string" },
+        "canBeFirst2": { "type": "string" },
+        "otherProperty": { "type": "string" }
+      },
+      "additionalProperties": true,
+      "deprecationMessage": "This object is deprecated"
+    },
+    "doNotSuggestObject": {
+      "description": "Test object that has is marked do not suggest",
+      "type": "object",
+      "required": [ "req1", "req2" ],
+      "firstProperty": [],
+      "properties": {
+        "req1": { "type": "string" },
+        "req2": { "type": "string" },
+        "canBeFirst1": { "type": "string" },
+        "canBeFirst2": { "type": "string" },
+        "otherProperty": { "type": "string" }
+      },
+      "additionalProperties": true,
+      "doNotSuggest": true
+    },
+    "objectWithDeprecatedString": {
+      "description": "Test object that has a property with a deprecation message",
+      "type": "object",
+      "required": [ "req1", "req2" ],
+      "firstProperty": [],
+      "properties": {
+        "req1": { "type": "string" },
+        "req2": { "type": "string" },
+        "canBeFirst1": { "type": "string" },
+        "canBeFirst2": { "type": "string" },
+        "otherProperty": {
+          "type": "string",
+          "deprecationMessage": "This option is deprecated"
+        }
+      },
+      "additionalProperties": true
+    },
+    "objectWithDeprecatedSubObject": {
+      "description": "Test object that has a property with a do not suggest",
+      "type": "object",
+      "required": [ "req1", "req2" ],
+      "firstProperty": [],
+      "properties": {
+        "req1": { "type": "string" },
+        "req2": { "type": "string" },
+        "canBeFirst1": { "type": "string" },
+        "canBeFirst2": { "type": "string" },
+        "otherProperty": {
+          "type": "object",
+          "doNotSuggest": true,
+          "properties": {
+            "otherProp": { "type": "string" },
+            "otherOtherProp": { "type": "string" }
+          }
+        }
+      },
+      "additionalProperties": true
+    },
+    "objectWithTwoDeprecatedProperties": {
+      "description": "Test object that has a property with a deprecation message and do not suggest",
+      "type": "object",
+      "required": [ "req1" ],
+      "firstProperty": [],
+      "properties": {
+        "req1": { "type": "string" },
+        "noLongerReq2": {
+          "type": "string",
+          "deprecationMessage": "This property is deprecated",
+          "doNotSuggest": true
+        },
+        "canBeFirst1": { "type": "string" },
+        "canBeFirst2": { "type": "string" },
+        "otherProperty": {
+          "type": "object",
+          "doNotSuggest": true,
+          "properties": {
+            "otherProp": { "type": "string" },
+            "otherOtherProp": { "type": "string" }
+          }
+        }
+      },
+      "additionalProperties": true
+    }
+  }
+}
