@@ -114,7 +114,7 @@
       "additionalProperties": true
     },
     "objectWithTwoDeprecatedProperties": {
-      "description": "Test object that has a property with a deprecation message",
+      "description": "Test object that has a property with a deprecation message and do not suggest",
       "type": "object",
       "required": [ "req1" ],
       "firstProperty": [],
