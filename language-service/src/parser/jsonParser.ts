@@ -169,11 +169,14 @@ export class ASTNode {
 		}
 		else if (schema.type) {
 			if (this.type !== schema.type) {
-				validationResult.problems.push({
-					location: { start: this.start, end: this.end },
-					severity: ProblemSeverity.Warning,
-					message: schema.errorMessage || localize('typeMismatchWarning', 'Incorrect type. Expected "{0}".', schema.type)
-				});
+				//count strings that look like numbers as strings
+				if (this.type != "number" || schema.type != "string") {
+					validationResult.problems.push({
+						location: { start: this.start, end: this.end },
+						severity: ProblemSeverity.Warning,
+						message: schema.errorMessage || localize('typeMismatchWarning', 'Incorrect type. Expected "{0}".', schema.type)
+					});
+				}
 			}
 		}
 		if (Array.isArray(schema.allOf)) {
@@ -247,11 +250,15 @@ export class ASTNode {
 
 		if (Array.isArray(schema.enum)) {
 			let val = this.getValue();
-			let enumValueMatch = false;
-			for (let e of schema.enum) {
-				if (objects.equals(val, e)) {
-					enumValueMatch = true;
-					break;
+			let enumValueMatch: boolean = false;
+			if (val) {
+				let ignoreCase: boolean = this.getIgnoreValueCase(schema);
+				for (let e of schema.enum) {
+					if (objects.equals(val, e) ||
+					   (ignoreCase && typeof e === "string" && typeof val === "string" && e.toUpperCase() === val.toUpperCase())) {
+						enumValueMatch = true;
+						break;
+					}
 				}
 			}
 			validationResult.enumValues = schema.enum;
@@ -282,6 +289,14 @@ export class ASTNode {
 	}
 
 	protected validateBestMatch(schema: JSONSchema, validationResult: ValidationResult): void {
+	}
+
+	protected getIgnoreValueCase(schema: JSONSchema): boolean {
+		return schema.ignoreCase === "value" || schema.ignoreCase === "all";
+	}
+
+	protected getIgnoreKeyCase(schema: JSONSchema): boolean {
+		return schema.ignoreCase === "key" || schema.ignoreCase === "all";
 	}
 }
 
@@ -541,7 +556,8 @@ export class StringASTNode extends ASTNode {
 		}
 
 		if (schema.pattern) {
-			let regex = new RegExp(schema.pattern);
+			let flags: string = this.getIgnoreValueCase(schema) ? "i" : "";
+			let regex: RegExp = new RegExp(schema.pattern, flags);
 			if (!regex.test(this.value)) {
 				validationResult.problems.push({
 					location: { start: this.start, end: this.end },
