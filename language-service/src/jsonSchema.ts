@@ -33,7 +33,7 @@ export interface JSONSchema {
 	exclusiveMaximum?: boolean;
 	multipleOf?: number;
 	required?: string[];
-	firstProperty?: string[];
+	firstProperty?: string[];  // VSCode extension
 	$ref?: string;
 	anyOf?: JSONSchema[];
 	allOf?: JSONSchema[];
@@ -44,7 +44,9 @@ export interface JSONSchema {
 	errorMessage?: string; // VSCode extension
 	patternErrorMessage?: string; // VSCode extension
 	deprecationMessage?: string; // VSCode extension
+	doNotSuggest?: boolean;  // VSCode extension
 	enumDescriptions?: string[]; // VSCode extension
+	ignoreCase?: string; // VSCode extension
 	"x-kubernetes-group-version-kind"?; //Kubernetes extension
 }
 

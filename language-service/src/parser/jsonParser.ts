@@ -139,12 +139,12 @@ export class ASTNode {
 			}
 			return null;
 		};
-		let foundNode = findNode(this);
+		const foundNode = findNode(this);
 		let currMinDist = Number.MAX_VALUE;
 		let currMinNode = null;
 		for(let possibleNode in collector){
-			let currNode = collector[possibleNode];
-			let minDist = (currNode.end - offset) + (offset - currNode.start);
+			const currNode = collector[possibleNode];
+			const minDist = (currNode.end - offset) + (offset - currNode.start);
 			if(minDist < currMinDist){
 				currMinNode = currNode;
 				currMinDist = minDist;
@@ -169,11 +169,14 @@ export class ASTNode {
 		}
 		else if (schema.type) {
 			if (this.type !== schema.type) {
-				validationResult.problems.push({
-					location: { start: this.start, end: this.end },
-					severity: ProblemSeverity.Warning,
-					message: schema.errorMessage || localize('typeMismatchWarning', 'Incorrect type. Expected "{0}".', schema.type)
-				});
+				//count strings that look like numbers as strings
+				if (this.type != "number" || schema.type != "string") {
+					validationResult.problems.push({
+						location: { start: this.start, end: this.end },
+						severity: ProblemSeverity.Warning,
+						message: schema.errorMessage || localize('typeMismatchWarning', 'Incorrect type. Expected "{0}".', schema.type)
+					});
+				}
 			}
 		}
 		if (Array.isArray(schema.allOf)) {
@@ -246,12 +249,16 @@ export class ASTNode {
 		}
 
 		if (Array.isArray(schema.enum)) {
-			let val = this.getValue();
-			let enumValueMatch = false;
-			for (let e of schema.enum) {
-				if (objects.equals(val, e)) {
-					enumValueMatch = true;
-					break;
+			const val = this.getValue();
+			let enumValueMatch: boolean = false;
+			if (val) {
+				const ignoreCase: boolean = this.getIgnoreValueCase(schema);
+				for (const e of schema.enum) {
+					if (objects.equals(val, e) ||
+					   (ignoreCase && typeof e === "string" && typeof val === "string" && e.toUpperCase() === val.toUpperCase())) {
+						enumValueMatch = true;
+						break;
+					}
 				}
 			}
 			validationResult.enumValues = schema.enum;
@@ -282,6 +289,14 @@ export class ASTNode {
 	}
 
 	protected validateBestMatch(schema: JSONSchema, validationResult: ValidationResult): void {
+	}
+
+	protected getIgnoreValueCase(schema: JSONSchema): boolean {
+		return schema.ignoreCase === "value" || schema.ignoreCase === "all";
+	}
+
+	protected getIgnoreKeyCase(schema: JSONSchema): boolean {
+		return schema.ignoreCase === "key" || schema.ignoreCase === "all";
 	}
 }
 
@@ -455,7 +470,7 @@ export class NumberASTNode extends ASTNode {
 		super.validate(schema, validationResult, matchingSchemas);
 		this.type = 'number';
 
-		let val = this.getValue();
+		const val = this.getValue();
 
 		if (typeof schema.multipleOf === 'number') {
 			if (val % schema.multipleOf !== 0) {
@@ -541,7 +556,8 @@ export class StringASTNode extends ASTNode {
 		}
 
 		if (schema.pattern) {
-			let regex = new RegExp(schema.pattern);
+			const flags: string = this.getIgnoreValueCase(schema) ? "i" : "";
+			const regex: RegExp = new RegExp(schema.pattern, flags);
 			if (!regex.test(this.value)) {
 				validationResult.problems.push({
 					location: { start: this.start, end: this.end },
@@ -661,7 +677,7 @@ export class ObjectASTNode extends ASTNode {
 		let unprocessedProperties: string[] = [];
 		this.properties.forEach((node) => {
 			
-			let key = node.key.value;
+			const key = node.key.value;
 
 			//Replace the merge key with the actual values of what the node value points to in seen keys
 			if(key === "<<" && node.value) {
@@ -669,7 +685,7 @@ export class ObjectASTNode extends ASTNode {
 				switch(node.value.type) {
 					case "object": {
 						node.value["properties"].forEach(propASTNode => {
-							let propKey = propASTNode.key.value;
+							const propKey = propASTNode.key.value;
 							seenKeys[propKey] = propASTNode.value;
 							unprocessedProperties.push(propKey);
 						});
@@ -678,7 +694,7 @@ export class ObjectASTNode extends ASTNode {
 					case "array": {
 						node.value["items"].forEach(sequenceNode => {
 							sequenceNode["properties"].forEach(propASTNode => {
-								let seqKey = propASTNode.key.value;
+								const seqKey = propASTNode.key.value;
 								seenKeys[seqKey] = propASTNode.value;
 								unprocessedProperties.push(seqKey);
 							});
