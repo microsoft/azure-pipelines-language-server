@@ -139,12 +139,12 @@ export class ASTNode {
 			}
 			return null;
 		};
-		let foundNode = findNode(this);
+		const foundNode = findNode(this);
 		let currMinDist = Number.MAX_VALUE;
 		let currMinNode = null;
 		for(let possibleNode in collector){
-			let currNode = collector[possibleNode];
-			let minDist = (currNode.end - offset) + (offset - currNode.start);
+			const currNode = collector[possibleNode];
+			const minDist = (currNode.end - offset) + (offset - currNode.start);
 			if(minDist < currMinDist){
 				currMinNode = currNode;
 				currMinDist = minDist;
@@ -249,11 +249,11 @@ export class ASTNode {
 		}
 
 		if (Array.isArray(schema.enum)) {
-			let val = this.getValue();
+			const val = this.getValue();
 			let enumValueMatch: boolean = false;
 			if (val) {
-				let ignoreCase: boolean = this.getIgnoreValueCase(schema);
-				for (let e of schema.enum) {
+				const ignoreCase: boolean = this.getIgnoreValueCase(schema);
+				for (const e of schema.enum) {
 					if (objects.equals(val, e) ||
 					   (ignoreCase && typeof e === "string" && typeof val === "string" && e.toUpperCase() === val.toUpperCase())) {
 						enumValueMatch = true;
@@ -470,7 +470,7 @@ export class NumberASTNode extends ASTNode {
 		super.validate(schema, validationResult, matchingSchemas);
 		this.type = 'number';
 
-		let val = this.getValue();
+		const val = this.getValue();
 
 		if (typeof schema.multipleOf === 'number') {
 			if (val % schema.multipleOf !== 0) {
@@ -556,8 +556,8 @@ export class StringASTNode extends ASTNode {
 		}
 
 		if (schema.pattern) {
-			let flags: string = this.getIgnoreValueCase(schema) ? "i" : "";
-			let regex: RegExp = new RegExp(schema.pattern, flags);
+			const flags: string = this.getIgnoreValueCase(schema) ? "i" : "";
+			const regex: RegExp = new RegExp(schema.pattern, flags);
 			if (!regex.test(this.value)) {
 				validationResult.problems.push({
 					location: { start: this.start, end: this.end },
@@ -677,7 +677,7 @@ export class ObjectASTNode extends ASTNode {
 		let unprocessedProperties: string[] = [];
 		this.properties.forEach((node) => {
 			
-			let key = node.key.value;
+			const key = node.key.value;
 
 			//Replace the merge key with the actual values of what the node value points to in seen keys
 			if(key === "<<" && node.value) {
@@ -685,7 +685,7 @@ export class ObjectASTNode extends ASTNode {
 				switch(node.value.type) {
 					case "object": {
 						node.value["properties"].forEach(propASTNode => {
-							let propKey = propASTNode.key.value;
+							const propKey = propASTNode.key.value;
 							seenKeys[propKey] = propASTNode.value;
 							unprocessedProperties.push(propKey);
 						});
@@ -694,7 +694,7 @@ export class ObjectASTNode extends ASTNode {
 					case "array": {
 						node.value["items"].forEach(sequenceNode => {
 							sequenceNode["properties"].forEach(propASTNode => {
-								let seqKey = propASTNode.key.value;
+								const seqKey = propASTNode.key.value;
 								seenKeys[seqKey] = propASTNode.value;
 								unprocessedProperties.push(seqKey);
 							});
