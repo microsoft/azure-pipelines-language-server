@@ -491,6 +491,8 @@ export class NumberASTNode extends ASTNode {
 		}
 
 		if (schema.type === 'string') {
+			//In YAML, a value like 123 could be a number but it could also be a string.  It initially gets
+			//parsed into a NumberASTNode, but we should also check it against string schema.
 			this.validateStringValue(schema, '' + this.getValue(), validationResult);
 		}
 		else {
