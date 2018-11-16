@@ -298,6 +298,37 @@ export class ASTNode {
 	protected getIgnoreKeyCase(schema: JSONSchema): boolean {
 		return schema && (schema.ignoreCase === "key" || schema.ignoreCase === "all");
 	}
+
+	protected validateStringValue(schema: JSONSchema, value: string, validationResult: ValidationResult): void {
+		if (schema.minLength && value.length < schema.minLength) {
+			validationResult.problems.push({
+				location: { start: this.start, end: this.end },
+				severity: ProblemSeverity.Warning,
+				message: localize('minLengthWarning', 'String is shorter than the minimum length of {0}.', schema.minLength)
+			});
+		}
+	
+		if (schema.maxLength && value.length > schema.maxLength) {
+			validationResult.problems.push({
+				location: { start: this.start, end: this.end },
+				severity: ProblemSeverity.Warning,
+				message: localize('maxLengthWarning', 'String is longer than the maximum length of {0}.', schema.maxLength)
+			});
+		}
+	
+		if (schema.pattern) {
+			const flags: string = this.getIgnoreValueCase(schema) ? "i" : "";
+			const regex: RegExp = new RegExp(schema.pattern, flags);
+			if (!regex.test(value)) {
+				validationResult.problems.push({
+					location: { start: this.start, end: this.end },
+					severity: ProblemSeverity.Warning,
+					message: schema.patternErrorMessage || schema.errorMessage || localize('patternWarning', 'String does not match the pattern of "{0}".', schema.pattern)
+				});
+			}
+		}
+	}
+	
 }
 
 export class NullASTNode extends ASTNode {
@@ -459,63 +490,67 @@ export class NumberASTNode extends ASTNode {
 			return;
 		}
 
-		// work around type validation in the base class
-		let typeIsInteger = false;
-		if (schema.type === 'integer' || (Array.isArray(schema.type) && (<string[]>schema.type).indexOf('integer') !== -1)) {
-			typeIsInteger = true;
+		if (schema.type === 'string') {
+			this.validateStringValue(schema, '' + this.getValue(), validationResult);
 		}
-		if (typeIsInteger && this.isInteger === true) {
-			this.type = 'integer';
-		}
-		super.validate(schema, validationResult, matchingSchemas);
-		this.type = 'number';
+		else {
+			// work around type validation in the base class
+			let typeIsInteger = false;
+			if (schema.type === 'integer' || (Array.isArray(schema.type) && (<string[]>schema.type).indexOf('integer') !== -1)) {
+				typeIsInteger = true;
+			}
+			if (typeIsInteger && this.isInteger === true) {
+				this.type = 'integer';
+			}
+			super.validate(schema, validationResult, matchingSchemas);
+			this.type = 'number';
 
-		const val = this.getValue();
+			const val = this.getValue();
 
-		if (typeof schema.multipleOf === 'number') {
-			if (val % schema.multipleOf !== 0) {
-				validationResult.problems.push({
-					location: { start: this.start, end: this.end },
-					severity: ProblemSeverity.Warning,
-					message: localize('multipleOfWarning', 'Value is not divisible by {0}.', schema.multipleOf)
-				});
+			if (typeof schema.multipleOf === 'number') {
+				if (val % schema.multipleOf !== 0) {
+					validationResult.problems.push({
+						location: { start: this.start, end: this.end },
+						severity: ProblemSeverity.Warning,
+						message: localize('multipleOfWarning', 'Value is not divisible by {0}.', schema.multipleOf)
+					});
+				}
+			}
+
+			if (typeof schema.minimum === 'number') {
+				if (schema.exclusiveMinimum && val <= schema.minimum) {
+					validationResult.problems.push({
+						location: { start: this.start, end: this.end },
+						severity: ProblemSeverity.Warning,
+						message: localize('exclusiveMinimumWarning', 'Value is below the exclusive minimum of {0}.', schema.minimum)
+					});
+				}
+				if (!schema.exclusiveMinimum && val < schema.minimum) {
+					validationResult.problems.push({
+						location: { start: this.start, end: this.end },
+						severity: ProblemSeverity.Warning,
+						message: localize('minimumWarning', 'Value is below the minimum of {0}.', schema.minimum)
+					});
+				}
+			}
+
+			if (typeof schema.maximum === 'number') {
+				if (schema.exclusiveMaximum && val >= schema.maximum) {
+					validationResult.problems.push({
+						location: { start: this.start, end: this.end },
+						severity: ProblemSeverity.Warning,
+						message: localize('exclusiveMaximumWarning', 'Value is above the exclusive maximum of {0}.', schema.maximum)
+					});
+				}
+				if (!schema.exclusiveMaximum && val > schema.maximum) {
+					validationResult.problems.push({
+						location: { start: this.start, end: this.end },
+						severity: ProblemSeverity.Warning,
+						message: localize('maximumWarning', 'Value is above the maximum of {0}.', schema.maximum)
+					});
+				}
 			}
 		}
-
-		if (typeof schema.minimum === 'number') {
-			if (schema.exclusiveMinimum && val <= schema.minimum) {
-				validationResult.problems.push({
-					location: { start: this.start, end: this.end },
-					severity: ProblemSeverity.Warning,
-					message: localize('exclusiveMinimumWarning', 'Value is below the exclusive minimum of {0}.', schema.minimum)
-				});
-			}
-			if (!schema.exclusiveMinimum && val < schema.minimum) {
-				validationResult.problems.push({
-					location: { start: this.start, end: this.end },
-					severity: ProblemSeverity.Warning,
-					message: localize('minimumWarning', 'Value is below the minimum of {0}.', schema.minimum)
-				});
-			}
-		}
-
-		if (typeof schema.maximum === 'number') {
-			if (schema.exclusiveMaximum && val >= schema.maximum) {
-				validationResult.problems.push({
-					location: { start: this.start, end: this.end },
-					severity: ProblemSeverity.Warning,
-					message: localize('exclusiveMaximumWarning', 'Value is above the exclusive maximum of {0}.', schema.maximum)
-				});
-			}
-			if (!schema.exclusiveMaximum && val > schema.maximum) {
-				validationResult.problems.push({
-					location: { start: this.start, end: this.end },
-					severity: ProblemSeverity.Warning,
-					message: localize('maximumWarning', 'Value is above the maximum of {0}.', schema.maximum)
-				});
-			}
-		}
-
 	}
 }
 
@@ -539,34 +574,7 @@ export class StringASTNode extends ASTNode {
 		}
 		super.validate(schema, validationResult, matchingSchemas);
 
-		if (schema.minLength && this.value.length < schema.minLength) {
-			validationResult.problems.push({
-				location: { start: this.start, end: this.end },
-				severity: ProblemSeverity.Warning,
-				message: localize('minLengthWarning', 'String is shorter than the minimum length of {0}.', schema.minLength)
-			});
-		}
-
-		if (schema.maxLength && this.value.length > schema.maxLength) {
-			validationResult.problems.push({
-				location: { start: this.start, end: this.end },
-				severity: ProblemSeverity.Warning,
-				message: localize('maxLengthWarning', 'String is longer than the maximum length of {0}.', schema.maxLength)
-			});
-		}
-
-		if (schema.pattern) {
-			const flags: string = this.getIgnoreValueCase(schema) ? "i" : "";
-			const regex: RegExp = new RegExp(schema.pattern, flags);
-			if (!regex.test(this.value)) {
-				validationResult.problems.push({
-					location: { start: this.start, end: this.end },
-					severity: ProblemSeverity.Warning,
-					message: schema.patternErrorMessage || schema.errorMessage || localize('patternWarning', 'String does not match the pattern of "{0}".', schema.pattern)
-				});
-			}
-		}
-		
+		this.validateStringValue(schema, this.value, validationResult);
 	}
 }
 
@@ -955,7 +963,7 @@ export interface ISchemaCollector {
 	schemas: IApplicableSchema[];
 	add(schema: IApplicableSchema): void;
 	merge(other: ISchemaCollector): void;
-	include(node: ASTNode): void;
+	include(node: ASTNode): boolean;
 	newSub(): ISchemaCollector;
 }
 
@@ -963,13 +971,13 @@ class SchemaCollector implements ISchemaCollector {
 	schemas: IApplicableSchema[] = [];
 	constructor(private focusOffset = -1, private exclude: ASTNode = null) {
 	}
-	add(schema: IApplicableSchema) {
+	add(schema: IApplicableSchema): void {
 		this.schemas.push(schema);
 	}
-	merge(other: ISchemaCollector) {
+	merge(other: ISchemaCollector): void {
 		this.schemas.push(...other.schemas);
 	}
-	include(node: ASTNode) {
+	include(node: ASTNode): boolean {
 		return (this.focusOffset === -1 || node.contains(this.focusOffset)) && (node !== this.exclude);
 	}
 	newSub(): ISchemaCollector {
@@ -978,10 +986,10 @@ class SchemaCollector implements ISchemaCollector {
 }
 
 class NoOpSchemaCollector implements ISchemaCollector {
-	get schemas() { return []; }
-	add(schema: IApplicableSchema) { }
-	merge(other: ISchemaCollector) { }
-	include(node: ASTNode) { return true; }
+	get schemas(): IApplicableSchema[] { return []; }
+	add(schema: IApplicableSchema): void { }
+	merge(other: ISchemaCollector): void { }
+	include(node: ASTNode): boolean { return true; }
 	newSub(): ISchemaCollector { return this; }
 }
 
