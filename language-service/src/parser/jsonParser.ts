@@ -716,7 +716,7 @@ export class ObjectASTNode extends ASTNode {
 			}
 		});
 
-		let findMatchingProperties = (propertyKey: string): ASTNodeMap => {
+		const findMatchingProperties = (propertyKey: string): ASTNodeMap => {
 			let result: ASTNodeMap = Object.create(null);
 			const compareKey: string = propertyKey.toUpperCase();
 
@@ -729,31 +729,22 @@ export class ObjectASTNode extends ASTNode {
 			return result;
 		}
 
-		let findSeenKeys = (propertyKey: string): ASTNodeMap => {
+		const hasProperty = (propertyKey: string): boolean => {
+			if (seenKeys[propertyKey]) {
+				return true;
+			}
+
 			if (schema.properties) {
 				const propSchema: JSONSchema = schema.properties[propertyKey];
 				const ignoreKeyCase: boolean = this.getIgnoreKeyCase(propSchema);
 
 				if (ignoreKeyCase) {
-					return findMatchingProperties(propertyKey);
+					const matchedKeys: ASTNodeMap = findMatchingProperties(propertyKey);
+					return Object.keys(matchedKeys).length > 0;
 				}
 			}
-
-			let result: ASTNodeMap = Object.create(null);
-			if (seenKeys[propertyKey]) {
-				result[propertyKey] = seenKeys[propertyKey];
-			}
-
-			return result;
-		}
-
-		let hasProperty = (propertyKey: string): boolean => {
-			if (seenKeys[propertyKey]) {
-				return true;
-			}
-
-			const matchedKeys: ASTNodeMap = findSeenKeys(propertyKey);
-			return Object.keys(matchedKeys).length > 0;
+			
+			return false;
 		}
 
 		if (Array.isArray(schema.required)) {
