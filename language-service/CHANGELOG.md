@@ -1,5 +1,5 @@
 #### 0.3.1
-Always add semicolon to the completion text for properties [#PR-25](https://github.com/Microsoft/azure-pipelines-language-server/pull/25)
+Always add colon to the completion text for properties [#PR-25](https://github.com/Microsoft/azure-pipelines-language-server/pull/25)
 
 #### 0.2.3
 Fix data returned by findDocumentSymbols [#PR-14](https://github.com/Microsoft/azure-pipelines-language-server/pull/14)
