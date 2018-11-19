@@ -1,5 +1,10 @@
-#### 0.3.1
+#### 0.4.0
+introduce the "ignoreCase" schema option that can be used to turn off case sensitivity for property keys and/or values
+use "firstProperty" to improve validation errors and auto-complete suggestions
 Always add colon to the completion text for properties [#PR-25](https://github.com/Microsoft/azure-pipelines-language-server/pull/25)
+
+#### 0.3.0
+introduce the "firstProperty" schema option that indicates which property must be listed first in the object
 
 #### 0.2.3
 Fix data returned by findDocumentSymbols [#PR-14](https://github.com/Microsoft/azure-pipelines-language-server/pull/14)
