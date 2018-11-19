@@ -47,7 +47,7 @@
     "nyc": "13.0.1",
     "shx": "0.3.2",
     "source-map-support": "0.5.5",
-    "ts-node": "5.0.1",
+    "ts-node": "7.0.1",
     "typescript": "2.7.2"
   },
   "scripts": {
@@ -55,7 +55,7 @@
     "preppackage": "shx cp package.json out/src && shx cp CHANGELOG.md out/src && shx cp LICENSE out/src && shx cp README.md out/src",
     "compile": "tsc -p .",
     "watch": "tsc -watch -p .",
-    "test": "mocha --require ts-node/register --ui tdd ./test/*.test.ts",
+    "test": "npm run compile && mocha --require ts-node/register --ui tdd ./test/*.test.ts",
     "coverage": "nyc mocha --require ts-node/register --require source-map-support/register --recursive --ui tdd ./test/*.test.ts",
     "coveralls": "nyc npm test && nyc report --reporter=text-lcov | coveralls"
   },

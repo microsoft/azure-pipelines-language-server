@@ -51,7 +51,7 @@
     "shx": "0.3.2",
     "source-map-support": "0.5.5",
     "ts-loader": "5.2.1",
-    "ts-node": "5.0.1",
+    "ts-node": "7.0.1",
     "typescript": "2.7.2",
     "webpack": "4.20.2",
     "webpack-cli": "3.1.2"
@@ -61,8 +61,7 @@
     "compile": "tsc -p .",
     "watch": "tsc -watch -p .",
     "clean": "shx rm -rf lib",
-    "test": "mocha --require ts-node/register --ui tdd ./test/*.test.ts",
-    "unittest": "mocha --require ts-node/register --ui tdd ./unittests/*.test.ts",
+    "test": "npm run compile && mocha --require ts-node/register --ui tdd ./test/**/*.test.ts",
     "coverage": "nyc mocha --require ts-node/register --require source-map-support/register --recursive --ui tdd ./test/*.test.ts",
     "coveralls": "nyc npm test && nyc report --reporter=text-lcov | coveralls"
   },
