@@ -131,14 +131,6 @@ suite("Kubernetes Integration Tests", () => {
 				}).then(done, done);
 			});
 
-			it('Error on incorrect value type (number)', (done) => {
-				let content = `apiVersion: 1000`;
-				let validator = parseSetup(content);
-				validator.then(function(result){
-					assert.notEqual(result.length, 0);
-				}).then(done, done);
-			});
-
 			it('Error on incorrect value type (boolean)', (done) => {
 				let content = `apiVersion: False`;
 				let validator = parseSetup(content);
