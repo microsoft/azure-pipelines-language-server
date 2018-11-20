@@ -66,7 +66,8 @@ suite("Non-standard validation Tests", () => {
 			const content: string = `action: type1-value1\nname: type1`;
 			const validator = parseSetup(content);
 			validator.then(function(result){
-				assert.notEqual(result.length, 0);
+				assert.equal(result.length, 1);
+				assert.equal(result[0].message, "The first property must be name");
 			}).then(done, done);
 		});
 
@@ -74,7 +75,9 @@ suite("Non-standard validation Tests", () => {
 			const content: string = `name: type1\naction: type1-value1\naction: type1-value2`;
 			const validator = parseSetup(content);
 			validator.then(function(result){
-				assert.notEqual(result.length, 0);
+				assert.equal(result.length, 2);
+				assert.equal(result[0].message, "duplicate key");
+				assert.equal(result[1].message, "duplicate key");
 			}).then(done, done);
 		});
 
@@ -82,7 +85,9 @@ suite("Non-standard validation Tests", () => {
 			const content: string = `name: type1\naction: type1-value1\nAction: type1-value2`;
 			const validator = parseSetup(content);
 			validator.then(function(result){
-				assert.notEqual(result.length, 0);
+				assert.equal(result.length, 2);
+				assert.equal(result[0].message, "Multiple properties found matching action");
+				assert.equal(result[1].message, "Multiple properties found matching action");
 			}).then(done, done);
 		});
 
@@ -90,7 +95,8 @@ suite("Non-standard validation Tests", () => {
 			const content: string = `name: type2\nAction: type2-value2`;
 			const validator = parseSetup(content);
 			validator.then(function(result){
-				assert.notEqual(result.length, 0);
+				assert.equal(result.length, 1);
+				assert.equal(result[0].message, "Missing property \"action\".");
 			}).then(done, done);
 		});
 
@@ -98,7 +104,8 @@ suite("Non-standard validation Tests", () => {
 			const content: string = `name: type3\naction: Type3-vAlue3`;
 			const validator = parseSetup(content);
 			validator.then(function(result){
-				assert.notEqual(result.length, 0);
+				assert.equal(result.length, 1);
+				assert.equal(result[0].message, "Value is not accepted. Valid values: \"type3-value1\", \"type3-value2\", \"type3-value3\".");
 			}).then(done, done);
 		});
 	});
