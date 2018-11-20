@@ -1,3 +1,6 @@
+#### 0.4.0
+Consume version 0.4.0 of the language service [#PR-27](https://github.com/Microsoft/azure-pipelines-language-server/pull/27)
+
 #### 0.2.1
 Update to coveralls@3.0.2 to get rid of [cryptiles vulenerability](https://github.com/hapijs/cryptiles/issues/34)
 
