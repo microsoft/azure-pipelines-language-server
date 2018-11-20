@@ -228,7 +228,7 @@ export class YAMLCompletion {
             return true;
         }
 
-        return !!stringArray.find(arrayEntry => arrayEntry === key);
+        return !!stringArray.some(arrayEntry => arrayEntry === key);
     }
 
     private getPropertyCompletions(schema: SchemaService.ResolvedSchema, doc, node: Parser.ASTNode, addValue: boolean, collector: CompletionsCollector, separatorAfter: string): void {

@@ -160,11 +160,18 @@ export class ASTNode {
 		
 		if (Array.isArray(schema.type)) {
 			if ((<string[]>schema.type).indexOf(this.type) === -1) {
-				validationResult.problems.push({
-					location: { start: this.start, end: this.end },
-					severity: ProblemSeverity.Warning,
-					message: schema.errorMessage || localize('typeArrayMismatchWarning', 'Incorrect type. Expected one of {0}.', (<string[]>schema.type).join(', '))
-				});
+				//allow numbers to be validated as strings
+				let isValid: boolean = false;
+				if (this.type === 'number') {
+					isValid = (<string[]>schema.type).indexOf('string') >= 0;
+				}
+				if (!isValid) {
+					validationResult.problems.push({
+						location: { start: this.start, end: this.end },
+						severity: ProblemSeverity.Warning,
+						message: schema.errorMessage || localize('typeArrayMismatchWarning', 'Incorrect type. Expected one of {0}.', (<string[]>schema.type).join(', '))
+					});
+				}
 			}
 		}
 		else if (schema.type) {
@@ -232,8 +239,6 @@ export class ASTNode {
 			}
 
 			if (bestMatch !== null) {
-				this.validateBestMatch(bestMatch.schema, validationResult);
-
 				validationResult.merge(bestMatch.validationResult);
 				validationResult.propertiesMatches += bestMatch.validationResult.propertiesMatches;
 				validationResult.propertiesValueMatches += bestMatch.validationResult.propertiesValueMatches;
@@ -286,9 +291,6 @@ export class ASTNode {
 		*/
 
 		matchingSchemas.add({ node: this, schema: schema });
-	}
-
-	protected validateBestMatch(schema: JSONSchema, validationResult: ValidationResult): void {
 	}
 
 	protected getIgnoreValueCase(schema: JSONSchema): boolean {
@@ -771,7 +773,7 @@ export class ObjectASTNode extends ASTNode {
 			});
 		}
 
-		let propertyProcessed = (prop: string) => {
+		const propertyProcessed = (prop: string): void => {
 			let index = unprocessedProperties.indexOf(prop);
 			while (index >= 0) {
 				unprocessedProperties.splice(index, 1);
@@ -779,11 +781,28 @@ export class ObjectASTNode extends ASTNode {
 			}
 		};
 
+		const firstPropertyContains = (propertyName: string): boolean => {
+			return schema.firstProperty && schema.firstProperty.indexOf(propertyName) >= 0;
+		}
+
+		const isFirstProperty = (propertySchema: JSONSchema, propertyName: string): boolean => {
+			if (!schema.firstProperty || !schema.firstProperty.length) {
+				return false;
+			}
+
+			if (this.getIgnoreKeyCase(propertySchema)) {
+				const upperPropName: string = propertyName.toUpperCase();
+				return !!schema.firstProperty.some(listProperty => listProperty.toUpperCase() === upperPropName);
+			}
+
+			return firstPropertyContains(propertyName);
+		}
+
 		if (schema.properties) {
 			Object.keys(schema.properties).forEach((schemaPropertyName: string) => {
-				const prop: JSONSchema = schema.properties[schemaPropertyName];
+				const propSchema: JSONSchema = schema.properties[schemaPropertyName];
 				let child: ASTNode = null;
-				const ignoreKeyCase: boolean = this.getIgnoreKeyCase(prop);
+				const ignoreKeyCase: boolean = this.getIgnoreKeyCase(propSchema);
 				if (ignoreKeyCase) {
 					const children: ASTNodeMap = findMatchingProperties(schemaPropertyName);
 					const numChildren: number = Object.keys(children).length;
@@ -813,7 +832,10 @@ export class ObjectASTNode extends ASTNode {
 
 				if (child) {
 					let propertyValidationResult = new ValidationResult();
-					child.validate(prop, propertyValidationResult, matchingSchemas);
+					child.validate(propSchema, propertyValidationResult, matchingSchemas);
+					if (propertyValidationResult.hasProblems() && firstPropertyContains(schemaPropertyName)) {
+						propertyValidationResult.firstPropertyProblems++;
+					}
 					validationResult.mergePropertyMatch(propertyValidationResult);
 				}
 			});
@@ -829,7 +851,11 @@ export class ObjectASTNode extends ASTNode {
 						const child = seenKeys[propertyName];
 						if (child) {
 							let propertyValidationResult = new ValidationResult();
-							child.validate(schema.patternProperties[propertyPattern], propertyValidationResult, matchingSchemas);
+							const childSchema: JSONSchema = schema.patternProperties[propertyPattern];
+							child.validate(childSchema, propertyValidationResult, matchingSchemas);
+							if (propertyValidationResult.hasProblems() && isFirstProperty(childSchema, propertyName)) {
+								propertyValidationResult.firstPropertyProblems++;
+							}
 							validationResult.mergePropertyMatch(propertyValidationResult);
 						}
 					}
@@ -843,6 +869,9 @@ export class ObjectASTNode extends ASTNode {
 				if (child) {
 					let propertyValidationResult = new ValidationResult();
 					child.validate(<any>schema.additionalProperties, propertyValidationResult, matchingSchemas);
+					if (propertyValidationResult.hasProblems() && isFirstProperty(<any>schema.additionalProperties, propertyName)) {
+						validationResult.firstPropertyProblems++;
+					}
 					validationResult.mergePropertyMatch(propertyValidationResult);
 				}
 			});
@@ -868,7 +897,7 @@ export class ObjectASTNode extends ASTNode {
 					}
 				});
 			}
-		} 
+		}
 
 		if (schema.maxProperties) {
 			if (this.properties.length > schema.maxProperties) {
@@ -914,37 +943,39 @@ export class ObjectASTNode extends ASTNode {
 				}
 			});
 		}
-	}
 
-	protected validateBestMatch(schema: JSONSchema, validationResult: ValidationResult): void {
-		if (schema.firstProperty &&
-		  schema.firstProperty.length &&
-		  this.properties &&
-		  this.properties.length) {
+		if (schema.firstProperty && schema.firstProperty.length &&
+			this.properties && this.properties.length) {
 			const firstProperty: PropertyASTNode = this.properties[0];
-			let contained: boolean = false;
 
 			if (firstProperty.key && firstProperty.key.value) {
 				let firstPropKey: string = firstProperty.key.value;
 
-				contained = !!schema.firstProperty.find(listProperty => listProperty === firstPropKey);
-			}
-
-			if (!contained) {
-				if (schema.firstProperty.length == 1) {
-					validationResult.problems.push({
-						location: { start: firstProperty.start, end: firstProperty.end },
-						severity: ProblemSeverity.Error,
-						message: localize('firstPropertyError', "The first property must be {0}", schema.firstProperty[0])
-					});
-				}
-				else {
-					const separator: string = localize('listSeparator', ", ");
-					validationResult.problems.push({
-						location: { start: firstProperty.start, end: firstProperty.end },
-						severity: ProblemSeverity.Error,
-						message: localize('firstPropertyErrorList', "The first property must be one of: {0}", schema.firstProperty.join(separator))
-					});
+				if (!schema.firstProperty.some((listProperty: string) => {
+					let propertySchema: JSONSchema = null;
+					if (schema.properties) {
+						propertySchema = schema.properties[listProperty];
+					}
+					if (this.getIgnoreKeyCase(propertySchema)) {
+						return listProperty.toUpperCase() === firstPropKey.toUpperCase();
+					}
+					return listProperty === firstPropKey;
+				})) {
+					if (schema.firstProperty.length == 1) {
+						validationResult.problems.push({
+							location: { start: firstProperty.start, end: firstProperty.end },
+							severity: ProblemSeverity.Error,
+							message: localize('firstPropertyError', "The first property must be {0}", schema.firstProperty[0])
+						});
+					}
+					else {
+						const separator: string = localize('listSeparator', ", ");
+						validationResult.problems.push({
+							location: { start: firstProperty.start, end: firstProperty.end },
+							severity: ProblemSeverity.Error,
+							message: localize('firstPropertyErrorList', "The first property must be one of: {0}", schema.firstProperty.join(separator))
+						});
+					}
 				}
 			}
 		}
@@ -998,6 +1029,7 @@ class NoOpSchemaCollector implements ISchemaCollector {
 export class ValidationResult {
 	public problems: IProblem[];
 
+	public firstPropertyProblems: number;
 	public propertiesMatches: number;
 	public propertiesValueMatches: number;
 	public primaryValueMatches: number;
@@ -1008,6 +1040,7 @@ export class ValidationResult {
 
 	constructor() {
 		this.problems = [];
+		this.firstPropertyProblems = 0;
 		this.propertiesMatches = 0;
 		this.propertiesValueMatches = 0;
 		this.primaryValueMatches = 0;
@@ -1044,6 +1077,7 @@ export class ValidationResult {
 
 	public mergePropertyMatch(propertyValidationResult: ValidationResult): void {
 		this.merge(propertyValidationResult);
+		this.firstPropertyProblems += propertyValidationResult.firstPropertyProblems;
 		this.propertiesMatches++;
 		if (propertyValidationResult.enumValueMatch || !this.hasProblems() && propertyValidationResult.propertiesMatches) {
 			this.propertiesValueMatches++;
@@ -1054,6 +1088,10 @@ export class ValidationResult {
 	}
 
 	public compareGeneric(other: ValidationResult): number {
+		if (this.firstPropertyProblems !== other.firstPropertyProblems) {
+			return other.firstPropertyProblems - this.firstPropertyProblems;
+		}
+
 		let hasProblems = this.hasProblems();
 		if (hasProblems !== other.hasProblems()) {
 			return hasProblems ? -1 : 1;
