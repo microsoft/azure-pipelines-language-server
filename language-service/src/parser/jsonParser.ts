@@ -792,7 +792,7 @@ export class ObjectASTNode extends ASTNode {
 
 			if (this.getIgnoreKeyCase(propertySchema)) {
 				const upperPropName: string = propertyName.toUpperCase();
-				return !!schema.firstProperty.find(listProperty => listProperty.toUpperCase() === upperPropName);
+				return !!schema.firstProperty.some(listProperty => listProperty.toUpperCase() === upperPropName);
 			}
 
 			return firstPropertyContains(propertyName);
@@ -951,7 +951,7 @@ export class ObjectASTNode extends ASTNode {
 			if (firstProperty.key && firstProperty.key.value) {
 				let firstPropKey: string = firstProperty.key.value;
 
-				if (!schema.firstProperty.find((listProperty: string) => {
+				if (!schema.firstProperty.some((listProperty: string) => {
 					let propertySchema: JSONSchema = null;
 					if (schema.properties) {
 						propertySchema = schema.properties[listProperty];
