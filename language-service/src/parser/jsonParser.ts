@@ -66,7 +66,6 @@ export class ASTNode {
 		return path;
 	}
 
-
 	public getChildNodes(): ASTNode[] {
 		return [];
 	}
@@ -152,6 +151,15 @@ export class ASTNode {
 		}
 		return currMinNode || foundNode;
 	}
+
+	public static getIgnoreValueCase(schema: JSONSchema): boolean {
+		return schema && (schema.ignoreCase === "value" || schema.ignoreCase === "all");
+	}
+
+	public static getIgnoreKeyCase(schema: JSONSchema): boolean {
+		return schema && (schema.ignoreCase === "key" || schema.ignoreCase === "all");
+	}
+
 
 	public validate(schema: JSONSchema, validationResult: ValidationResult, matchingSchemas: ISchemaCollector): void {
 		if (!matchingSchemas.include(this)) {
@@ -261,7 +269,7 @@ export class ASTNode {
 			}
 			let enumValueMatch: boolean = false;
 			if (val) {
-				const ignoreCase: boolean = this.getIgnoreValueCase(schema);
+				const ignoreCase: boolean = ASTNode.getIgnoreValueCase(schema);
 				for (const e of schema.enum) {
 					if (objects.equals(val, e) ||
 					   (ignoreCase && typeof e === "string" && typeof val === "string" && e.toUpperCase() === val.toUpperCase())) {
@@ -297,14 +305,6 @@ export class ASTNode {
 		matchingSchemas.add({ node: this, schema: schema });
 	}
 
-	protected getIgnoreValueCase(schema: JSONSchema): boolean {
-		return schema && (schema.ignoreCase === "value" || schema.ignoreCase === "all");
-	}
-
-	protected getIgnoreKeyCase(schema: JSONSchema): boolean {
-		return schema && (schema.ignoreCase === "key" || schema.ignoreCase === "all");
-	}
-
 	protected validateStringValue(schema: JSONSchema, value: string, validationResult: ValidationResult): void {
 		if (schema.minLength && value.length < schema.minLength) {
 			validationResult.problems.push({
@@ -323,7 +323,7 @@ export class ASTNode {
 		}
 	
 		if (schema.pattern) {
-			const flags: string = this.getIgnoreValueCase(schema) ? "i" : "";
+			const flags: string = ASTNode.getIgnoreValueCase(schema) ? "i" : "";
 			const regex: RegExp = new RegExp(schema.pattern, flags);
 			if (!regex.test(value)) {
 				validationResult.problems.push({
@@ -334,7 +334,6 @@ export class ASTNode {
 			}
 		}
 	}
-	
 }
 
 export class NullASTNode extends ASTNode {
@@ -752,7 +751,7 @@ export class ObjectASTNode extends ASTNode {
 
 			if (schema.properties) {
 				const propSchema: JSONSchema = schema.properties[propertyKey];
-				const ignoreKeyCase: boolean = this.getIgnoreKeyCase(propSchema);
+				const ignoreKeyCase: boolean = ASTNode.getIgnoreKeyCase(propSchema);
 
 				if (ignoreKeyCase) {
 					const matchedKeys: ASTNodeMap = findMatchingProperties(propertyKey);
@@ -794,7 +793,7 @@ export class ObjectASTNode extends ASTNode {
 				return false;
 			}
 
-			if (this.getIgnoreKeyCase(propertySchema)) {
+			if (ASTNode.getIgnoreKeyCase(propertySchema)) {
 				const upperPropName: string = propertyName.toUpperCase();
 				return !!schema.firstProperty.some(listProperty => listProperty.toUpperCase() === upperPropName);
 			}
@@ -806,7 +805,7 @@ export class ObjectASTNode extends ASTNode {
 			Object.keys(schema.properties).forEach((schemaPropertyName: string) => {
 				const propSchema: JSONSchema = schema.properties[schemaPropertyName];
 				let child: ASTNode = null;
-				const ignoreKeyCase: boolean = this.getIgnoreKeyCase(propSchema);
+				const ignoreKeyCase: boolean = ASTNode.getIgnoreKeyCase(propSchema);
 				if (ignoreKeyCase) {
 					const children: ASTNodeMap = findMatchingProperties(schemaPropertyName);
 					const numChildren: number = Object.keys(children).length;
@@ -847,7 +846,7 @@ export class ObjectASTNode extends ASTNode {
 
 		if (schema.patternProperties) {
 			Object.keys(schema.patternProperties).forEach((propertyPattern: string) => {
-				const ignoreKeyCase: boolean = this.getIgnoreKeyCase(schema.patternProperties[propertyPattern]);
+				const ignoreKeyCase: boolean = ASTNode.getIgnoreKeyCase(schema.patternProperties[propertyPattern]);
 				const regex = new RegExp(propertyPattern, ignoreKeyCase ? "i" : "");
 				unprocessedProperties.slice(0).forEach((propertyName: string) => {
 					if (regex.test(propertyName)) {
@@ -960,7 +959,7 @@ export class ObjectASTNode extends ASTNode {
 					if (schema.properties) {
 						propertySchema = schema.properties[listProperty];
 					}
-					if (this.getIgnoreKeyCase(propertySchema)) {
+					if (ASTNode.getIgnoreKeyCase(propertySchema)) {
 						return listProperty.toUpperCase() === firstPropKey.toUpperCase();
 					}
 					return listProperty === firstPropKey;

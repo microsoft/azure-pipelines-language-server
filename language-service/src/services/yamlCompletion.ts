@@ -111,9 +111,23 @@ export class YAMLCompletion {
 
         let proposed: { [key: string]: CompletionItem } = {};
         let collector: CompletionsCollector = {
-            add: (suggestion: CompletionItem) => {
-                let existing = proposed[suggestion.label];
+            add: (suggestion: CompletionItem, ignoreCase: boolean) => {
+                let suggestionLabel: string = suggestion.label;
+
+                if (ignoreCase) {
+                    const upperSuggestion: string = suggestionLabel.toUpperCase();
+                    Object.keys(proposed).some( (existingLabel: string): boolean => {
+                        if (upperSuggestion === existingLabel.toUpperCase()) {
+                            suggestionLabel = existingLabel;
+                            return true;
+                        }
+                        return false;
+                    });
+                }
+
+                let existing = proposed[suggestionLabel];
                 if (!existing) {
+                    //keep the nominal casing here - ie don't use suggestionLabel
                     proposed[suggestion.label] = suggestion;
                     if (overwriteRange) {
                         suggestion.textEdit = TextEdit.replace(overwriteRange, suggestion.insertText);
@@ -200,7 +214,7 @@ export class YAMLCompletion {
                         insertText: this.getInsertTextForProperty(currentWord, null, false, separatorAfter),
                         insertTextFormat: InsertTextFormat.Snippet,
                         documentation: ''
-                    });
+                    }, false);
                 }
             }
 
@@ -248,7 +262,7 @@ export class YAMLCompletion {
                                     insertText: this.getInsertTextForProperty(key, propertySchema, addValue, separatorAfter),
                                     insertTextFormat: InsertTextFormat.Snippet,
                                     documentation: propertySchema.description || ''
-                                });
+                                }, Parser.ASTNode.getIgnoreKeyCase(propertySchema));
                             }
                         }
                     });
@@ -404,7 +418,7 @@ export class YAMLCompletion {
                 insertText: this.getInsertTextForValue(value, separatorAfter),
                 insertTextFormat: InsertTextFormat.Snippet,
                 detail: localize('json.suggest.default', 'Default value'),
-            });
+            }, false);
             hasProposals = true;
         }
         if (!hasProposals && schema.items && !Array.isArray(schema.items)) {
@@ -427,7 +441,7 @@ export class YAMLCompletion {
                     insertText: this.getInsertTextForValue(enm, separatorAfter),
                     insertTextFormat: InsertTextFormat.Snippet,
                     documentation
-                });
+                }, false);
             }
         }
     }
@@ -448,7 +462,7 @@ export class YAMLCompletion {
             insertText: this.getInsertTextForValue(value, separatorAfter),
             insertTextFormat: InsertTextFormat.Snippet,
             documentation: ''
-        });
+        }, false);
     }
 
     private addNullValueCompletion(collector: CompletionsCollector, separatorAfter: string): void {
@@ -458,7 +472,7 @@ export class YAMLCompletion {
             insertText: 'null' + separatorAfter,
             insertTextFormat: InsertTextFormat.Snippet,
             documentation: ''
-        });
+        }, false);
     }
 
     private addCustomTagValueCompletion(collector: CompletionsCollector, separatorAfter: string, label: string): void {
@@ -468,7 +482,7 @@ export class YAMLCompletion {
             insertText: label + separatorAfter,
             insertTextFormat: InsertTextFormat.Snippet,
             documentation: ''
-        });
+        }, false);
     }
 
     private getLabelForValue(value: any): string {

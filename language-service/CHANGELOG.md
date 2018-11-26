@@ -1,5 +1,6 @@
 #### 0.4.1 
 Fix bug where enums that looked like numbers would be marked invalid [#PR-29](https://github.com/Microsoft/azure-pipelines-language-server/pull/29)
+do not suggest case insensitive properties when a matching property is present [#PR-28](https://github.com/Microsoft/azure-pipelines-language-server/pull/28)
 
 #### 0.4.0
 introduce the "ignoreCase" schema option that can be used to turn off case sensitivity for property keys and/or values
