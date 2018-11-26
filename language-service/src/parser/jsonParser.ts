@@ -254,7 +254,11 @@ export class ASTNode {
 		}
 
 		if (Array.isArray(schema.enum)) {
-			const val = this.getValue();
+			let val = this.getValue();
+			//force number values to strings for the comparison
+			if (typeof val === "number") {
+				val = val.toString();
+			}
 			let enumValueMatch: boolean = false;
 			if (val) {
 				const ignoreCase: boolean = this.getIgnoreValueCase(schema);
