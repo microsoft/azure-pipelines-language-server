@@ -345,6 +345,19 @@ export class NullASTNode extends ASTNode {
 	public getValue(): any {
 		return null;
 	}
+	public validate(schema: JSONSchema, validationResult: ValidationResult, matchingSchemas: ISchemaCollector): void {
+		if (!matchingSchemas.include(this)) {
+			return;
+		}
+
+		//allow empty values to validate as strings
+		if (schema.type === 'string') {
+			this.validateStringValue(schema, '', validationResult);
+		}
+		else {
+			super.validate(schema, validationResult, matchingSchemas);
+		}
+	}
 }
 
 export class BooleanASTNode extends ASTNode {
@@ -964,6 +977,8 @@ export class ObjectASTNode extends ASTNode {
 					}
 					return listProperty === firstPropKey;
 				})) {
+					validationResult.firstPropertyProblems++;
+
 					if (schema.firstProperty.length == 1) {
 						validationResult.problems.push({
 							location: { start: firstProperty.start, end: firstProperty.end },
