@@ -1,9 +1,8 @@
 /*---------------------------------------------------------------------------------------------
  *  Copyright (c) Red Hat, Inc. All rights reserved.
+ *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
-import * as yamlParser from "../parser/yamlParser";
-import { JSONDocument } from "../parser/jsonParser";
 
 export function removeDuplicates(arr, prop) {
     var new_arr = [];
@@ -21,30 +20,28 @@ export function removeDuplicates(arr, prop) {
 }
 
 export function getLineOffsets(textDocString: String): number[] {
-		
-		let lineOffsets: number[] = [];
-		let text = textDocString;
-		let isLineStart = true;
-		for (let i = 0; i < text.length; i++) {
-			if (isLineStart) {
-				lineOffsets.push(i);
-				isLineStart = false;
-			}
-			let ch = text.charAt(i);
-			isLineStart = (ch === '\r' || ch === '\n');
-			if (ch === '\r' && i + 1 < text.length && text.charAt(i + 1) === '\n') {
-				i++;
-			}
+	let lineOffsets: number[] = [];
+	let text: String = textDocString;
+	let isLineStart: boolean = true;
+	for (let i = 0; i < text.length; i++) {
+		if (isLineStart) {
+			lineOffsets.push(i);
+			isLineStart = false;
 		}
-		if (isLineStart && text.length > 0) {
-			lineOffsets.push(text.length);
+		let ch: string = text.charAt(i);
+		isLineStart = (ch === '\r' || ch === '\n');
+		if (ch === '\r' && i + 1 < text.length && text.charAt(i + 1) === '\n') {
+			i++;
 		}
-		
-		return lineOffsets;
+	}
+	if (isLineStart && text.length > 0) {
+		lineOffsets.push(text.length);
+	}
+	
+	return lineOffsets;
 }
 
 export function removeDuplicatesObj(objArray){
-	
 	let nonDuplicateSet = new Set();
 	let nonDuplicateArr = [];
 	for(let obj in objArray){
@@ -59,21 +56,4 @@ export function removeDuplicatesObj(objArray){
 	}
 
 	return nonDuplicateArr;
-
-}
-
-// YAMLDocument
-// This method takes "jsonDocuments" but above it passes a single object, I think it's getting implicitly converted to an array
-export function matchOffsetToDocument(offset: number, jsonDocuments: yamlParser.YAMLDocument): JSONDocument {
-	
-	for(let jsonDoc in jsonDocuments.documents){
-		let currJsonDoc = jsonDocuments.documents[jsonDoc];
-		if(currJsonDoc.root && currJsonDoc.root.end >= offset && currJsonDoc.root.start <= offset){
-
-			// Fix jsonDocuments type that's passed in.
-			return currJsonDoc;
-		}
-	}
-
-	return null;
 }

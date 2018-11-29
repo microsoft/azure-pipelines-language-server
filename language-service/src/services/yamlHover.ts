@@ -8,10 +8,10 @@
 import { JSONWorkerContribution } from "../jsonContributions";
 import * as Parser from "../parser/jsonParser";
 import { YAMLDocument } from "../parser/yamlParser";
-import { matchOffsetToDocument } from '../utils/arrUtils';
 import * as SchemaService from "./jsonSchemaService";
 import { PromiseConstructor, Thenable } from "vscode-json-languageservice";
-import {Hover, TextDocument, Position, Range, MarkedString} from 'vscode-languageserver-types';
+import { Hover, TextDocument, Position, Range, MarkedString } from "vscode-languageserver-types";
+import { toMarkdown } from "../utils/strings";
 
 export class YAMLHover {
 
@@ -25,18 +25,18 @@ export class YAMLHover {
         this.promise = promiseConstructor || Promise;
     }
 
-    public doHover(document: TextDocument, position: Position, doc: YAMLDocument): Thenable<Hover> {
+    public doHover(document: TextDocument, position: Position, yamlDocument: YAMLDocument): Thenable<Hover> {
 
         if(!document){
             this.promise.resolve(void 0);
         }
 
-        let offset = document.offsetAt(position);
-        let currentDoc = matchOffsetToDocument(offset, doc);
-        if(currentDoc === null){
+        const offset: number = document.offsetAt(position);
+        const jsonDocument = yamlDocument.documents.length > 0 ? yamlDocument.documents[0] : null;
+        if(jsonDocument === null){
             return this.promise.resolve(void 0);
         }
-        let node = currentDoc.getNodeFromOffset(offset);
+        let node = jsonDocument.getNodeFromOffset(offset);
         if (!node || (node.type === 'object' || node.type === 'array') && offset > node.start + 1 && offset < node.end - 1) {
             return this.promise.resolve(void 0);
         }
@@ -76,7 +76,7 @@ export class YAMLHover {
         return this.schemaService.getSchemaForResource(document.uri).then((schema) => {
             if (schema) {
 
-                let matchingSchemas = currentDoc.getMatchingSchemas(schema.schema, node.start);
+                let matchingSchemas = jsonDocument.getMatchingSchemas(schema.schema, node.start);
 
                 let title: string = null;
                 let markdownDescription: string = null;
@@ -139,10 +139,3 @@ export class YAMLHover {
     }
 }
 
-function toMarkdown(plain: string) {
-    if (plain) {
-        let res = plain.replace(/([^\n\r])(\r?\n)([^\n\r])/gm, '$1\n\n$3'); // single new lines to \n\n (Markdown paragraph)
-        return res.replace(/[\\`*_{}[\]()#+\-.!]/g, "\\$&"); // escape markdown syntax tokens: http://daringfireball.net/projects/markdown/syntax#backslash
-    }
-    return void 0;
-}

@@ -9,7 +9,12 @@ function is_EOL(c: number) {
     return (c === 0x0A/* LF */) || (c === 0x0D/* CR */);
 }
 
-export function completionHelper(document: TextDocument, textDocumentPosition: Position) {
+export interface CompletionAdjustment {
+    newText: string,
+    newPosition: Position
+}
+
+export function completionHelper(document: TextDocument, textDocumentPosition: Position): CompletionAdjustment {
     // Get the string we are looking at via a substring
     const lineNumber: number = textDocumentPosition.line;
     const lineOffsets: number[] = getLineOffsets(document.getText());
@@ -44,7 +49,7 @@ export function completionHelper(document: TextDocument, textDocumentPosition: P
         }
 
         return {
-            newText,
+            newText: newText,
             newPosition: textDocumentPosition,
         };
 
