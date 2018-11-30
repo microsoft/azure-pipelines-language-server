@@ -47,6 +47,7 @@ export interface JSONSchema {
 	doNotSuggest?: boolean;  // VSCode extension
 	enumDescriptions?: string[]; // VSCode extension
 	ignoreCase?: string; // VSCode extension
+	aliases?: string[]; // VSCode extension
 	"x-kubernetes-group-version-kind"?; //Kubernetes extension
 }
 

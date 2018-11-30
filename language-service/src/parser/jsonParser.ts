@@ -764,11 +764,29 @@ export class ObjectASTNode extends ASTNode {
 
 			if (schema.properties) {
 				const propSchema: JSONSchema = schema.properties[propertyKey];
-				const ignoreKeyCase: boolean = ASTNode.getIgnoreKeyCase(propSchema);
 
-				if (ignoreKeyCase) {
-					const matchedKeys: ASTNodeMap = findMatchingProperties(propertyKey);
-					return Object.keys(matchedKeys).length > 0;
+				if (propSchema) {
+					const ignoreKeyCase: boolean = ASTNode.getIgnoreKeyCase(propSchema);
+
+					if (ignoreKeyCase) {
+						const matchedKeys: ASTNodeMap = findMatchingProperties(propertyKey);
+						return Object.keys(matchedKeys).length > 0;
+					}
+
+					if (Array.isArray(propSchema.aliases)) {
+						return propSchema.aliases.some((aliasName: string) => {
+							if (seenKeys[aliasName]) {
+								return true;
+							}
+
+							if (ignoreKeyCase) {
+								const matchedKeys: ASTNodeMap = findMatchingProperties(aliasName);
+								return Object.keys(matchedKeys).length > 0;
+							}
+
+							return false;
+						});
+					}
 				}
 			}
 			
@@ -801,6 +819,7 @@ export class ObjectASTNode extends ASTNode {
 			return schema.firstProperty && schema.firstProperty.indexOf(propertyName) >= 0;
 		}
 
+		//TODO figure out how this is used and how it needs to be updated for aliases
 		const isFirstProperty = (propertySchema: JSONSchema, propertyName: string): boolean => {
 			if (!schema.firstProperty || !schema.firstProperty.length) {
 				return false;
@@ -815,6 +834,7 @@ export class ObjectASTNode extends ASTNode {
 		}
 
 		if (schema.properties) {
+			//TODO deal with aliases in this mess
 			Object.keys(schema.properties).forEach((schemaPropertyName: string) => {
 				const propSchema: JSONSchema = schema.properties[schemaPropertyName];
 				let child: ASTNode = null;
@@ -972,6 +992,7 @@ export class ObjectASTNode extends ASTNode {
 					if (schema.properties) {
 						propertySchema = schema.properties[listProperty];
 					}
+					//TODO check for aliases here
 					if (ASTNode.getIgnoreKeyCase(propertySchema)) {
 						return listProperty.toUpperCase() === firstPropKey.toUpperCase();
 					}

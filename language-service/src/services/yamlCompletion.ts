@@ -250,7 +250,10 @@ export class YAMLCompletion {
                 const schemaProperties = s.schema.properties;
                 if (schemaProperties) {
                     Object.keys(schemaProperties).forEach((key: string) => {
-                        //check for more than one propery because the placeholder will always be in the list
+                        //check for more than one property because the placeholder will always be in the list
+                        //TODO deal with aliases both in terms of ignoring matches and in terms of suggesting...
+                        //or not.  When the schema is generated, the perfered name should be the real name which
+                        //could involve switching things around.
                         if (s.node.properties.length > 1 || this.arrayIsEmptyOrContainsKey(s.schema.firstProperty, key)) {
                             const propertySchema = schemaProperties[key];
                             if (!propertySchema.deprecationMessage && !propertySchema["doNotSuggest"]) {
