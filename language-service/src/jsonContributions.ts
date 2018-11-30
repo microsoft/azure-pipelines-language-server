@@ -18,7 +18,7 @@ export type Segment = string | number;
 export type JSONPath = Segment[];
 
 export interface CompletionsCollector {
-	add(suggestion: CompletionItem, ignoreCase: boolean): void;
+	add(suggestion: CompletionItem): void;
 	error(message: string): void;
 	log(message: string): void;
 	setAsIncomplete(): void;
