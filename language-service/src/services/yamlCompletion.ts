@@ -17,7 +17,6 @@ import { nodeHolder } from "../utils/yamlServiceUtils";
 import { CompletionItem, CompletionItemKind, CompletionList, TextDocument, Position, Range, TextEdit, InsertTextFormat } from 'vscode-languageserver-types';
 
 import * as nls from 'vscode-nls';
-import { matchOffsetToDocument } from '../utils/arrUtils';
 import { YAMLDocument } from '../parser/yamlParser';
 
 const localize = nls.loadMessageBundle();
@@ -52,24 +51,23 @@ export class YAMLCompletion {
         return this.promise.resolve(item);
     }
 
-    public doComplete(document: TextDocument, position: Position, doc: YAMLDocument/*Parser.JSONDocument*/): Thenable<CompletionList> {
+    public doComplete(document: TextDocument, position: Position, yamlDocument: YAMLDocument): Thenable<CompletionList> {
 
         let result: CompletionList = {
             items: [],
             isIncomplete: false
         };
 
-        let offset = document.offsetAt(position);
+        const offset = document.offsetAt(position);
         if (document.getText()[offset] === ":") {
             return Promise.resolve(result);
         }
 
-        //let currentDoc = matchOffsetToDocument(offset, doc);
-        let currentDoc = matchOffsetToDocument(offset, doc);
-        if (currentDoc === null) {
+        const jsonDocument = yamlDocument.documents.length > 0 ? yamlDocument.documents[0] : null;
+        if (jsonDocument === null) {
             return Promise.resolve(result);
         }
-        let node = currentDoc.getNodeFromOffsetEndInclusive(offset);
+        let node = jsonDocument.getNodeFromOffsetEndInclusive(offset);
         if (this.isInComment(document, node ? node.start : 0, offset)) {
             return Promise.resolve(result);
         }
@@ -197,7 +195,7 @@ export class YAMLCompletion {
 
                 if (schema) {
                     // property proposals with schema
-                    this.getPropertyCompletions(schema, currentDoc, node, addValue, collector, separatorAfter);
+                    this.getPropertyCompletions(schema, jsonDocument, node, addValue, collector, separatorAfter);
                 }
 
                 let location = node.getPath();
@@ -222,10 +220,10 @@ export class YAMLCompletion {
             let types: { [type: string]: boolean } = {};
             //console.log('schema: ' + JSON.stringify(schema));
             if (schema) {
-                this.getValueCompletions(schema, currentDoc, node, offset, document, collector, types);
+                this.getValueCompletions(schema, jsonDocument, node, offset, document, collector, types);
             }
             if (this.contributions.length > 0) {
-                this.getContributedValueCompletions(currentDoc, node, offset, document, collector, collectionPromises);
+                this.getContributedValueCompletions(jsonDocument, node, offset, document, collector, collectionPromises);
             }
             if (this.customTags.length > 0) {
                 this.getCustomTagValueCompletions(collector);

@@ -95,8 +95,8 @@ export interface SchemaConfiguration {
 
 export interface LanguageService {
   configure(settings: LanguageSettings): void;
-	doComplete(document: TextDocument, position: Position, doc): Thenable<CompletionList>;
-  doValidation(document: TextDocument, yamlDocument): Thenable<Diagnostic[]>;
+	doComplete(document: TextDocument, position: Position, yamlDocument: YAMLDocument): Thenable<CompletionList>;
+  doValidation(document: TextDocument, yamlDocument: YAMLDocument): Thenable<Diagnostic[]>;
   doHover(document: TextDocument, position: Position, doc: YAMLDocument): Thenable<Hover>;
   findDocumentSymbols(document: TextDocument, doc: YAMLDocument): SymbolInformation[];
   doResolve(completionItem: CompletionItem): Thenable<CompletionItem>;

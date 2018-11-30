@@ -45,3 +45,11 @@ function convertGlobalPattern2RegExp(pattern: string): RegExp {
 function convertRegexString2RegExp(pattern: string, flag: string): RegExp {
 	return new RegExp(pattern, flag);
 }
+
+export function toMarkdown(plain: string) {
+    if (plain) {
+        let res = plain.replace(/([^\n\r])(\r?\n)([^\n\r])/gm, '$1\n\n$3'); // single new lines to \n\n (Markdown paragraph)
+        return res.replace(/[\\`*_{}[\]()#+\-.!]/g, "\\$&"); // escape markdown syntax tokens: http://daringfireball.net/projects/markdown/syntax#backslash
+    }
+    return void 0;
+}
