@@ -36,16 +36,18 @@ export function completionHelper(document: TextDocument, textDocumentPosition: P
     // Check if the string we are looking at is a node
     if (textLine.indexOf(":") === -1) {
         // We need to add the ":" to load the nodes
+        const documentText = document.getText();
+
         let newText = "";
 
         // This is for the empty line case
         const trimmedText = textLine.trim();
         if (trimmedText.length === 0 || (trimmedText.length === 1 && trimmedText[0] === '-')) {
             // Add a temp node that is in the document but we don't use at all.
-            newText = document.getText().substring(0, start + textLine.length) + nodeHolderWithEnding + document.getText().substr(lineOffsets[lineNumber + 1] || document.getText().length);
+            newText = documentText.substring(0, start + textDocumentPosition.character) + nodeHolderWithEnding + documentText.substr(start + textDocumentPosition.character);
         } else {
-            // Add a semicolon to the end of the current line so we can validate the node
-            newText = document.getText().substring(0, start + textLine.length) + nodeLineEnding + document.getText().substr(lineOffsets[lineNumber + 1] || document.getText().length);
+            // Add a colon to the end of the current line so we can validate the node
+            newText = documentText.substring(0, start + textLine.length) + nodeLineEnding + documentText.substr(lineOffsets[lineNumber + 1] || documentText.length);
         }
 
         return {
