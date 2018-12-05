@@ -202,7 +202,7 @@ suite("Validation Tests", () => {
 			});
 
 			it('Error when theres no value for a node', (done) => {
-				let content = `cwd:`;
+				let content = `storage:`;
 				let validator = parseSetup(content);
 				validator.then(function(result){
 					assert.notEqual(result.length, 0);

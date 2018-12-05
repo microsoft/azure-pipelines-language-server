@@ -118,14 +118,6 @@ suite("Hover Tests", () => {
 					assertHasContents(result);
 				}).then(done, done);
 			});
-			
-			it('Hover on multi document', (done) => {
-				let content: string = '---\nanalytics: true\n...\n---\njson: test\n...';
-				let hover: Thenable<Hover> = parseSetup(content, 30);
-				hover.then(function(result: Hover){
-					assertHasContents(result);
-				}).then(done, done);
-            });
 		});
 	});
 });

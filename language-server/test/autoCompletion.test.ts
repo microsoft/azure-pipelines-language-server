@@ -129,22 +129,6 @@ suite("Auto Completion Tests", () => {
 					assert.notEqual(result.items.length, 0);
 				}).then(done, done);
 			});
-
-			it('Autocomplete on multi yaml documents in a single file on root', (done) => {
-				let content = `---\nanalytics: true\n...\n---\n...`;
-				let completion = parseSetup(content, 28);
-				completion.then(function(result){
-					assert.notEqual(result.items.length, 0);
-				}).then(done, done);
-			});
-
-			it('Autocomplete on multi yaml documents in a single file on scalar', (done) => {
-				let content = `---\nanalytics: true\n...\n---\njson: \n...`;
-				let completion = parseSetup(content, 34);
-				completion.then(function(result){
-					assert.notEqual(result.items.length, 0);
-				}).then(done, done);
-			});
 		});
 	});
 });
