@@ -1,7 +1,7 @@
 {
   "name": "azure-pipelines-language-server",
   "description": "Azure Pipelines language server",
-  "version": "0.4.1",
+  "version": "0.4.2",
   "author": "Microsoft",
   "license": "MIT",
   "contributors": [
@@ -51,7 +51,7 @@
     "typescript": "2.7.2"
   },
   "scripts": {
-    "build": "npm run compile && npm run preppackage && cd out/src && npm pack",
+    "build": "npm run compile && npm run preppackage && cd out/src && del *.tgz && npm pack",
     "preppackage": "shx cp package.json out/src && shx cp CHANGELOG.md out/src && shx cp LICENSE out/src && shx cp README.md out/src",
     "compile": "tsc -p .",
     "watch": "tsc -watch -p .",
