@@ -51,7 +51,7 @@
     "typescript": "2.7.2"
   },
   "scripts": {
-    "build": "npm run compile && npm run preppackage && cd out/src && shx rm *.tgz && npm pack",
+    "build": "npm run compile && npm run preppackage && cd out/src && shx rm -f *.tgz && npm pack",
     "preppackage": "shx cp package.json out/src && shx cp CHANGELOG.md out/src && shx cp LICENSE out/src && shx cp README.md out/src",
     "compile": "tsc -p .",
     "watch": "tsc -watch -p .",

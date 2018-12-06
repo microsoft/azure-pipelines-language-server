@@ -1,5 +1,5 @@
 #### 0.4.2
-Improve build/packaging process
+Improve build/packaging process [#PR-41](https://github.com/Microsoft/azure-pipelines-language-server/pull/41)
 
 #### 0.4.1
 Consume version 0.4.1 of the language service [#PR-34](https://github.com/Microsoft/azure-pipelines-language-server/pull/34)
