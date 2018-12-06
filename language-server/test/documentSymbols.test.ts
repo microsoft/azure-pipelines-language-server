@@ -86,14 +86,5 @@ suite("Document Symbols Tests", () => {
             assert.equal(symbols.length, 6);	
             done();			
         });
-
-        it('Document Symbols with multi documents', (done) => {
-            let content = '---\nanalytics: true\n...\n---\njson: test\n...';
-            let symbols = parseSetup(content);
-            assert.equal(symbols.length, 2);	
-            done();			
-        });
-
     });
-    
 });

@@ -35,7 +35,7 @@ suite("Auto Completion Tests", () => {
 
 			it('Array autocomplete without word', (done) => {
 				let content = "authors:\n  - ";
-				let completion = parseSetup(content, 14);
+				let completion = parseSetup(content, content.length);
 				completion.then(function(result){
 					assert.notEqual(result.items.length, 0);
 				}).then(done, done);
@@ -43,7 +43,7 @@ suite("Auto Completion Tests", () => {
 
 			it('Array autocomplete with letter', (done) => {
 				let content = "authors:\n  - n";
-				let completion = parseSetup(content, 14);
+				let completion = parseSetup(content, content.length);
 				completion.then(function(result){
 					assert.notEqual(result.items.length, 0);
 				}).then(done, done);
@@ -51,7 +51,7 @@ suite("Auto Completion Tests", () => {
 
 			it('Array autocomplete without word (second item)', (done) => {
 				let content = "authors:\n  - name: test\n    ";
-				let completion = parseSetup(content, 32);
+				let completion = parseSetup(content, content.length);
 				completion.then(function(result){
 					assert.notEqual(result.items.length, 0);
 				}).then(done, done);
@@ -59,7 +59,7 @@ suite("Auto Completion Tests", () => {
 
 			it('Array autocomplete with letter (second item)', (done) => {
 				let content = "authors:\n  - name: test\n    e";
-				let completion = parseSetup(content, 27);
+				let completion = parseSetup(content, content.length);
 				completion.then(function(result){
 					assert.notEqual(result.items.length, 0);
 				}).then(done, done);
@@ -67,7 +67,7 @@ suite("Auto Completion Tests", () => {
 
 			it('Autocompletion after array', (done) => {
 				let content = "authors:\n  - name: test\n"
-				let completion = parseSetup(content, 24);
+				let completion = parseSetup(content, content.length);
 				completion.then(function(result){
 					assert.notEqual(result.items.length, 0);
 				}).then(done, done);
@@ -75,7 +75,7 @@ suite("Auto Completion Tests", () => {
 
 			it('Autocompletion after array with depth', (done) => {
 				let content = "archive:\n  exclude:\n  - test\n"
-				let completion = parseSetup(content, 29);
+				let completion = parseSetup(content, content.length);
 				completion.then(function(result){
 					assert.notEqual(result.items.length, 0);
 				}).then(done, done);
@@ -83,7 +83,7 @@ suite("Auto Completion Tests", () => {
 
 			it('Autocompletion after array with depth', (done) => {
 				let content = "autoload:\n  classmap:\n  - test\n  exclude-from-classmap:\n  - test\n  "
-				let completion = parseSetup(content, 70);
+				let completion = parseSetup(content, content.length);
 				completion.then(function(result){
 					assert.notEqual(result.items.length, 0);
 				}).then(done, done);
@@ -95,7 +95,7 @@ suite("Auto Completion Tests", () => {
 
 			it('Autocompletion has no results on value when they are not available', (done) => {
 				let content = "time: "
-				let completion = parseSetup(content, 6);
+				let completion = parseSetup(content, content.length);
 				completion.then(function(result){
 					assert.equal(result.items.length, 0);
 				}).then(done, done);
@@ -103,7 +103,7 @@ suite("Auto Completion Tests", () => {
 
 			it('Autocompletion has no results on value when they are not available (with depth)', (done) => {
 				let content = "archive:\n  exclude:\n    - test\n    "
-				let completion = parseSetup(content, 33);
+				let completion = parseSetup(content, content.length);
 				completion.then(function(result){
 					assert.equal(result.items.length, 0);
 				}).then(done, done);
@@ -111,7 +111,7 @@ suite("Auto Completion Tests", () => {
 
 			it('Autocompletion does not complete on wrong spot in array node', (done) => {
 				let content = "authors:\n  - name: test\n  "
-				let completion = parseSetup(content, 24);
+				let completion = parseSetup(content, content.length);
 				completion.then(function(result){
 					assert.equal(result.items.length, 0);
 				}).then(done, done);

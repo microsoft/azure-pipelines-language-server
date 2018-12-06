@@ -124,7 +124,7 @@ suite("Kubernetes Integration Tests", () => {
 
 		describe('Test that validation DOES throw errors', function(){
 			it('Error when theres no value for a node', (done) => {
-				let content = `apiVersion:`;
+				let content = `isNonResourceURL:`;
 				let validator = parseSetup(content);
 				validator.then(function(result){
 					assert.notEqual(result.length, 0);
@@ -155,14 +155,6 @@ suite("Kubernetes Integration Tests", () => {
 				}).then(done, done);
 			});
 
-			it('Error on incorrect value type in multiple yaml documents', (done) => {
-				let content = `---\napiVersion: v1\n...\n---\napiVersion: False\n...`;
-				let validator = parseSetup(content);
-				validator.then(function(result){
-					assert.notEqual(result.length, 0);
-				}).then(done, done);
-			});
-
 			it('Property error message should be \"Unexpected property {$property_name}\" when property is not allowed ', (done) => {
 				let content = `unknown_node: test`;
 				let validator = parseSetup(content);
@@ -171,9 +163,7 @@ suite("Kubernetes Integration Tests", () => {
 					assert.equal(result[0].message, "Unexpected property unknown_node");
 				}).then(done, done);
 			});
-
 		});
-
 	});
 
 	describe('yamlCompletion with kubernetes', function(){
