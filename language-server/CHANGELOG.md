@@ -1,3 +1,6 @@
+#### 0.4.1
+Consume version 0.4.1 of the language service [#PR-34](https://github.com/Microsoft/azure-pipelines-language-server/pull/34)
+
 #### 0.4.0
 Consume version 0.4.0 of the language service [#PR-27](https://github.com/Microsoft/azure-pipelines-language-server/pull/27)
 
