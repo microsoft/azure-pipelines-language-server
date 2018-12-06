@@ -109,23 +109,9 @@ export class YAMLCompletion {
 
         let proposed: { [key: string]: CompletionItem } = {};
         let collector: CompletionsCollector = {
-            add: (suggestion: CompletionItem, ignoreCase: boolean) => {
-                let suggestionLabel: string = suggestion.label;
-
-                if (ignoreCase) {
-                    const upperSuggestion: string = suggestionLabel.toUpperCase();
-                    Object.keys(proposed).some( (existingLabel: string): boolean => {
-                        if (upperSuggestion === existingLabel.toUpperCase()) {
-                            suggestionLabel = existingLabel;
-                            return true;
-                        }
-                        return false;
-                    });
-                }
-
-                let existing = proposed[suggestionLabel];
+            add: (suggestion: CompletionItem) => {
+                let existing = proposed[suggestion.label];
                 if (!existing) {
-                    //keep the nominal casing here - ie don't use suggestionLabel
                     proposed[suggestion.label] = suggestion;
                     if (overwriteRange) {
                         suggestion.textEdit = TextEdit.replace(overwriteRange, suggestion.insertText);
@@ -181,7 +167,7 @@ export class YAMLCompletion {
             //console.log('node and node object');
             if (node && node.type === 'object') {
                 // don't suggest properties that are already present
-                let properties = (<Parser.ObjectASTNode>node).properties;
+                const properties: Parser.PropertyASTNode[] = (<Parser.ObjectASTNode>node).properties;
                 properties.forEach(p => {
                     if (!currentProperty || currentProperty !== p) {
                         proposed[p.key.value] = CompletionItem.create('__');
@@ -212,7 +198,7 @@ export class YAMLCompletion {
                         insertText: this.getInsertTextForProperty(currentWord, null, false, separatorAfter),
                         insertTextFormat: InsertTextFormat.Snippet,
                         documentation: ''
-                    }, false);
+                    });
                 }
             }
 
@@ -244,23 +230,53 @@ export class YAMLCompletion {
     }
 
     private getPropertyCompletions(schema: SchemaService.ResolvedSchema, doc, node: Parser.ASTNode, addValue: boolean, collector: CompletionsCollector, separatorAfter: string): void {
+        const nodeProperties: Parser.PropertyASTNode[] = (<Parser.ObjectASTNode>node).properties;
+        const hasMatchingProperty = (key: string, propSchema: JSONSchema): boolean => {
+            return nodeProperties.some((propertyNode: Parser.PropertyASTNode): boolean => {
+                let propertyKey: string = propertyNode.key.value;
+
+                if (propertyKey === key) {
+                    return true;
+                }
+
+                const ignoreCase: boolean = Parser.ASTNode.getIgnoreKeyCase(propSchema);
+                if (ignoreCase) {
+                    propertyKey = propertyKey.toUpperCase();
+
+                    if (propertyKey === key) {
+                        return true;
+                    }
+                }
+
+                if (Array.isArray(propSchema.aliases)) {
+                    return propSchema.aliases.some((alias: string): boolean => {
+                        const testAlias: string = ignoreCase ? alias.toUpperCase() : alias;
+                        return testAlias === propertyKey;
+                    });
+                }
+                return false;
+            });
+        }
+
         const matchingSchemas = doc.getMatchingSchemas(schema.schema);
         matchingSchemas.forEach((s) => {
             if (s.node === node && !s.inverted) {
                 const schemaProperties = s.schema.properties;
                 if (schemaProperties) {
                     Object.keys(schemaProperties).forEach((key: string) => {
-                        //check for more than one propery because the placeholder will always be in the list
+                        //check for more than one property because the placeholder will always be in the list
                         if (s.node.properties.length > 1 || this.arrayIsEmptyOrContainsKey(s.schema.firstProperty, key)) {
                             const propertySchema = schemaProperties[key];
-                            if (!propertySchema.deprecationMessage && !propertySchema["doNotSuggest"]) {
+                            if (!propertySchema.deprecationMessage &&
+                                !propertySchema["doNotSuggest"] &&
+                                !hasMatchingProperty(key, propertySchema)) {
                                 collector.add({
                                     kind: CompletionItemKind.Property,
                                     label: key,
                                     insertText: this.getInsertTextForProperty(key, propertySchema, addValue, separatorAfter),
                                     insertTextFormat: InsertTextFormat.Snippet,
                                     documentation: propertySchema.description || ''
-                                }, Parser.ASTNode.getIgnoreKeyCase(propertySchema));
+                                });
                             }
                         }
                     });
@@ -416,7 +432,7 @@ export class YAMLCompletion {
                 insertText: this.getInsertTextForValue(value, separatorAfter),
                 insertTextFormat: InsertTextFormat.Snippet,
                 detail: localize('json.suggest.default', 'Default value'),
-            }, false);
+            });
             hasProposals = true;
         }
         if (!hasProposals && schema.items && !Array.isArray(schema.items)) {
@@ -439,7 +455,7 @@ export class YAMLCompletion {
                     insertText: this.getInsertTextForValue(enm, separatorAfter),
                     insertTextFormat: InsertTextFormat.Snippet,
                     documentation
-                }, false);
+                });
             }
         }
     }
@@ -460,7 +476,7 @@ export class YAMLCompletion {
             insertText: this.getInsertTextForValue(value, separatorAfter),
             insertTextFormat: InsertTextFormat.Snippet,
             documentation: ''
-        }, false);
+        });
     }
 
     private addNullValueCompletion(collector: CompletionsCollector, separatorAfter: string): void {
@@ -470,7 +486,7 @@ export class YAMLCompletion {
             insertText: 'null' + separatorAfter,
             insertTextFormat: InsertTextFormat.Snippet,
             documentation: ''
-        }, false);
+        });
     }
 
     private addCustomTagValueCompletion(collector: CompletionsCollector, separatorAfter: string, label: string): void {
@@ -480,7 +496,7 @@ export class YAMLCompletion {
             insertText: label + separatorAfter,
             insertTextFormat: InsertTextFormat.Snippet,
             documentation: ''
-        }, false);
+        });
     }
 
     private getLabelForValue(value: any): string {

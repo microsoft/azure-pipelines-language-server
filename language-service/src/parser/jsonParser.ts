@@ -764,11 +764,31 @@ export class ObjectASTNode extends ASTNode {
 
 			if (schema.properties) {
 				const propSchema: JSONSchema = schema.properties[propertyKey];
-				const ignoreKeyCase: boolean = ASTNode.getIgnoreKeyCase(propSchema);
 
-				if (ignoreKeyCase) {
-					const matchedKeys: ASTNodeMap = findMatchingProperties(propertyKey);
-					return Object.keys(matchedKeys).length > 0;
+				if (propSchema) {
+					const ignoreKeyCase: boolean = ASTNode.getIgnoreKeyCase(propSchema);
+
+					if (ignoreKeyCase) {
+						const matchedKeys: ASTNodeMap = findMatchingProperties(propertyKey);
+						if (Object.keys(matchedKeys).length > 0) {
+							return true;
+						}
+					}
+
+					if (Array.isArray(propSchema.aliases)) {
+						return propSchema.aliases.some((aliasName: string): boolean => {
+							if (seenKeys[aliasName]) {
+								return true;
+							}
+
+							if (ignoreKeyCase) {
+								const matchedKeys: ASTNodeMap = findMatchingProperties(aliasName);
+								return Object.keys(matchedKeys).length > 0;
+							}
+
+							return false;
+						});
+					}
 				}
 			}
 			
@@ -817,34 +837,47 @@ export class ObjectASTNode extends ASTNode {
 		if (schema.properties) {
 			Object.keys(schema.properties).forEach((schemaPropertyName: string) => {
 				const propSchema: JSONSchema = schema.properties[schemaPropertyName];
-				let child: ASTNode = null;
+
+				let children: ASTNodeMap = {};
 				const ignoreKeyCase: boolean = ASTNode.getIgnoreKeyCase(propSchema);
+
 				if (ignoreKeyCase) {
-					const children: ASTNodeMap = findMatchingProperties(schemaPropertyName);
-					const numChildren: number = Object.keys(children).length;
-					const generateErrors: boolean = numChildren > 1;
+					children = findMatchingProperties(schemaPropertyName);
+				}
+				else if (seenKeys[schemaPropertyName]) {
+					children[schemaPropertyName] = seenKeys[schemaPropertyName];
+				}
 
-					Object.keys(children).forEach((childKey:string): void => {
-						propertyProcessed(childKey);
-
-						if (generateErrors) {
-							const childProperty: PropertyASTNode = <PropertyASTNode>(children[childKey].parent);
-							validationResult.problems.push({
-								location: {start: childProperty.key.start, end: childProperty.key.end},
-								severity: ProblemSeverity.Error,
-								message: localize('DuplicatePropError', 'Multiple properties found matching {0}', schemaPropertyName)
-							})
+				if (Array.isArray(propSchema.aliases)) {
+					propSchema.aliases.forEach((aliasName: string): void => {
+						if (ignoreKeyCase) {
+							Object.assign(children, findMatchingProperties(aliasName));
 						}
-						else {
-							child = children[childKey];
+						else if (seenKeys[aliasName]) {
+							children[aliasName] = seenKeys[aliasName];
 						}
-
 					});
 				}
-				else {
-					propertyProcessed(schemaPropertyName);
-					child = seenKeys[schemaPropertyName];
-				}
+
+				let child: ASTNode = null;
+				const numChildren: number = Object.keys(children).length;
+				const generateErrors: boolean = numChildren > 1;
+
+				Object.keys(children).forEach((childKey:string): void => {
+					propertyProcessed(childKey);
+
+					if (generateErrors) {
+						const childProperty: PropertyASTNode = <PropertyASTNode>(children[childKey].parent);
+						validationResult.problems.push({
+							location: {start: childProperty.key.start, end: childProperty.key.end},
+							severity: ProblemSeverity.Error,
+							message: localize('DuplicatePropError', 'Multiple properties found matching {0}', schemaPropertyName)
+						})
+					}
+					else {
+						child = children[childKey];
+					}
+				});
 
 				if (child) {
 					let propertyValidationResult = new ValidationResult();
@@ -968,14 +1001,31 @@ export class ObjectASTNode extends ASTNode {
 				let firstPropKey: string = firstProperty.key.value;
 
 				if (!schema.firstProperty.some((listProperty: string) => {
-					let propertySchema: JSONSchema = null;
+					if (listProperty === firstPropKey) {
+						return true;
+					}
+
 					if (schema.properties) {
-						propertySchema = schema.properties[listProperty];
+						const propertySchema: JSONSchema = schema.properties[listProperty];
+						if (propertySchema) {
+							const ignoreCase: boolean = ASTNode.getIgnoreKeyCase(propertySchema);
+							if (ignoreCase && listProperty.toUpperCase() === firstPropKey.toUpperCase()) {
+								return true;
+							}
+
+							if (Array.isArray(propertySchema.aliases)) {
+								return propertySchema.aliases.some((aliasName: string): boolean => {
+									if (aliasName === firstPropKey) {
+										return true;
+									}
+
+									return ignoreCase && aliasName.toUpperCase() === firstPropKey.toUpperCase();
+								});
+							}
+						}
 					}
-					if (ASTNode.getIgnoreKeyCase(propertySchema)) {
-						return listProperty.toUpperCase() === firstPropKey.toUpperCase();
-					}
-					return listProperty === firstPropKey;
+
+					return false;
 				})) {
 					validationResult.firstPropertyProblems++;
 
