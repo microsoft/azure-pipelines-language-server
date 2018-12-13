@@ -243,7 +243,7 @@ export class YAMLCompletion {
                 if (ignoreCase) {
                     propertyKey = propertyKey.toUpperCase();
 
-                    if (propertyKey === key) {
+                    if (propertyKey === key.toUpperCase()) {
                         return true;
                     }
                 }

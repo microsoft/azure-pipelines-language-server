@@ -8,11 +8,17 @@ import { Thenable } from '../../src/yamlLanguageService';
 import * as assert from 'assert';
 import { completionHelper } from '../../src/utils/yamlServiceUtils';
 
+interface Suggestions {
+    expected?: number,
+    minimum?: number,
+    maximum?: number
+}
+
 suite("Yaml Completion Service Tests", function () {
     this.timeout(20000);
 
     test('Given empty file completion should give suggestions', async function () {
-       const list = await runTaskCompletionItemsTest("", 0, 0, 11);
+       const list = await runTaskCompletionItemsTest("", {line: 0, character: 0}, {});
        const labels = list.items.map(item => item.label);
        assert.equal(labels.filter(l => l === "name").length, 1);
        assert.equal(labels.filter(l => l === "steps").length, 1);
@@ -21,23 +27,33 @@ suite("Yaml Completion Service Tests", function () {
     });
 
     test('Given steps context completion should give suggestions of possible steps', async function () {
-        await runTaskCompletionItemsTest("steps:\n- ", 1, 2, 8);
+        await runTaskCompletionItemsTest("steps:\n- ", {line: 1, character: 2}, {expected: 7});
      });
 
     test('Given an already valid file with task name, autocomplete should still give all suggestions', async function () {
-        await runTaskCompletionItemsTest('steps:\n- task: npmAuthenticate@0', 1, 26, 165);
+        await runTaskCompletionItemsTest('steps:\n- task: npmAuthenticate@0', {line: 1, character: 26}, {minimum: 100});
     });
 
     test ('Given a new file with steps and task, autocomplete should give suggestions', async function() {
-         await runTaskCompletionItemsTest('steps:\n  - task: ', 1, 10, 165);
+         await runTaskCompletionItemsTest('steps:\n  - task: ', {line: 1, character: 10}, {minimum: 100});
     });
 
     test ('All completion text for properties should end with `:`', async function() {
-        const list = await runTaskCompletionItemsTest('', 0, 0, 11);
+        const list = await runTaskCompletionItemsTest('', {line: 0, character: 0}, {});
         list.items.forEach(item => {
             assert.equal(item.textEdit.newText.search(":") > 0, true, "new text should contain `:`");
         });
-   });
+    });
+
+    test ('trailing whitespace does not affect suggestions', async function() {
+        await runTaskCompletionItemsTest('strategy:\n   ', {line: 1, character: 2}, {expected: 3});
+    });
+
+    test ('case insensitive matching keys are not suggested', async function() {
+        const list = await runTaskCompletionItemsTest('steps:\n- task: azureAppServiceManage@0\n  inputs:\n    ACTION: Restart Azure App Service\n    ', {line: 4, character: 4}, {minimum: 6});
+        const labels = list.items.map(item => item.label);
+        assert.equal(labels.filter(l => l.toUpperCase() === "Action".toUpperCase()).length, 0);
+    });
 });
 
 const workspaceContext = {
@@ -60,14 +76,13 @@ const schemaResolver = (url: string): Promise<string> => {
 
 
 // Given a file and a position, this test expects the task list to show as completion items.
-async function runTaskCompletionItemsTest(content: string, line: number, character: number, expectedTaskCount: number): Promise<CompletionList> {
+async function runTaskCompletionItemsTest(content: string, position: Position, suggestions: Suggestions): Promise<CompletionList> {
     // Arrange
     const schemaUri: string = "test/completion/schema.json";
     const schemaService = new JSONSchemaService.JSONSchemaService(schemaResolver, workspaceContext, requestService);
 
     const yamlCompletion = new YAMLCompletion(schemaService, [], Promise);
     const textDocument: TextDocument = TextDocument.create(schemaUri, "azure-pipelines", 1, content);
-    const position: Position = { line, character };
 
     const completionFix = completionHelper(textDocument, position);
     const newText = completionFix.newText;
@@ -78,7 +93,18 @@ async function runTaskCompletionItemsTest(content: string, line: number, charact
 
     // Assert
 
-    assert.equal(completionList.items.length, expectedTaskCount);
+    if (typeof suggestions.expected != 'undefined') {
+        assert.equal(completionList.items.length, suggestions.expected);
+    }
+    else {
+        if (typeof suggestions.minimum != 'undefined') {
+            assert.ok(completionList.items.length >= suggestions.minimum);
+        }
+
+        if (typeof suggestions.maximum != 'undefined') {
+            assert.ok(completionList.items.length <= suggestions.maximum);
+        }
+    }
 
     return completionList;
 }
