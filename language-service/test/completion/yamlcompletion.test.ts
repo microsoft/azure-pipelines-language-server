@@ -54,6 +54,22 @@ suite("Yaml Completion Service Tests", function () {
         const labels = list.items.map(item => item.label);
         assert.equal(labels.filter(l => l.toUpperCase() === "Action".toUpperCase()).length, 0);
     });
+
+    test ('alias matching keys are not suggested', async function() {
+        //first make sure that azureSubscription is still in the schema
+        {
+            const list = await runTaskCompletionItemsTest('steps:\n- task: azureAppServiceManage@0\n  inputs:\n    ACTION: Restart Azure App Service\n    ', {line: 4, character: 4}, {minimum: 6});
+            const labels = list.items.map(item => item.label);
+            assert.equal(labels.filter(l => l.toUpperCase() === "azureSubscription".toUpperCase()).length, 1);
+        }
+
+        //now make sure it is not suggested when an alias is present
+        {
+            const list = await runTaskCompletionItemsTest('steps:\n- task: azureAppServiceManage@0\n  inputs:\n    ConnectedServiceName: some_service\n    ', {line: 4, character: 4}, {minimum: 6});
+            const labels = list.items.map(item => item.label);
+            assert.equal(labels.filter(l => l.toUpperCase() === "azureSubscription".toUpperCase()).length, 0);
+        }
+    });
 });
 
 const workspaceContext = {
