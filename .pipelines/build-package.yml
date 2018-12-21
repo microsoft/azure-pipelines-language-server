@@ -100,7 +100,7 @@ jobs:
 
     - ${{ if eq( parameters.configuration, 'release') }}:
       - bash: |
-          SCRIPT=.pipelines\github-release\github-release.js
+          SCRIPT=.pipelines/github-release/github-release.js
           PACKAGE_VERSION=$(cat $STAGE_DIR/version.txt)
           CONTENT=$STAGE_DIR/$PACKAGE_NAME-$PACKAGE_VERSION.tgz
           CHANGELOG=$STAGE_DIR/minichangelog.txt
