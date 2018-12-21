@@ -1,5 +1,7 @@
+
 #### 0.5.0
 Add support for property aliases [#PR-33](https://github.com/Microsoft/azure-pipelines-language-server/pull/33)
+Improve auto-complete suggestions [#PR-44](https://github.com/Microsoft/azure-pipelines-language-server/pull/44)
 
 #### 0.4.1 
 Fix bug where enums that looked like numbers would be marked invalid [#PR-29](https://github.com/Microsoft/azure-pipelines-language-server/pull/29)
