@@ -15,7 +15,7 @@ let token = process.argv[5] || null
 if (token === null) {
     console.log(`Usage:
 
-    github-release.js <content> <version> <PAT>
+    github-release.js <content> <changelog> <version> <PAT>
 
 This will create a new release and tag on GitHub at the current HEAD commit.
 
