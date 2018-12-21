@@ -2,7 +2,6 @@
 
 trigger:
 - master
-- releases/*
 
 jobs:
 - template: build-package.yml
@@ -11,6 +10,7 @@ jobs:
     root: 'language-service'
     packagename: 'azure-pipelines-language-service'
     tarballPath: 'language-service'
+    configuration: 'ci'
 
 - template: build-package.yml
   parameters:
@@ -18,3 +18,4 @@ jobs:
     root: 'language-server'
     packagename: 'azure-pipelines-language-server'
     tarballPath: 'language-server/out/src'
+    configuration: 'ci'

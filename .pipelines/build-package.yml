@@ -7,26 +7,28 @@
 #   npm install
 #   (make changes)
 #   npm run compile
-#   npm run test <-- TODO
+#   npm run test
 
 parameters:
   name: ''            # job name
   root: ''            # root folder of the package
   packagename: ''     # name of the package
   tarballPath: ''     # path to the tarball folder
+  configuration: ''   # 'ci' or 'release'
 
 jobs:
 - job: ${{ parameters.name }}
   steps:
+    - bash: |
+        PACKAGE_VERSION=$(node -p "require('./package.json').version")
+        echo "$PACKAGE_VERSION" > version.txt
+      workingDirectory: ${{ parameters.root }}
+      displayName: Extract the version number from the package
+
     # Set version number for PR/CI or release
-    - ${{ if startsWith(variables['Build.SourceBranch'], 'refs/heads/releases/') }}:
-      - template: version-release.yml
-        parameters:
-          root: ${{ parameters.root }}
-    - ${{ if not(startsWith(variables['Build.SourceBranch'], 'refs/heads/releases/')) }}:
-      - template: version-ci.yml
-        parameters:
-          root: ${{ parameters.root }}
+    - template: ${{ format('version-{0}.yml', parameters.configuration) }}
+      parameters:
+        root: ${{ parameters.root }}
 
     # Install dependecies
     - script: npm install
@@ -58,9 +60,53 @@ jobs:
         contents: '*.tgz' 
         targetFolder: ${{ format('$(Build.ArtifactStagingDirectory)/{0}', parameters.packageName) }}
 
+    - ${{ if eq( parameters.configuration, 'release') }}:
+      - bash: |
+          echo $(Build.SourceBranch) | sed "s|refs/[^/]*/||" > branch.txt
+          PACKAGE_VERSION=$(cat version.txt)
+          VERSION_REGEX="## $(echo $PACKAGE_VERSION | sed 's/\./\\./g')"
+          sed -n "/$VERSION_REGEX/,/## 1\..*/p" CHANGELOG.md | head -n -2 > minichangelog.txt
+          LINE_COUNT=$(cat minichangelog.txt | wc -l)
+          if [ "$LINE_COUNT" -lt 3 ]; then
+            echo Mini changelog is too short. Did you use the wrong version number in CHANGELOG.txt?
+            exit 1
+          fi
+        workingDirectory: ${{ parameters.root }}
+        displayName: Get branch and mini-changelog
+
+    - ${{ if eq( parameters.configuration, 'release') }}:
+      - task: CopyFiles@2
+        displayName: Stage release meta-data files
+        inputs:
+          SourceFolder: ${{ parameters.root }}
+          contents: |-
+            version.txt
+            branch.txt
+            minichangelog.txt
+          targetFolder: ${{ format('$(Build.ArtifactStagingDirectory)/{0}', parameters.packageName) }}
+
     # Publish artifacts
     - task: PublishBuildArtifacts@1
       displayName: Save the npm module
       inputs:
         pathToPublish: ${{ format('$(Build.ArtifactStagingDirectory)/{0}', parameters.packageName) }}
         artifactName: ${{ parameters.packagename }}
+
+# create a GitHub Release
+    - ${{ if eq( parameters.configuration, 'release') }}:
+      - bash: npm install
+        displayName: Prepare to create GitHub Release
+        workingDirectory: '$(Build.SourcesDirectory)/.pipelines/github-release'
+
+    - ${{ if eq( parameters.configuration, 'release') }}:
+      - bash: |
+          SCRIPT=.pipelines\github-release\github-release.js
+          PACKAGE_VERSION=$(cat $STAGE_DIR/version.txt)
+          CONTENT=$STAGE_DIR/$PACKAGE_NAME-$PACKAGE_VERSION.tgz
+          CHANGELOG=$STAGE_DIR/minichangelog.txt
+          node $SCRIPT $CONTENT $PACKAGE_VERSION $GITHUB_TOKEN
+        displayName: Create GitHub Release
+        env:
+          GITHUB_TOKEN: $(GitHubSecret)
+          STAGE_DIR: ${{ format('$(Build.ArtifactStagingDirectory)/{0}', parameters.packageName) }}
+          PACKAGE_NAME: ${{ parameters.packageName }}
