@@ -927,22 +927,26 @@ export class ObjectASTNode extends ASTNode {
 		} else if (schema.additionalProperties === false) {
 			if (unprocessedProperties.length > 0) {
 				unprocessedProperties.forEach((propertyName: string) => {
-					let child = seenKeys[propertyName];
-					if (child) {
-						let propertyNode = null;
-						if(child.type !== "property"){
-							propertyNode = <PropertyASTNode>child.parent;
-							if(propertyNode.type === "object"){
-								propertyNode = propertyNode.properties[0];
+					//Auto-complete can insert a "holder" node when parsing, do not count it as an error
+					//against additionalProperties
+					if (propertyName !== "h") {
+						let child = seenKeys[propertyName];
+						if (child) {
+							let propertyNode = null;
+							if(child.type !== "property"){
+								propertyNode = <PropertyASTNode>child.parent;
+								if(propertyNode.type === "object"){
+									propertyNode = propertyNode.properties[0];
+								}
+							}else{
+								propertyNode = child;
 							}
-						}else{
-							propertyNode = child;
+							validationResult.problems.push({
+								location: { start: propertyNode.key.start, end: propertyNode.key.end },
+								severity: ProblemSeverity.Warning,
+								message: schema.errorMessage || localize('DisallowedExtraPropWarning', 'Unexpected property {0}', propertyName)
+							});
 						}
-						validationResult.problems.push({
-							location: { start: propertyNode.key.start, end: propertyNode.key.end },
-							severity: ProblemSeverity.Warning,
-							message: schema.errorMessage || localize('DisallowedExtraPropWarning', 'Unexpected property {0}', propertyName)
-						});
 					}
 				});
 			}
