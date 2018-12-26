@@ -1,7 +1,7 @@
 import { getLineOffsets } from "./arrUtils";
 import { TextDocument, Position } from "vscode-languageserver-types";
 
-export const nodeHolder = "h";
+export const nodeHolder = "~";  //This won't conflict with any legal Pipelines nodes
 const nodeLineEnding = ":\r\n";
 const nodeHolderWithEnding = nodeHolder + nodeLineEnding;
 
