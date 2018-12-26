@@ -8,6 +8,7 @@
 import Json = require('jsonc-parser');
 import { JSONSchema } from '../jsonSchema';
 import * as objects from '../utils/objects';
+import { nodeHolder } from '../utils/yamlServiceUtils';
 
 import * as nls from 'vscode-nls';
 import { LanguageSettings } from '../yamlLanguageService';
@@ -929,7 +930,7 @@ export class ObjectASTNode extends ASTNode {
 				unprocessedProperties.forEach((propertyName: string) => {
 					//Auto-complete can insert a "holder" node when parsing, do not count it as an error
 					//against additionalProperties
-					if (propertyName !== "h") {
+					if (propertyName !== nodeHolder) {
 						let child = seenKeys[propertyName];
 						if (child) {
 							let propertyNode = null;
