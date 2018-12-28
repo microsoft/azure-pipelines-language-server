@@ -104,7 +104,7 @@ const schemaResolver = (url: string): Promise<string> => {
 // Given a file and a position, this test expects the task list to show as completion items.
 async function runTaskCompletionItemsTest(content: string, position: Position, suggestions: Suggestions): Promise<CompletionList> {
     // Arrange
-    const schemaUri: string = "test/completion/schema.json";
+    const schemaUri: string = "test/pipelinesTests/schema.json";
     const schemaService = new JSONSchemaService.JSONSchemaService(schemaResolver, workspaceContext, requestService);
 
     const yamlCompletion = new YAMLCompletion(schemaService, [], Promise);
