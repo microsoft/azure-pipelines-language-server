@@ -416,7 +416,6 @@ function validateTextDocument(textDocument: TextDocument): void {
 
 		let diagnostics = [];
 		for(let diagnosticItem in diagnosticResults){
-			diagnosticResults[diagnosticItem].severity = 1; //Convert all warnings to errors
 			diagnostics.push(diagnosticResults[diagnosticItem]);
 		}
 

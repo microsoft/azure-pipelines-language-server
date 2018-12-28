@@ -26,7 +26,7 @@ export enum ErrorCode {
 }
 
 export enum ProblemSeverity {
-	Error, Warning
+	Error, Warning, Hint
 }
 
 export interface IProblem {
@@ -291,17 +291,13 @@ export class ASTNode {
 			}
 		}
 
-		//validation warnings look like errors in VS code
-		//For now, disable them completely
-		/*
 		if (schema.deprecationMessage && this.parent) {
 			validationResult.problems.push({
 				location: { start: this.parent.start, end: this.parent.end },
-				severity: ProblemSeverity.Warning,
+				severity: ProblemSeverity.Hint,
 				message: schema.deprecationMessage
 			});
 		}
-		*/
 
 		matchingSchemas.add({ node: this, schema: schema });
 	}
@@ -1200,7 +1196,6 @@ export class ValidationResult {
 		}
 		return this.propertiesMatches - other.propertiesMatches;
 	}
-
 }
 
 export class JSONDocument {
@@ -1246,7 +1241,7 @@ export class JSONDocument {
 		return matchingSchemas.schemas;
 	}
 
-	public getValidationProblems(schema: JSONSchema, focusOffset: number = -1, exclude: ASTNode = null) {
+	public getValidationProblems(schema: JSONSchema, focusOffset: number = -1, exclude: ASTNode = null): IProblem[] {
 		let matchingSchemas = new SchemaCollector(focusOffset, exclude);
 		let validationResult = new ValidationResult();
 		if (this.root && schema) {

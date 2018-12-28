@@ -8,6 +8,12 @@
 import { JSONSchemaService } from './jsonSchemaService';
 import { Diagnostic, DiagnosticSeverity } from 'vscode-languageserver-types';
 import { PromiseConstructor, Thenable, LanguageSettings} from '../yamlLanguageService';
+import { TextDocument } from "vscode-languageserver-types";
+import { YAMLDocument } from "../parser/yamlParser";
+import { IProblem, JSONDocument, ProblemSeverity } from '../parser/jsonParser';
+
+import * as nls from 'vscode-nls';
+const localize = nls.loadMessageBundle();
 
 export class YAMLValidation {
 	
@@ -15,7 +21,7 @@ export class YAMLValidation {
 	private promise: PromiseConstructor;
 	private validationEnabled: boolean;
 
-	public constructor(jsonSchemaService, promiseConstructor) {
+	public constructor(jsonSchemaService: JSONSchemaService, promiseConstructor: PromiseConstructor) {
 		this.jsonSchemaService = jsonSchemaService;
 		this.promise = promiseConstructor;
 		this.validationEnabled = true;
@@ -27,67 +33,85 @@ export class YAMLValidation {
 		}
 	}
 	
-	public doValidation(textDocument, yamlDocument): Thenable<Diagnostic[]> {
+	public doValidation(textDocument: TextDocument, yamlDocument: YAMLDocument): Thenable<Diagnostic[]> {
 
 		if(!this.validationEnabled){
 			return this.promise.resolve([]);
 		}
 
+		if (yamlDocument.documents.length === 0) {
+			//this is strange...
+			return this.promise.resolve([]);
+		}
+
+		if (yamlDocument.documents.length > 1) {
+			return this.promise.resolve([{
+				severity: DiagnosticSeverity.Error,
+				range: {
+					start: {
+						line: 0,
+						character: 0
+					},
+					end: textDocument.positionAt(textDocument.getText().length)
+				},
+				message: localize('multiDocumentError', 'Only single-document files are supported')
+			}])
+		}
+
+		const translateSeverity = (problemSeverity: ProblemSeverity): DiagnosticSeverity => {
+			if (problemSeverity === ProblemSeverity.Error) {
+				return DiagnosticSeverity.Error;
+			 }
+			 if (problemSeverity == ProblemSeverity.Warning) {
+				 return DiagnosticSeverity.Warning;
+			 }
+	
+			 return DiagnosticSeverity.Hint;
+		};
+
 		return this.jsonSchemaService.getSchemaForResource(textDocument.uri).then(function (schema) {
 			var diagnostics: Diagnostic[] = [];
-			var added: {[key:string]: boolean} = {};
+
+			let jsonDocument: JSONDocument = yamlDocument.documents[0];
 
 			if (schema) {
-				
-				for(let currentYAMLDoc in yamlDocument.documents){
-					let currentDoc = yamlDocument.documents[currentYAMLDoc];
-					let diagnostics = currentDoc.getValidationProblems(schema.schema);
-					for(let diag in diagnostics){
-						let curDiagnostic = diagnostics[diag];
-						currentDoc.errors.push({ location: { start: curDiagnostic.location.start, end: curDiagnostic.location.end }, message: curDiagnostic.message })
-					}
-				}
-
-			}
-			if(schema && schema.errors.length > 0){
-				
-				for(let curDiagnostic of schema.errors){
-					diagnostics.push({
-						severity: DiagnosticSeverity.Error,
-						range: {
-							start: {
-								line: 0,
-								character: 0
-							},
-							end: {
-								line: 0,
-								character: 1
-							}
-						},
-						message: curDiagnostic
-					});
-				}
-
-			}
-			for(let currentYAMLDoc in yamlDocument.documents){
-				let currentDoc = yamlDocument.documents[currentYAMLDoc];
-				currentDoc.errors.concat(currentDoc.warnings).forEach(function (error, idx) {
-					// remove duplicated messages
-					var signature = error.location.start + ' ' + error.location.end + ' ' + error.message;
+				var added: {[key:string]: boolean} = {};
+				const problems: IProblem[] = jsonDocument.getValidationProblems(schema.schema);
+				problems.forEach(function (problem: IProblem, index: number) {
+					const signature: string = '' + problem.location.start + ' ' + problem.location.end + ' ' + problem.message;
 					if (!added[signature]) {
 						added[signature] = true;
-						var range = {
-							start: textDocument.positionAt(error.location.start),
-							end: textDocument.positionAt(error.location.end)
-						};
 						diagnostics.push({
-							severity: idx >= currentDoc.errors.length ? DiagnosticSeverity.Warning : DiagnosticSeverity.Error,
-							range: range,
-							message: error.message
-						});
+							severity: translateSeverity(problem.severity),
+							range: {
+								start: textDocument.positionAt(problem.location.start),
+								end: textDocument.positionAt(problem.location.end)
+							},
+							message: problem.message
+						})
 					}
 				});
+
+				if(schema.errors.length > 0) {
+					for(let curDiagnostic of schema.errors){
+						diagnostics.push({
+							severity: DiagnosticSeverity.Error,
+							range: {
+								start: {
+									line: 0,
+									character: 0
+								},
+								end: {
+									line: 0,
+									character: 1
+								}
+							},
+							message: curDiagnostic
+						});
+					}
+				}
 			}
+
 			return diagnostics;
 		});
 	}
