@@ -6,16 +6,17 @@ const octokit = require('@octokit/rest')({
 const util = require('util');
 const exec = util.promisify(require('child_process').exec);
 const fs = require('fs');
+const path = require('path');
 
 const DEBUG_LOGGING = process.env.SYSTEM_DEBUG && process.env.SYSTEM_DEBUG == 'true';
 let contentName = process.argv[2] || null;
 let changelogName = process.argv[3] || null;
-let version = process.argv[4] || null;
+let versionTag = process.argv[4] || null;
 let token = process.argv[5] || null
 if (token === null) {
     console.log(`Usage:
 
-    github-release.js <content> <changelog> <version> <PAT>
+    github-release.js <content> <changelog> <versiontag> <PAT>
 
 This will create a new release and tag on GitHub at the current HEAD commit.
 
@@ -46,9 +47,9 @@ async function createRelease() {
         createReleaseResult = await octokit.repos.createRelease({
             owner: 'Microsoft',
             repo: 'azure-pipelines-language-server',
-            tag_name: `v${version}`,
+            tag_name: `${versionTag}`,
             target_commitish: target_commitish,
-            name: `${version}`,
+            name: `${versionTag}`,
             body: body
         });
     } catch (e) {
@@ -71,7 +72,7 @@ async function createRelease() {
                 'content-length': contentSize,
                 'content-type': 'application/gzip',
             },
-            name: contentName,
+            name: path.basename(contentName),
             file: fs.createReadStream(contentName)
         });
     } catch (e) {

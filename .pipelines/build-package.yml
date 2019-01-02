@@ -64,10 +64,10 @@ jobs:
       - bash: |
           echo $(Build.SourceBranch) | sed "s|refs/[^/]*/||" > branch.txt
           PACKAGE_VERSION=$(cat version.txt)
-          VERSION_REGEX="## $(echo $PACKAGE_VERSION | sed 's/\./\\./g')"
-          sed -n "/$VERSION_REGEX/,/## 1\..*/p" CHANGELOG.md | head -n -2 > minichangelog.txt
+          VERSION_REGEX="#### $(echo $PACKAGE_VERSION | sed 's/\./\\./g')"
+          sed -n "/$VERSION_REGEX/,/#### [0-9]+\..*/p" CHANGELOG.md | head -n -2 > minichangelog.txt
           LINE_COUNT=$(cat minichangelog.txt | wc -l)
-          if [ "$LINE_COUNT" -lt 3 ]; then
+          if [ "$LINE_COUNT" -lt 2 ]; then
             echo Mini changelog is too short. Did you use the wrong version number in CHANGELOG.txt?
             exit 1
           fi
@@ -104,7 +104,8 @@ jobs:
           PACKAGE_VERSION=$(cat $STAGE_DIR/version.txt)
           CONTENT=$STAGE_DIR/$PACKAGE_NAME-$PACKAGE_VERSION.tgz
           CHANGELOG=$STAGE_DIR/minichangelog.txt
-          node $SCRIPT $CONTENT $CHANGELOG $PACKAGE_VERSION $GITHUB_TOKEN
+          VERSION_TAG=$PACKAGE_NAME/v$PACKAGE_VERSION
+          node $SCRIPT $CONTENT $CHANGELOG $VERSION_TAG $GITHUB_TOKEN
         displayName: Create GitHub Release
         env:
           GITHUB_TOKEN: $(GitHubSecret)
