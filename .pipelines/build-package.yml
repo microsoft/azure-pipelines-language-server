@@ -65,7 +65,7 @@ jobs:
           echo $(Build.SourceBranch) | sed "s|refs/[^/]*/||" > branch.txt
           PACKAGE_VERSION=$(cat version.txt)
           VERSION_REGEX="#### $(echo $PACKAGE_VERSION | sed 's/\./\\./g')"
-          sed -n "/$VERSION_REGEX/,/#### [0-9]+\..*/p" CHANGELOG.md | head -n -2 > minichangelog.txt
+          sed -n "/$VERSION_REGEX/,/#### [0-9]\+\..*/p" CHANGELOG.md | head -n -2 > minichangelog.txt
           LINE_COUNT=$(cat minichangelog.txt | wc -l)
           if [ "$LINE_COUNT" -lt 2 ]; then
             echo Mini changelog is too short. Did you use the wrong version number in CHANGELOG.txt?
