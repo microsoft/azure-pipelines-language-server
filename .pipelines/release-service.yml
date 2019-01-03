@@ -1,0 +1,14 @@
+# Release build script for language-service
+
+# Only trigger manually
+trigger: none
+pr: none
+
+jobs:
+- template: build-package.yml
+  parameters:
+    name: 'build_language_service'
+    root: 'language-service'
+    packagename: 'azure-pipelines-language-service'
+    tarballPath: 'language-service'
+    configuration: 'release'
