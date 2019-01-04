@@ -1,4 +1,7 @@
 
+#### 0.5.1
+version 0.5.0 was not built correctly
+
 #### 0.5.0
 Add support for property aliases [#PR-33](https://github.com/Microsoft/azure-pipelines-language-server/pull/33)
 Improve auto-complete suggestions [#PR-44](https://github.com/Microsoft/azure-pipelines-language-server/pull/44)
