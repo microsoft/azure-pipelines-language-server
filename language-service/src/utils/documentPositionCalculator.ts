@@ -9,7 +9,7 @@ export function insertionPointReturnValue(pt: number) {
     return ((-pt) - 1)
 }
 
-export function binarySearch(array: number[], sought: number) {
+export function binarySearch(array: number[], sought: number): number {
 
     let lower = 0
     let upper = array.length - 1
@@ -33,10 +33,13 @@ export function binarySearch(array: number[], sought: number) {
             upper = idx - 1;
         }
     }
+
+    //This shouldn't happen
+    return lower;
 }
 
-export function getLineStartPositions(text: string) {
-    const lineStartPositions = [0];
+export function getLineStartPositions(text: string): number[] {
+    const lineStartPositions: number[] = [0];
     for (var i = 0; i < text.length; i++) {
         const c = text[i];
 
@@ -55,7 +58,12 @@ export function getLineStartPositions(text: string) {
     return lineStartPositions;
 }
 
-export function getPosition(pos: number, lineStartPositions: number[]){
+export interface ILineColumn {
+    line: number;
+    column: number;
+}
+
+export function getPosition(pos: number, lineStartPositions: number[]): ILineColumn {
     let line = binarySearch(lineStartPositions, pos)
 
     if (line < 0){

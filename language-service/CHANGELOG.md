@@ -1,4 +1,7 @@
 
+#### 0.5.2
+Fix a regression with YAML structure errors
+
 #### 0.5.1
 version 0.5.0 was not built correctly
 
