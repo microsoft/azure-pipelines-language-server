@@ -195,7 +195,7 @@ function recursivelyBuildAst(parent: ASTNode, node: Yaml.YAMLNode): ASTNode {
 }
 
 function convertError(e: Yaml.YAMLException): YAMLError {
-	return { message: `${e.reason}`, start: e.mark.position, end: e.mark.position + e.mark.column }
+	return { message: e.reason, start: e.mark.position, end: e.mark.position + e.mark.column };
 }
 
 function createJSONDocument(yamlNode: Yaml.YAMLNode, startPositions: number[], text: string): SingleYAMLDocument {
@@ -207,7 +207,7 @@ function createJSONDocument(yamlNode: Yaml.YAMLNode, startPositions: number[], t
 		_doc.errors.push({ message: localize('Invalid symbol', 'Expected a YAML object, array or literal'), start: yamlNode.startPosition, end: yamlNode.endPosition } );
 	}
 
-	const duplicateKeyReason: string = 'duplicate key'
+	const duplicateKeyReason: string = 'duplicate key';
 
 	//Patch ontop of yaml-ast-parser to disable duplicate key message on merge key
 	let isDuplicateAndNotMergeKey = function (error: Yaml.YAMLException, yamlText: string) {
