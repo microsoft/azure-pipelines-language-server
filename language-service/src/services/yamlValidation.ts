@@ -81,7 +81,7 @@ export class YAMLValidation {
 						start: textDocument.positionAt(err.start),
 						end: textDocument.positionAt(err.end)
 					},
-					message: err.message
+					message: err.messageFunction()
 				});
 			});
 
@@ -92,7 +92,7 @@ export class YAMLValidation {
 						start: textDocument.positionAt(warn.start),
 						end: textDocument.positionAt(warn.end)
 					},
-					message: warn.message
+					message: warn.messageFunction()
 				});
 			});
 
@@ -100,7 +100,8 @@ export class YAMLValidation {
 				var added: {[key:string]: boolean} = {};
 				const problems: IProblem[] = jsonDocument.getValidationProblems(schema.schema);
 				problems.forEach(function (problem: IProblem, index: number) {
-					const signature: string = '' + problem.location.start + ' ' + problem.location.end + ' ' + problem.message;
+					const message: string = problem.messageFunction();
+					const signature: string = '' + problem.location.start + ' ' + problem.location.end + ' ' + message
 					if (!added[signature]) {
 						added[signature] = true;
 						diagnostics.push({
@@ -109,7 +110,7 @@ export class YAMLValidation {
 								start: textDocument.positionAt(problem.location.start),
 								end: textDocument.positionAt(problem.location.end)
 							},
-							message: problem.message
+							message: message
 						})
 					}
 				});

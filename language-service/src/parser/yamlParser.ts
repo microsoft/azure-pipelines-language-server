@@ -16,7 +16,7 @@ import { Schema, Type } from 'js-yaml';
 import { getLineStartPositions, getPosition, ILineColumn } from '../utils/documentPositionCalculator'
 
 export interface YAMLError {
-	message: string;
+	messageFunction: () => string;
 	start: number;
 	end: number;
 }
@@ -195,7 +195,7 @@ function recursivelyBuildAst(parent: ASTNode, node: Yaml.YAMLNode): ASTNode {
 }
 
 function convertError(e: Yaml.YAMLException): YAMLError {
-	return { message: e.reason, start: e.mark.position, end: e.mark.position + e.mark.column };
+	return { messageFunction: () => { return e.reason }, start: e.mark.position, end: e.mark.position + e.mark.column };
 }
 
 function createJSONDocument(yamlNode: Yaml.YAMLNode, startPositions: number[], text: string): SingleYAMLDocument {
@@ -204,7 +204,7 @@ function createJSONDocument(yamlNode: Yaml.YAMLNode, startPositions: number[], t
 
 	if (!_doc.root) {
 		// TODO: When this is true, consider not pushing the other errors.
-		_doc.errors.push({ message: localize('Invalid symbol', 'Expected a YAML object, array or literal'), start: yamlNode.startPosition, end: yamlNode.endPosition } );
+		_doc.errors.push({ messageFunction: () => { return localize('Invalid symbol', 'Expected a YAML object, array or literal'); }, start: yamlNode.startPosition, end: yamlNode.endPosition } );
 	}
 
 	const duplicateKeyReason: string = 'duplicate key';

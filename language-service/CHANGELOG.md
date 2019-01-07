@@ -1,6 +1,7 @@
 
 #### 0.5.2
 Fix a regression with YAML structure errors [#PR-49](https://github.com/Microsoft/azure-pipelines-language-server/pull/49)
+Improve performance
 
 #### 0.5.1
 version 0.5.0 was not built correctly
