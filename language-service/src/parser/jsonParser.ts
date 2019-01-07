@@ -1038,11 +1038,13 @@ export class ObjectASTNode extends ASTNode {
 						});
 					}
 					else {
-						const separator: string = localize('listSeparator', ", ");
 						validationResult.problems.push({
 							location: { start: firstProperty.start, end: firstProperty.end },
 							severity: ProblemSeverity.Error,
-							messageFunction: () => { return localize('firstPropertyErrorList', "The first property must be one of: {0}", schema.firstProperty.join(separator)); }
+							messageFunction: () => {
+								const separator: string = localize('listSeparator', ", ");
+								return localize('firstPropertyErrorList', "The first property must be one of: {0}", schema.firstProperty.join(separator));
+							}
 						});
 					}
 				}
