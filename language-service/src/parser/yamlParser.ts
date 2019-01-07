@@ -5,7 +5,7 @@
  *--------------------------------------------------------------------------------------------*/
 'use strict';
 
-import { ASTNode, ErrorCode, BooleanASTNode, NullASTNode, ArrayASTNode, NumberASTNode, ObjectASTNode, PropertyASTNode, StringASTNode, JSONDocument } from './jsonParser';
+import { ASTNode, BooleanASTNode, NullASTNode, ArrayASTNode, NumberASTNode, ObjectASTNode, PropertyASTNode, StringASTNode, JSONDocument } from './jsonParser';
 
 import * as nls from 'vscode-nls';
 const localize = nls.loadMessageBundle();
@@ -13,13 +13,19 @@ const localize = nls.loadMessageBundle();
 import * as Yaml from 'yaml-ast-parser'
 import { Schema, Type } from 'js-yaml';
 
-import { getLineStartPositions, getPosition } from '../utils/documentPositionCalculator'
+import { getLineStartPositions, getPosition, ILineColumn } from '../utils/documentPositionCalculator'
+
+export interface YAMLError {
+	message: string;
+	start: number;
+	end: number;
+}
 
 export class SingleYAMLDocument extends JSONDocument {
-	private lines;
-	public root;
-	public errors;
-	public warnings;
+	private lines : number[];
+	public root: ASTNode;
+	public errors: YAMLError[];
+	public warnings: YAMLError[];
 
 	constructor(lines: number[]) {
 		super(null, []);
@@ -29,44 +35,35 @@ export class SingleYAMLDocument extends JSONDocument {
 		this.warnings = [];
 	}
 
-	public getSchemas(schema, doc, node) {
-		let matchingSchemas = [];
-		doc.validate(schema, matchingSchemas, node.start);
-		return matchingSchemas;
-	}
-
 	public getNodeFromOffset(offset: number): ASTNode {
 		return this.getNodeFromOffsetEndInclusive(offset);
 	}
 
-	public getNodeByIndent = (lines: number[], offset: number, node: ASTNode) => {
+	public getNodeByIndent = (lines: number[], offset: number, node: ASTNode): ASTNode => {
 
-		const { line, column: indent } = getPosition(offset, this.lines)
+		const offsetPosition: ILineColumn = getPosition(offset, this.lines);
 
-		const children = node.getChildNodes()
+		function findNode(children: ASTNode[]): ASTNode {
+			for (var idx: number = 0; idx < children.length; idx++) {
+				const child: ASTNode = children[idx];
 
-		function findNode(children) {
-			for (var idx = 0; idx < children.length; idx++) {
-				var child = children[idx];
+				const childPosition: ILineColumn = getPosition(child.start, lines);
 
-				const { line: childLine, column: childCol } = getPosition(child.start, lines);
-
-				if (childCol > indent) {
+				if (childPosition.column > offsetPosition.column) {
 					return null;
 				}
 
-				const newChildren = child.getChildNodes()
-				const foundNode = findNode(newChildren)
+				const foundNode: ASTNode = findNode(child.getChildNodes());
 
 				if (foundNode) {
 					return foundNode;
 				}
 
 				// We have the right indentation, need to return based on line
-				if (childLine == line) {
+				if (childPosition.line == offsetPosition.line) {
 					return child;
 				}
-				if (childLine > line) {
+				if (childPosition.line > offsetPosition.line) {
 					// Get previous
 					(idx - 1) >= 0 ? children[idx - 1] : child;
 				}
@@ -74,10 +71,10 @@ export class SingleYAMLDocument extends JSONDocument {
 			}
 
 			// Special case, we found the correct
-			return children[children.length - 1]
+			return children[children.length - 1];
 		}
 
-		return findNode(children) || node
+		return findNode(node.getChildNodes()) || node;
 	}
 }
 
@@ -197,33 +194,33 @@ function recursivelyBuildAst(parent: ASTNode, node: Yaml.YAMLNode): ASTNode {
 	}
 }
 
-function convertError(e: Yaml.YAMLException) {
-	return { message: `${e.reason}`, location: { start: e.mark.position, end: e.mark.position + e.mark.column, code: ErrorCode.Undefined } }
+function convertError(e: Yaml.YAMLException): YAMLError {
+	return { message: e.reason, start: e.mark.position, end: e.mark.position + e.mark.column };
 }
 
-function createJSONDocument(yamlDoc: Yaml.YAMLNode, startPositions: number[], text: string) {
-	let _doc = new SingleYAMLDocument(startPositions);
-	_doc.root = recursivelyBuildAst(null, yamlDoc)
+function createJSONDocument(yamlNode: Yaml.YAMLNode, startPositions: number[], text: string): SingleYAMLDocument {
+	let _doc: SingleYAMLDocument = new SingleYAMLDocument(startPositions);
+	_doc.root = recursivelyBuildAst(null, yamlNode);
 
 	if (!_doc.root) {
 		// TODO: When this is true, consider not pushing the other errors.
-		_doc.errors.push({ message: localize('Invalid symbol', 'Expected a YAML object, array or literal'), code: ErrorCode.Undefined, location: { start: yamlDoc.startPosition, end: yamlDoc.endPosition } });
+		_doc.errors.push({ message: localize('Invalid symbol', 'Expected a YAML object, array or literal'), start: yamlNode.startPosition, end: yamlNode.endPosition } );
 	}
 
-	const duplicateKeyReason = 'duplicate key'
+	const duplicateKeyReason: string = 'duplicate key';
 
 	//Patch ontop of yaml-ast-parser to disable duplicate key message on merge key
 	let isDuplicateAndNotMergeKey = function (error: Yaml.YAMLException, yamlText: string) {
-		let errorConverted = convertError(error);
-		let errorStart = errorConverted.location.start;
-		let errorEnd = errorConverted.location.end;
+		let errorConverted: YAMLError = convertError(error);
+		let errorStart: number = errorConverted.start;
+		let errorEnd: number = errorConverted.end;
 		if (error.reason === duplicateKeyReason && yamlText.substring(errorStart, errorEnd).startsWith("<<")) {
 			return false;
 		}
 		return true;
 	};
-	const errors = yamlDoc.errors.filter(e => e.reason !== duplicateKeyReason && !e.isWarning).map(e => convertError(e))
-	const warnings = yamlDoc.errors.filter(e => (e.reason === duplicateKeyReason && isDuplicateAndNotMergeKey(e, text)) || e.isWarning).map(e => convertError(e))
+	const errors: YAMLError[] = yamlNode.errors.filter(e => e.reason !== duplicateKeyReason && !e.isWarning).map(e => convertError(e));
+	const warnings: YAMLError[] = yamlNode.errors.filter(e => (e.reason === duplicateKeyReason && isDuplicateAndNotMergeKey(e, text)) || e.isWarning).map(e => convertError(e));
 
 	errors.forEach(e => _doc.errors.push(e));
 	warnings.forEach(e => _doc.warnings.push(e));
@@ -232,11 +229,11 @@ function createJSONDocument(yamlDoc: Yaml.YAMLNode, startPositions: number[], te
 }
 
 export class YAMLDocument {
-	public documents: JSONDocument[]
-	public errors;
-	public warnings;
+	public documents: SingleYAMLDocument[]
+	public errors: YAMLError[];
+	public warnings: YAMLError[];
 
-	constructor(documents: JSONDocument[]) {
+	constructor(documents: SingleYAMLDocument[]) {
 		this.documents = documents;
 		this.errors = [];
 		this.warnings = [];
