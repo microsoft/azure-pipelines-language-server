@@ -33,7 +33,7 @@ export interface IProblem {
 	location: IRange;
 	severity: ProblemSeverity;
 	code?: ErrorCode;
-	messageFunction: () => string;
+	getMessage: () => string;
 }
 
 export class ASTNode {
@@ -178,7 +178,7 @@ export class ASTNode {
 					validationResult.problems.push({
 						location: { start: this.start, end: this.end },
 						severity: ProblemSeverity.Warning,
-						messageFunction: () => { return schema.errorMessage || localize('typeArrayMismatchWarning', 'Incorrect type. Expected one of {0}.', (<string[]>schema.type).join(', ')); }
+						getMessage: () => schema.errorMessage || localize('typeArrayMismatchWarning', 'Incorrect type. Expected one of {0}.', (<string[]>schema.type).join(', '))
 					});
 				}
 			}
@@ -190,7 +190,7 @@ export class ASTNode {
 					validationResult.problems.push({
 						location: { start: this.start, end: this.end },
 						severity: ProblemSeverity.Warning,
-						messageFunction: () => { return schema.errorMessage || localize('typeMismatchWarning', 'Incorrect type. Expected "{0}".', schema.type); }
+						getMessage: () => schema.errorMessage || localize('typeMismatchWarning', 'Incorrect type. Expected "{0}".', schema.type)
 					});
 				}
 			}
@@ -208,7 +208,7 @@ export class ASTNode {
 				validationResult.problems.push({
 					location: { start: this.start, end: this.end },
 					severity: ProblemSeverity.Warning,
-					messageFunction: () => { return localize('notSchemaWarning', "Matches a schema that is not allowed."); }
+					getMessage: () => localize('notSchemaWarning', "Matches a schema that is not allowed.")
 				});
 			}
 			subMatchingSchemas.schemas.forEach((ms) => {
@@ -243,7 +243,7 @@ export class ASTNode {
 				validationResult.problems.push({
 					location: { start: this.start, end: this.start + 1 },
 					severity: ProblemSeverity.Warning,
-					messageFunction: () => { return localize('oneOfWarning', "Matches multiple schemas when only one must validate."); }
+					getMessage: () => localize('oneOfWarning', "Matches multiple schemas when only one must validate.")
 				});
 			}
 
@@ -286,7 +286,7 @@ export class ASTNode {
 					location: { start: this.start, end: this.end },
 					severity: ProblemSeverity.Warning,
 					code: ErrorCode.EnumValueMismatch,
-					messageFunction: () => { return schema.errorMessage || localize('enumWarning', 'Value is not accepted. Valid values: {0}.', schema.enum.map(v => JSON.stringify(v)).join(', ')); }
+					getMessage: () => schema.errorMessage || localize('enumWarning', 'Value is not accepted. Valid values: {0}.', schema.enum.map(v => JSON.stringify(v)).join(', '))
 				});
 			}
 		}
@@ -295,7 +295,7 @@ export class ASTNode {
 			validationResult.problems.push({
 				location: { start: this.parent.start, end: this.parent.end },
 				severity: ProblemSeverity.Hint,
-				messageFunction: () => { return schema.deprecationMessage; }
+				getMessage: () => schema.deprecationMessage
 			});
 		}
 
@@ -307,7 +307,7 @@ export class ASTNode {
 			validationResult.problems.push({
 				location: { start: this.start, end: this.end },
 				severity: ProblemSeverity.Warning,
-				messageFunction: () => { return localize('minLengthWarning', 'String is shorter than the minimum length of {0}.', schema.minLength); }
+				getMessage: () => localize('minLengthWarning', 'String is shorter than the minimum length of {0}.', schema.minLength)
 			});
 		}
 	
@@ -315,7 +315,7 @@ export class ASTNode {
 			validationResult.problems.push({
 				location: { start: this.start, end: this.end },
 				severity: ProblemSeverity.Warning,
-				messageFunction: () => { return localize('maxLengthWarning', 'String is longer than the maximum length of {0}.', schema.maxLength); }
+				getMessage: () => localize('maxLengthWarning', 'String is longer than the maximum length of {0}.', schema.maxLength)
 			});
 		}
 	
@@ -326,7 +326,7 @@ export class ASTNode {
 				validationResult.problems.push({
 					location: { start: this.start, end: this.end },
 					severity: ProblemSeverity.Warning,
-					messageFunction: () => { return schema.patternErrorMessage || schema.errorMessage || localize('patternWarning', 'String does not match the pattern of "{0}".', schema.pattern); }
+					getMessage: () => schema.patternErrorMessage || schema.errorMessage || localize('patternWarning', 'String does not match the pattern of "{0}".', schema.pattern)
 				});
 			}
 		}
@@ -438,7 +438,7 @@ export class ArrayASTNode extends ASTNode {
 					validationResult.problems.push({
 						location: { start: this.start, end: this.end },
 						severity: ProblemSeverity.Warning,
-						messageFunction: () => { return localize('additionalItemsWarning', 'Array has too many items according to schema. Expected {0} or fewer.', subSchemas.length); }
+						getMessage: () => localize('additionalItemsWarning', 'Array has too many items according to schema. Expected {0} or fewer.', subSchemas.length)
 					});
 				}
 			}
@@ -455,7 +455,7 @@ export class ArrayASTNode extends ASTNode {
 			validationResult.problems.push({
 				location: { start: this.start, end: this.end },
 				severity: ProblemSeverity.Warning,
-				messageFunction: () => { return localize('minItemsWarning', 'Array has too few items. Expected {0} or more.', schema.minItems); }
+				getMessage: () => localize('minItemsWarning', 'Array has too few items. Expected {0} or more.', schema.minItems)
 			});
 		}
 
@@ -463,7 +463,7 @@ export class ArrayASTNode extends ASTNode {
 			validationResult.problems.push({
 				location: { start: this.start, end: this.end },
 				severity: ProblemSeverity.Warning,
-				messageFunction: () => { return localize('maxItemsWarning', 'Array has too many items. Expected {0} or fewer.', schema.minItems); }
+				getMessage: () => localize('maxItemsWarning', 'Array has too many items. Expected {0} or fewer.', schema.maxItems)
 			});
 		}
 
@@ -478,7 +478,7 @@ export class ArrayASTNode extends ASTNode {
 				validationResult.problems.push({
 					location: { start: this.start, end: this.end },
 					severity: ProblemSeverity.Warning,
-					messageFunction: () => { return localize('uniqueItemsWarning', 'Array has duplicate items.'); }
+					getMessage: () => localize('uniqueItemsWarning', 'Array has duplicate items.')
 				});
 			}
 		}
@@ -529,7 +529,7 @@ export class NumberASTNode extends ASTNode {
 					validationResult.problems.push({
 						location: { start: this.start, end: this.end },
 						severity: ProblemSeverity.Warning,
-						messageFunction: () => { return localize('multipleOfWarning', 'Value is not divisible by {0}.', schema.multipleOf); }
+						getMessage: () => localize('multipleOfWarning', 'Value is not divisible by {0}.', schema.multipleOf)
 					});
 				}
 			}
@@ -539,14 +539,14 @@ export class NumberASTNode extends ASTNode {
 					validationResult.problems.push({
 						location: { start: this.start, end: this.end },
 						severity: ProblemSeverity.Warning,
-						messageFunction: () => { return localize('exclusiveMinimumWarning', 'Value is below the exclusive minimum of {0}.', schema.minimum); }
+						getMessage: () => localize('exclusiveMinimumWarning', 'Value is below the exclusive minimum of {0}.', schema.minimum)
 					});
 				}
 				if (!schema.exclusiveMinimum && val < schema.minimum) {
 					validationResult.problems.push({
 						location: { start: this.start, end: this.end },
 						severity: ProblemSeverity.Warning,
-						messageFunction: () => { return localize('minimumWarning', 'Value is below the minimum of {0}.', schema.minimum); }
+						getMessage: () => localize('minimumWarning', 'Value is below the minimum of {0}.', schema.minimum)
 					});
 				}
 			}
@@ -556,14 +556,14 @@ export class NumberASTNode extends ASTNode {
 					validationResult.problems.push({
 						location: { start: this.start, end: this.end },
 						severity: ProblemSeverity.Warning,
-						messageFunction: () => { return localize('exclusiveMaximumWarning', 'Value is above the exclusive maximum of {0}.', schema.maximum); }
+						getMessage: () => localize('exclusiveMaximumWarning', 'Value is above the exclusive maximum of {0}.', schema.maximum)
 					});
 				}
 				if (!schema.exclusiveMaximum && val > schema.maximum) {
 					validationResult.problems.push({
 						location: { start: this.start, end: this.end },
 						severity: ProblemSeverity.Warning,
-						messageFunction: () => { return localize('maximumWarning', 'Value is above the maximum of {0}.', schema.maximum); }
+						getMessage: () => localize('maximumWarning', 'Value is above the maximum of {0}.', schema.maximum)
 					});
 				}
 			}
@@ -800,7 +800,7 @@ export class ObjectASTNode extends ASTNode {
 					validationResult.problems.push({
 						location: location,
 						severity: ProblemSeverity.Warning,
-						messageFunction: () => { return localize('MissingRequiredPropWarning', 'Missing property "{0}".', propertyName); }
+						getMessage: () => localize('MissingRequiredPropWarning', 'Missing property "{0}".', propertyName)
 					});
 				}
 			});
@@ -868,7 +868,7 @@ export class ObjectASTNode extends ASTNode {
 						validationResult.problems.push({
 							location: {start: childProperty.key.start, end: childProperty.key.end},
 							severity: ProblemSeverity.Error,
-							messageFunction: () => { return localize('DuplicatePropError', 'Multiple properties found matching {0}', schemaPropertyName); }
+							getMessage: () => localize('DuplicatePropError', 'Multiple properties found matching {0}', schemaPropertyName)
 						})
 					}
 					else {
@@ -941,7 +941,7 @@ export class ObjectASTNode extends ASTNode {
 							validationResult.problems.push({
 								location: { start: propertyNode.key.start, end: propertyNode.key.end },
 								severity: ProblemSeverity.Warning,
-								messageFunction: () => { return schema.errorMessage || localize('DisallowedExtraPropWarning', 'Unexpected property {0}', propertyName); }
+								getMessage: () => schema.errorMessage || localize('DisallowedExtraPropWarning', 'Unexpected property {0}', propertyName)
 							});
 						}
 					}
@@ -954,7 +954,7 @@ export class ObjectASTNode extends ASTNode {
 				validationResult.problems.push({
 					location: { start: this.start, end: this.end },
 					severity: ProblemSeverity.Warning,
-					messageFunction: () => { return localize('MaxPropWarning', 'Object has more properties than limit of {0}.', schema.maxProperties); }
+					getMessage: () => localize('MaxPropWarning', 'Object has more properties than limit of {0}.', schema.maxProperties)
 				});
 			}
 		}
@@ -964,7 +964,7 @@ export class ObjectASTNode extends ASTNode {
 				validationResult.problems.push({
 					location: { start: this.start, end: this.end },
 					severity: ProblemSeverity.Warning,
-					messageFunction: () => { return localize('MinPropWarning', 'Object has fewer properties than the required number of {0}', schema.minProperties); }
+					getMessage: () => localize('MinPropWarning', 'Object has fewer properties than the required number of {0}', schema.minProperties)
 				});
 			}
 		}
@@ -979,7 +979,7 @@ export class ObjectASTNode extends ASTNode {
 								validationResult.problems.push({
 									location: { start: this.start, end: this.end },
 									severity: ProblemSeverity.Warning,
-									messageFunction: () => { return localize('RequiredDependentPropWarning', 'Object is missing property {0} required by property {1}.', requiredProp, key); }
+									getMessage: () => localize('RequiredDependentPropWarning', 'Object is missing property {0} required by property {1}.', requiredProp, key)
 								});
 							} else {
 								validationResult.propertiesValueMatches++;
@@ -1034,14 +1034,14 @@ export class ObjectASTNode extends ASTNode {
 						validationResult.problems.push({
 							location: { start: firstProperty.start, end: firstProperty.end },
 							severity: ProblemSeverity.Error,
-							messageFunction: () => { return localize('firstPropertyError', "The first property must be {0}", schema.firstProperty[0]); }
+							getMessage: () => localize('firstPropertyError', "The first property must be {0}", schema.firstProperty[0])
 						});
 					}
 					else {
 						validationResult.problems.push({
 							location: { start: firstProperty.start, end: firstProperty.end },
 							severity: ProblemSeverity.Error,
-							messageFunction: () => {
+							getMessage: () => {
 								const separator: string = localize('listSeparator', ", ");
 								return localize('firstPropertyErrorList', "The first property must be one of: {0}", schema.firstProperty.join(separator));
 							}
@@ -1136,7 +1136,7 @@ export class ValidationResult {
 			this.enumValues = this.enumValues.concat(validationResult.enumValues);
 			for (let error of this.problems) {
 				if (error.code === ErrorCode.EnumValueMismatch) {
-					error.messageFunction = () => { return localize('enumWarning', 'Value is not accepted. Valid values: {0}.', this.enumValues.map(v => JSON.stringify(v)).join(', ')); };
+					error.getMessage = () => localize('enumWarning', 'Value is not accepted. Valid values: {0}.', this.enumValues.map(v => JSON.stringify(v)).join(', '));
 				}
 			}
 		}

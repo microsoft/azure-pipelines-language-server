@@ -81,7 +81,7 @@ export class YAMLValidation {
 						start: textDocument.positionAt(err.start),
 						end: textDocument.positionAt(err.end)
 					},
-					message: err.messageFunction()
+					message: err.getMessage()
 				});
 			});
 
@@ -92,7 +92,7 @@ export class YAMLValidation {
 						start: textDocument.positionAt(warn.start),
 						end: textDocument.positionAt(warn.end)
 					},
-					message: warn.messageFunction()
+					message: warn.getMessage()
 				});
 			});
 
@@ -100,7 +100,7 @@ export class YAMLValidation {
 				var added: {[key:string]: boolean} = {};
 				const problems: IProblem[] = jsonDocument.getValidationProblems(schema.schema);
 				problems.forEach(function (problem: IProblem, index: number) {
-					const message: string = problem.messageFunction();
+					const message: string = problem.getMessage();
 					const signature: string = '' + problem.location.start + ' ' + problem.location.end + ' ' + message
 					if (!added[signature]) {
 						added[signature] = true;
