@@ -1,5 +1,5 @@
-#### 0.5.1
-Consume version 0.5.1 of the language service [#PR-48](https://github.com/Microsoft/azure-pipelines-language-server/pull/48)
+#### 0.5.2
+Consume version 0.5.2 of the language service [#PR-48](https://github.com/Microsoft/azure-pipelines-language-server/pull/48)
 
 #### 0.4.2
 Improve build/packaging process [#PR-41](https://github.com/Microsoft/azure-pipelines-language-server/pull/41)
