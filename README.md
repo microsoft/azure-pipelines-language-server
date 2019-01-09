@@ -1,3 +1,9 @@
+## Build status
+
+| Language server | Language service |
+|--------|---------|
+| [![Server build status](https://dev.azure.com/ms/azure-pipelines-vscode/_apis/build/status/Langserv%20Release%20Server?branchName=master)](https://dev.azure.com/ms/azure-pipelines-vscode/_build/latest?definitionId=34?branchName=master) | [![Service build status](https://dev.azure.com/ms/azure-pipelines-vscode/_apis/build/status/Langserv%20Release%20Service?branchName=master)](https://dev.azure.com/ms/azure-pipelines-vscode/_build/latest?definitionId=33?branchName=master) |
+
 ## Features
 
 1. YAML validation:
