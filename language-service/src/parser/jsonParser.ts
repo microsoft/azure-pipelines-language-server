@@ -174,7 +174,7 @@ export class ASTNode {
 					isValid = (<string[]>schema.type).indexOf('string') >= 0;
 				}
 				if (!isValid) {
-					validationResult.problems.push({
+					validationResult.addProblem({
 						location: { start: this.start, end: this.end },
 						severity: ProblemSeverity.Warning,
 						getMessage: () => schema.errorMessage || localize('typeArrayMismatchWarning', 'Incorrect type. Expected one of {0}.', (<string[]>schema.type).join(', '))
@@ -186,7 +186,7 @@ export class ASTNode {
 			if (this.type !== schema.type) {
 				//count strings that look like numbers as strings
 				if (this.type != "number" || schema.type != "string") {
-					validationResult.problems.push({
+					validationResult.addProblem({
 						location: { start: this.start, end: this.end },
 						severity: ProblemSeverity.Warning,
 						getMessage: () => schema.errorMessage || localize('typeMismatchWarning', 'Incorrect type. Expected "{0}".', schema.type)
@@ -204,7 +204,7 @@ export class ASTNode {
 			let subMatchingSchemas = matchingSchemas.newSub();
 			this.validate(schema.not, subValidationResult, subMatchingSchemas);
 			if (!subValidationResult.hasProblems()) {
-				validationResult.problems.push({
+				validationResult.addProblem({
 					location: { start: this.start, end: this.end },
 					severity: ProblemSeverity.Warning,
 					getMessage: () => localize('notSchemaWarning', "Matches a schema that is not allowed.")
@@ -224,7 +224,7 @@ export class ASTNode {
 			const possibleMatches: JSONSchema[] = (Array.isArray(firstPropMatches) && firstPropMatches.length > 0) ? firstPropMatches : alternatives;
 
 			// remember the best match that is used for error messages
-			let bestMatch: { schema: JSONSchema; validationResult: ValidationResult; matchingSchemas: ISchemaCollector; } = null;
+			let bestMatch: SchemaMatch = null;
 			possibleMatches.forEach((subSchema) => {
 				let subValidationResult = new ValidationResult();
 				let subMatchingSchemas = matchingSchemas.newSub();
@@ -243,7 +243,7 @@ export class ASTNode {
 			});
 
 			if (matches.length > 1 && maxOneMatch && !this.parserSettings.isKubernetes) {
-				validationResult.problems.push({
+				validationResult.addProblem({
 					location: { start: this.start, end: this.start + 1 },
 					severity: ProblemSeverity.Warning,
 					getMessage: () => localize('oneOfWarning', "Matches multiple schemas when only one must validate.")
@@ -251,7 +251,7 @@ export class ASTNode {
 			}
 
 			if (bestMatch !== null) {
-				validationResult.merge(bestMatch.validationResult);
+				validationResult.mergeSubResult(bestMatch.validationResult);
 				validationResult.propertiesMatches += bestMatch.validationResult.propertiesMatches;
 				validationResult.propertiesValueMatches += bestMatch.validationResult.propertiesValueMatches;
 				matchingSchemas.merge(bestMatch.matchingSchemas);
@@ -285,7 +285,7 @@ export class ASTNode {
 			validationResult.enumValues = schema.enum;
 			validationResult.enumValueMatch = enumValueMatch;
 			if (!enumValueMatch) {
-				validationResult.problems.push({
+				validationResult.addProblem({
 					location: { start: this.start, end: this.end },
 					severity: ProblemSeverity.Warning,
 					code: ErrorCode.EnumValueMismatch,
@@ -295,7 +295,7 @@ export class ASTNode {
 		}
 
 		if (schema.deprecationMessage && this.parent) {
-			validationResult.problems.push({
+			validationResult.addProblem({
 				location: { start: this.parent.start, end: this.parent.end },
 				severity: ProblemSeverity.Hint,
 				getMessage: () => schema.deprecationMessage
@@ -307,7 +307,7 @@ export class ASTNode {
 
 	protected validateStringValue(schema: JSONSchema, value: string, validationResult: ValidationResult): void {
 		if (schema.minLength && value.length < schema.minLength) {
-			validationResult.problems.push({
+			validationResult.addProblem({
 				location: { start: this.start, end: this.end },
 				severity: ProblemSeverity.Warning,
 				getMessage: () => localize('minLengthWarning', 'String is shorter than the minimum length of {0}.', schema.minLength)
@@ -315,7 +315,7 @@ export class ASTNode {
 		}
 	
 		if (schema.maxLength && value.length > schema.maxLength) {
-			validationResult.problems.push({
+			validationResult.addProblem({
 				location: { start: this.start, end: this.end },
 				severity: ProblemSeverity.Warning,
 				getMessage: () => localize('maxLengthWarning', 'String is longer than the maximum length of {0}.', schema.maxLength)
@@ -326,7 +326,7 @@ export class ASTNode {
 			const flags: string = ASTNode.getIgnoreValueCase(schema) ? "i" : "";
 			const regex: RegExp = new RegExp(schema.pattern, flags);
 			if (!regex.test(value)) {
-				validationResult.problems.push({
+				validationResult.addProblem({
 					location: { start: this.start, end: this.end },
 					severity: ProblemSeverity.Warning,
 					getMessage: () => schema.patternErrorMessage || schema.errorMessage || localize('patternWarning', 'String does not match the pattern of "{0}".', schema.pattern)
@@ -442,7 +442,7 @@ export class ArrayASTNode extends ASTNode {
 						validationResult.mergePropertyMatch(itemValidationResult);
 					}
 				} else if (schema.additionalItems === false) {
-					validationResult.problems.push({
+					validationResult.addProblem({
 						location: { start: this.start, end: this.end },
 						severity: ProblemSeverity.Warning,
 						getMessage: () => localize('additionalItemsWarning', 'Array has too many items according to schema. Expected {0} or fewer.', subSchemas.length)
@@ -459,7 +459,7 @@ export class ArrayASTNode extends ASTNode {
 		}
 
 		if (schema.minItems && this.items.length < schema.minItems) {
-			validationResult.problems.push({
+			validationResult.addProblem({
 				location: { start: this.start, end: this.end },
 				severity: ProblemSeverity.Warning,
 				getMessage: () => localize('minItemsWarning', 'Array has too few items. Expected {0} or more.', schema.minItems)
@@ -467,7 +467,7 @@ export class ArrayASTNode extends ASTNode {
 		}
 
 		if (schema.maxItems && this.items.length > schema.maxItems) {
-			validationResult.problems.push({
+			validationResult.addProblem({
 				location: { start: this.start, end: this.end },
 				severity: ProblemSeverity.Warning,
 				getMessage: () => localize('maxItemsWarning', 'Array has too many items. Expected {0} or fewer.', schema.maxItems)
@@ -482,7 +482,7 @@ export class ArrayASTNode extends ASTNode {
 				return index !== values.lastIndexOf(value);
 			});
 			if (duplicates) {
-				validationResult.problems.push({
+				validationResult.addProblem({
 					location: { start: this.start, end: this.end },
 					severity: ProblemSeverity.Warning,
 					getMessage: () => localize('uniqueItemsWarning', 'Array has duplicate items.')
@@ -533,7 +533,7 @@ export class NumberASTNode extends ASTNode {
 
 			if (typeof schema.multipleOf === 'number') {
 				if (val % schema.multipleOf !== 0) {
-					validationResult.problems.push({
+					validationResult.addProblem({
 						location: { start: this.start, end: this.end },
 						severity: ProblemSeverity.Warning,
 						getMessage: () => localize('multipleOfWarning', 'Value is not divisible by {0}.', schema.multipleOf)
@@ -543,14 +543,14 @@ export class NumberASTNode extends ASTNode {
 
 			if (typeof schema.minimum === 'number') {
 				if (schema.exclusiveMinimum && val <= schema.minimum) {
-					validationResult.problems.push({
+					validationResult.addProblem({
 						location: { start: this.start, end: this.end },
 						severity: ProblemSeverity.Warning,
 						getMessage: () => localize('exclusiveMinimumWarning', 'Value is below the exclusive minimum of {0}.', schema.minimum)
 					});
 				}
 				if (!schema.exclusiveMinimum && val < schema.minimum) {
-					validationResult.problems.push({
+					validationResult.addProblem({
 						location: { start: this.start, end: this.end },
 						severity: ProblemSeverity.Warning,
 						getMessage: () => localize('minimumWarning', 'Value is below the minimum of {0}.', schema.minimum)
@@ -560,14 +560,14 @@ export class NumberASTNode extends ASTNode {
 
 			if (typeof schema.maximum === 'number') {
 				if (schema.exclusiveMaximum && val >= schema.maximum) {
-					validationResult.problems.push({
+					validationResult.addProblem({
 						location: { start: this.start, end: this.end },
 						severity: ProblemSeverity.Warning,
 						getMessage: () => localize('exclusiveMaximumWarning', 'Value is above the exclusive maximum of {0}.', schema.maximum)
 					});
 				}
 				if (!schema.exclusiveMaximum && val > schema.maximum) {
-					validationResult.problems.push({
+					validationResult.addProblem({
 						location: { start: this.start, end: this.end },
 						severity: ProblemSeverity.Warning,
 						getMessage: () => localize('maximumWarning', 'Value is above the maximum of {0}.', schema.maximum)
@@ -804,7 +804,7 @@ export class ObjectASTNode extends ASTNode {
 				if (!hasProperty(propertyName)) {
 					const key = this.parent && (<PropertyASTNode>this.parent).key;
 					const location = key ? { start: key.start, end: key.end } : { start: this.start, end: this.start + 1 };
-					validationResult.problems.push({
+					validationResult.addProblem({
 						location: location,
 						severity: ProblemSeverity.Warning,
 						getMessage: () => localize('MissingRequiredPropWarning', 'Missing property "{0}".', propertyName)
@@ -872,7 +872,7 @@ export class ObjectASTNode extends ASTNode {
 
 					if (generateErrors) {
 						const childProperty: PropertyASTNode = <PropertyASTNode>(children[childKey].parent);
-						validationResult.problems.push({
+						validationResult.addProblem({
 							location: {start: childProperty.key.start, end: childProperty.key.end},
 							severity: ProblemSeverity.Error,
 							getMessage: () => localize('DuplicatePropError', 'Multiple properties found matching {0}', schemaPropertyName)
@@ -945,7 +945,7 @@ export class ObjectASTNode extends ASTNode {
 							}else{
 								propertyNode = child;
 							}
-							validationResult.problems.push({
+							validationResult.addProblem({
 								location: { start: propertyNode.key.start, end: propertyNode.key.end },
 								severity: ProblemSeverity.Warning,
 								getMessage: () => schema.errorMessage || localize('DisallowedExtraPropWarning', 'Unexpected property {0}', propertyName)
@@ -958,7 +958,7 @@ export class ObjectASTNode extends ASTNode {
 
 		if (schema.maxProperties) {
 			if (this.properties.length > schema.maxProperties) {
-				validationResult.problems.push({
+				validationResult.addProblem({
 					location: { start: this.start, end: this.end },
 					severity: ProblemSeverity.Warning,
 					getMessage: () => localize('MaxPropWarning', 'Object has more properties than limit of {0}.', schema.maxProperties)
@@ -968,7 +968,7 @@ export class ObjectASTNode extends ASTNode {
 
 		if (schema.minProperties) {
 			if (this.properties.length < schema.minProperties) {
-				validationResult.problems.push({
+				validationResult.addProblem({
 					location: { start: this.start, end: this.end },
 					severity: ProblemSeverity.Warning,
 					getMessage: () => localize('MinPropWarning', 'Object has fewer properties than the required number of {0}', schema.minProperties)
@@ -983,7 +983,7 @@ export class ObjectASTNode extends ASTNode {
 					if (Array.isArray(propertyDep)) {
 						propertyDep.forEach((requiredProp: string) => {
 							if (!hasProperty(requiredProp)) {
-								validationResult.problems.push({
+								validationResult.addProblem({
 									location: { start: this.start, end: this.end },
 									severity: ProblemSeverity.Warning,
 									getMessage: () => localize('RequiredDependentPropWarning', 'Object is missing property {0} required by property {1}.', requiredProp, key)
@@ -1038,14 +1038,14 @@ export class ObjectASTNode extends ASTNode {
 					validationResult.firstPropertyProblems++;
 
 					if (schema.firstProperty.length == 1) {
-						validationResult.problems.push({
+						validationResult.addProblem({
 							location: { start: firstProperty.start, end: firstProperty.end },
 							severity: ProblemSeverity.Error,
 							getMessage: () => localize('firstPropertyError', "The first property must be {0}", schema.firstProperty[0])
 						});
 					}
 					else {
-						validationResult.problems.push({
+						validationResult.addProblem({
 							location: { start: firstProperty.start, end: firstProperty.end },
 							severity: ProblemSeverity.Error,
 							getMessage: () => {
@@ -1134,6 +1134,12 @@ export interface ISchemaCollector {
 	newSub(): ISchemaCollector;
 }
 
+interface SchemaMatch {
+	schema: JSONSchema;
+	validationResult: ValidationResult;
+	matchingSchemas: ISchemaCollector;
+}
+
 class SchemaCollector implements ISchemaCollector {
 	schemas: IApplicableSchema[] = [];
 	constructor(private focusOffset = -1, private exclude: ASTNode = null) {
@@ -1162,6 +1168,7 @@ class NoOpSchemaCollector implements ISchemaCollector {
 
 export class ValidationResult {
 	public problems: IProblem[];
+	public problemDepths: number[];
 
 	public firstPropertyProblems: number;
 	public propertiesMatches: number;
@@ -1172,6 +1179,7 @@ export class ValidationResult {
 
 	constructor() {
 		this.problems = [];
+		this.problemDepths = [0];
 		this.firstPropertyProblems = 0;
 		this.propertiesMatches = 0;
 		this.propertiesValueMatches = 0;
@@ -1184,14 +1192,22 @@ export class ValidationResult {
 		return !!this.problems.length;
 	}
 
-	public mergeAll(validationResults: ValidationResult[]): void {
-		validationResults.forEach((validationResult) => {
-			this.merge(validationResult);
-		});
+	public addProblem(problem: IProblem): void {
+		this.problems.push(problem);
+		this.problemDepths[0]++;
 	}
 
-	public merge(validationResult: ValidationResult): void {
+	public mergeSubResult(validationResult: ValidationResult): void {
 		this.problems = this.problems.concat(validationResult.problems);
+
+		const subDepth: number = validationResult.problemDepths.length;
+		while (this.problemDepths.length <= subDepth) {
+			this.problemDepths.push(0);
+		}
+
+		validationResult.problemDepths.forEach((problemCount: number, depth: number) => {
+			this.problemDepths[depth + 1] += problemCount;
+		});
 	}
 
 	public mergeEnumValues(validationResult: ValidationResult): void {
@@ -1206,7 +1222,7 @@ export class ValidationResult {
 	}
 
 	public mergePropertyMatch(propertyValidationResult: ValidationResult): void {
-		this.merge(propertyValidationResult);
+		this.mergeSubResult(propertyValidationResult);
 		this.firstPropertyProblems += propertyValidationResult.firstPropertyProblems;
 		this.propertiesMatches++;
 		if (propertyValidationResult.enumValueMatch || !this.hasProblems() && propertyValidationResult.propertiesMatches) {
@@ -1225,6 +1241,13 @@ export class ValidationResult {
 		let hasProblems = this.hasProblems();
 		if (hasProblems !== other.hasProblems()) {
 			return hasProblems ? -1 : 1;
+		}
+		if (hasProblems) {
+			const depthOfFirstProblem: number = this.problemDepths.findIndex((value: number, index: number) => value > 0);
+			const depthOfOtherFirstProblem: number = other.problemDepths.findIndex((value: number, index: number) => value > 0);
+			if (depthOfFirstProblem != depthOfOtherFirstProblem) {
+				return depthOfFirstProblem - depthOfOtherFirstProblem;
+			}
 		}
 		if (this.enumValueMatch !== other.enumValueMatch) {
 			return other.enumValueMatch ? -1 : 1;
@@ -1313,7 +1336,7 @@ export class JSONDocument {
 }
 
 //Alternative comparison is specifically used by the kubernetes/openshift schema but may lead to better results then genericComparison depending on the schema
-function alternativeComparison(subValidationResult, bestMatch, subSchema, subMatchingSchemas){
+function alternativeComparison(subValidationResult: ValidationResult, bestMatch: SchemaMatch, subSchema: JSONSchema, subMatchingSchemas: ISchemaCollector): SchemaMatch {
 	let compareResult = subValidationResult.compareKubernetes(bestMatch.validationResult);
 	if (compareResult > 0) {
 		// our node is the best matching so far
@@ -1327,7 +1350,7 @@ function alternativeComparison(subValidationResult, bestMatch, subSchema, subMat
 }
 
 //genericComparison tries to find the best matching schema using a generic comparison
-function genericComparison(maxOneMatch, subValidationResult, bestMatch, subSchema, subMatchingSchemas){
+function genericComparison(maxOneMatch: boolean, subValidationResult: ValidationResult, bestMatch: SchemaMatch, subSchema: JSONSchema, subMatchingSchemas: ISchemaCollector): SchemaMatch {
 	if (!maxOneMatch && !subValidationResult.hasProblems() && !bestMatch.validationResult.hasProblems()) {
 		// no errors, both are equally good matches
 		bestMatch.matchingSchemas.merge(subMatchingSchemas);
