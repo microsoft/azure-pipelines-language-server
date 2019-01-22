@@ -161,7 +161,6 @@ export class ASTNode {
 		return schema && (schema.ignoreCase === "key" || schema.ignoreCase === "all");
 	}
 
-
 	public validate(schema: JSONSchema, validationResult: ValidationResult, matchingSchemas: ISchemaCollector): void {
 		if (!matchingSchemas.include(this)) {
 			return;
@@ -218,11 +217,15 @@ export class ASTNode {
 		}
 
 		let testAlternatives = (alternatives: JSONSchema[], maxOneMatch: boolean) => {
-			let matches = [];
+			const matches: JSONSchema[] = [];
+
+			const firstPropMatches: JSONSchema[] = this.getFirstPropertyMatches(alternatives);
+
+			const possibleMatches: JSONSchema[] = (Array.isArray(firstPropMatches) && firstPropMatches.length > 0) ? firstPropMatches : alternatives;
 
 			// remember the best match that is used for error messages
 			let bestMatch: { schema: JSONSchema; validationResult: ValidationResult; matchingSchemas: ISchemaCollector; } = null;
-			alternatives.forEach((subSchema) => {
+			possibleMatches.forEach((subSchema) => {
 				let subValidationResult = new ValidationResult();
 				let subMatchingSchemas = matchingSchemas.newSub();
 
@@ -330,6 +333,10 @@ export class ASTNode {
 				});
 			}
 		}
+	}
+
+	protected getFirstPropertyMatches(subSchemas: JSONSchema[]): JSONSchema[] {
+		return [];
 	}
 }
 
@@ -1050,6 +1057,62 @@ export class ObjectASTNode extends ASTNode {
 				}
 			}
 		}
+	}
+
+	protected getFirstPropertyMatches(subSchemas: JSONSchema[]): JSONSchema[] {
+		if (!this.properties || !this.properties.length) {
+			return [];
+		}
+
+		const firstProperty: PropertyASTNode = this.properties[0];
+		if (!firstProperty.key || !firstProperty.key.value) {
+			return [];
+		}
+
+		const firstPropKey: string = firstProperty.key.value;
+
+		const matches: JSONSchema[] = [];
+
+		subSchemas.forEach((schema:JSONSchema) => {
+			if (schema.firstProperty && schema.firstProperty.length) {
+				let firstPropSchemaName: string = null;
+				if (schema.firstProperty.indexOf(firstPropKey) >= 0) {
+					firstPropSchemaName = firstPropKey;
+				}
+				else if (ASTNode.getIgnoreKeyCase(schema)) {
+					const firstPropCompareKey: string = firstPropKey.toUpperCase();
+
+					schema.firstProperty.some( (schemaProp: string) => {
+						if (schemaProp.toUpperCase() === firstPropCompareKey) {
+							firstPropSchemaName = schemaProp;
+							return true;
+						}
+						return false;
+					});
+				}
+
+				if (firstPropSchemaName != null) {
+					if (!schema.properties) {
+						matches.push(schema);
+					}
+					else {
+						const propertySchema: JSONSchema = schema.properties[firstPropSchemaName];
+						if (!propertySchema) {
+							matches.push(schema);
+						}
+						else {
+							let propertyValidationResult = new ValidationResult();
+							firstProperty.validate(propertySchema, propertyValidationResult, new SchemaCollector(-1, null));
+							if (!propertyValidationResult.hasProblems()) {
+								matches.push(schema);
+							}
+						}
+					}
+				}
+			}
+		});
+
+		return matches;
 	}
 }
 
