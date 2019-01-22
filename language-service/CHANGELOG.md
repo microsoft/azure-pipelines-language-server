@@ -1,6 +1,7 @@
 
 #### 0.5.3
 Improve performance [#PR-51](https://github.com/Microsoft/azure-pipelines-language-server/pull/51)
+Improve error messages and suggestions [#PR-52](https://github.com/Microsoft/azure-pipelines-language-server/pull/52)
 
 #### 0.5.2
 Fix a regression with YAML structure errors [#PR-49](https://github.com/Microsoft/azure-pipelines-language-server/pull/49)
