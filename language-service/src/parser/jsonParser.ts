@@ -1168,7 +1168,7 @@ class NoOpSchemaCollector implements ISchemaCollector {
 
 export class ValidationResult {
 	public problems: IProblem[];
-	public problemDepths: number[];
+	public problemDepths: number[];  //count of problems found at each level of the parse tree.  problemDepths[0] is the root, problemDepths[1] is one level down, etc.
 
 	public firstPropertyProblems: number;
 	public propertiesMatches: number;
@@ -1200,11 +1200,15 @@ export class ValidationResult {
 	public mergeSubResult(validationResult: ValidationResult): void {
 		this.problems = this.problems.concat(validationResult.problems);
 
+		//overlay the problem count array one level down
+
+		//first make sure the array is long enough
 		const subDepth: number = validationResult.problemDepths.length;
 		while (this.problemDepths.length <= subDepth) {
 			this.problemDepths.push(0);
 		}
 
+		//then add the problem counts shifted lower in the parse tree
 		validationResult.problemDepths.forEach((problemCount: number, depth: number) => {
 			this.problemDepths[depth + 1] += problemCount;
 		});
