@@ -35,7 +35,8 @@
     "vscode-languageserver": "4.1.2",
     "vscode-languageserver-types": "3.6.1",
     "vscode-nls": "3.2.2",
-    "vscode-uri": "1.0.3"
+    "vscode-uri": "1.0.3",
+    "jsonc-parser": "2.0.2"
   },
   "devDependencies": {
     "@types/mocha": "5.2.5",

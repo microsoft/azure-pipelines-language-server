@@ -1,6 +1,5 @@
 
 
-
 import {
 	IPCMessageReader, IPCMessageWriter,
 	createConnection, IConnection, TextDocumentSyncKind,
@@ -11,6 +10,8 @@ import Strings = require( 'azure-pipelines-language-service');
 import URI from 'vscode-uri';
 import * as URL from 'url';
 import fs = require('fs');
+import { JSONSchema } from "azure-pipelines-language-service";
+import Json = require('jsonc-parser');
 
 namespace VSCodeContentRequest {
 	export const type: RequestType<{}, {}, {}, {}> = new RequestType('vscode/content');
@@ -47,12 +48,12 @@ export let workspaceContext = {
 	}
 };
 
-export let schemaRequestService = (uri: string): Thenable<string> => {
+export let schemaRequestService = (uri: string): Thenable<JSONSchema> => {
 	if (Strings.startsWith(uri, 'file://')) {
 		let fsPath = URI.parse(uri).fsPath;
-		return new Promise<string>((c, e) => {
+		return new Promise<JSONSchema>((c, e) => {
 			fs.readFile(fsPath, 'UTF-8', (err, result) => {
-				err ? e('') : c(result.toString());
+				err ? e('') : c(Json.parse(result.toString()));
 			});
 		});
 	} else if (Strings.startsWith(uri, 'vscode://')) {
@@ -63,7 +64,7 @@ export let schemaRequestService = (uri: string): Thenable<string> => {
 		});
 	}
 	return xhr({ url: uri, followRedirects: 5 }).then(response => {
-		return response.responseText;
+		return Json.parse(response.responseText);
 	}, (error: XHRResponse) => {
 		return Promise.reject(error.responseText || getErrorStatusDescription(error.status) || error.toString());
 	});
