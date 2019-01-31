@@ -6,6 +6,7 @@ import * as JsonSchema from '../src/jsonSchema';
 import fs = require('fs');
 import url = require('url');
 import path = require('path');
+import Json = require('jsonc-parser');
 
 const fixtureDocuments = {
 	'http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json': 'deploymentTemplate.json',
@@ -17,20 +18,20 @@ const fixtureDocuments = {
 	'http://schema.management.azure.com/schemas/2014-04-01/SuccessBricks.ClearDB.json': 'SuccessBricks.ClearDB.json',
 	'http://schema.management.azure.com/schemas/2015-08-01/Microsoft.Compute.json': 'Microsoft.Compute.json'
 };
-const requestServiceMock = function (uri: string): Promise<string> {
+const requestServiceMock = function (uri: string): Promise<JsonSchema.JSONSchema> {
 	if (uri.length && uri[uri.length - 1] === '#') {
 		uri = uri.substr(0, uri.length - 1);
 	}
 	let fileName = fixtureDocuments[uri];
 	if (fileName) {
-		return new Promise<string>((c, e) => {
+		return new Promise<JsonSchema.JSONSchema>((c, e) => {
 			let fixturePath = path.join(__dirname, './fixtures', fileName);
 			fs.readFile(fixturePath, 'UTF-8', (err, result) => {
-				err ? e("Resource not found.") : c(result.toString());
+				err ? e("Resource not found.") : c(Json.parse(result.toString()));
 			});
 		});
 	}
-	return Promise.reject<string>("Resource not found.");
+	return Promise.reject<JsonSchema.JSONSchema>("Resource not found.");
 };
 
 

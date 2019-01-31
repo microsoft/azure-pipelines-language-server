@@ -5,7 +5,6 @@
  *--------------------------------------------------------------------------------------------*/
 'use strict';
 
-import Json = require('jsonc-parser');
 import {JSONSchema, JSONSchemaMap} from '../jsonSchema';
 import URI from 'vscode-uri';
 import Strings = require('../utils/strings');
@@ -14,28 +13,6 @@ import {SchemaRequestService, WorkspaceContextService, PromiseConstructor, Thena
 
 import * as nls from 'vscode-nls';
 const localize = nls.loadMessageBundle();
-
-/**
- * getParseErrorMessage has been removed from jsonc-parser since 1.0.0
- *
- * see https://github.com/Microsoft/node-jsonc-parser/blob/42ec16f9c91582d4267a0c48199cdac283c90fc9/CHANGELOG.md
- * 1.0.0
- *  remove nls dependency (remove getParseErrorMessage)
- */
-function getParseErrorMessage(errorCode: Json.ParseErrorCode): string {
-	switch (errorCode) {
-		case Json.ParseErrorCode.InvalidSymbol: return localize('error.invalidSymbol', 'Invalid symbol');
-		case Json.ParseErrorCode.InvalidNumberFormat: return localize('error.invalidNumberFormat', 'Invalid number format');
-		case Json.ParseErrorCode.PropertyNameExpected: return localize('error.propertyNameExpected', 'Property name expected');
-		case Json.ParseErrorCode.ValueExpected: return localize('error.valueExpected', 'Value expected');
-		case Json.ParseErrorCode.ColonExpected: return localize('error.colonExpected', 'Colon expected');
-		case Json.ParseErrorCode.CommaExpected: return localize('error.commaExpected', 'Comma expected');
-		case Json.ParseErrorCode.CloseBraceExpected: return localize('error.closeBraceExpected', 'Closing brace expected');
-		case Json.ParseErrorCode.CloseBracketExpected: return localize('error.closeBracketExpected', 'Closing bracket expected');
-		case Json.ParseErrorCode.EndOfFileExpected: return localize('error.endOfFileExpected', 'End of file expected');
-		default: return '';
-	}
-}
 
 export interface IJSONSchemaService {
 
@@ -384,17 +361,13 @@ export class JSONSchemaService implements IJSONSchemaService {
 		}
 
 		return this.requestService(url).then(
-			content => {
+			(content: JSONSchema) => {
 				if (!content) {
 					let errorMessage = localize('json.schema.nocontent', 'Unable to load schema from \'{0}\': No content.', toDisplayString(url));
 					return new UnresolvedSchema(<JSONSchema>{}, [errorMessage]);
 				}
 
-				let schemaContent: JSONSchema = {};
-				let jsonErrors = [];
-				schemaContent = Json.parse(content, jsonErrors);
-				let errors = jsonErrors.length ? [localize('json.schema.invalidFormat', 'Unable to parse content from \'{0}\': {1}.', toDisplayString(url), getParseErrorMessage(jsonErrors[0]))] : [];
-				return new UnresolvedSchema(schemaContent, errors);
+				return new UnresolvedSchema(content, []);
 			},
 			(error: any) => {
 				let errorMessage = localize('json.schema.unabletoload', 'Unable to load schema from \'{0}\': {1}', toDisplayString(url), error.toString());
