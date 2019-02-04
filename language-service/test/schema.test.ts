@@ -6,7 +6,6 @@ import * as JsonSchema from '../src/jsonSchema';
 import fs = require('fs');
 import url = require('url');
 import path = require('path');
-import Json = require('jsonc-parser');
 
 const fixtureDocuments = {
 	'http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json': 'deploymentTemplate.json',
@@ -27,7 +26,7 @@ const requestServiceMock = function (uri: string): Promise<JsonSchema.JSONSchema
 		return new Promise<JsonSchema.JSONSchema>((c, e) => {
 			let fixturePath = path.join(__dirname, './fixtures', fileName);
 			fs.readFile(fixturePath, 'UTF-8', (err, result) => {
-				err ? e("Resource not found.") : c(Json.parse(result.toString()));
+				err ? e("Resource not found.") : c(SchemaService.ParseSchema(result.toString()));
 			});
 		});
 	}

@@ -7,7 +7,6 @@ import { TextDocument, Position, Diagnostic } from 'vscode-languageserver-types'
 import * as yamlparser from '../../src/parser/yamlParser'
 import { Thenable } from '../../src/yamlLanguageService';
 import * as assert from 'assert';
-import Json = require('jsonc-parser');
 
 suite("Yaml Validation Service Tests", function () {
     this.timeout(20000);
@@ -39,7 +38,7 @@ const requestService = (path: string): Thenable<string> => {
 };
 
 const schemaResolver = (url: string): Promise<JSONSchema> => {
-    return Promise.resolve(Json.parse(url));
+    return Promise.resolve(JSONSchemaService.ParseSchema(url));
 }
 
 

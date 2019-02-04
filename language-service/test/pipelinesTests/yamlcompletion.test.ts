@@ -8,7 +8,6 @@ import * as yamlparser from '../../src/parser/yamlParser'
 import { Thenable } from '../../src/yamlLanguageService';
 import * as assert from 'assert';
 import { completionHelper } from '../../src/utils/yamlServiceUtils';
-import Json = require('jsonc-parser');
 
 interface Suggestions {
     expected?: number,
@@ -99,7 +98,7 @@ const requestService = (path: string): Thenable<string> => {
 };
 
 const schemaResolver = (url: string): Promise<JSONSchema> => {
-    return Promise.resolve(Json.parse(url));
+    return Promise.resolve(JSONSchemaService.ParseSchema(url));
 }
 
 

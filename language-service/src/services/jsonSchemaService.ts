@@ -5,6 +5,7 @@
  *--------------------------------------------------------------------------------------------*/
 'use strict';
 
+import Json = require('jsonc-parser');
 import {JSONSchema, JSONSchemaMap} from '../jsonSchema';
 import URI from 'vscode-uri';
 import Strings = require('../utils/strings');
@@ -13,6 +14,10 @@ import {SchemaRequestService, WorkspaceContextService, PromiseConstructor, Thena
 
 import * as nls from 'vscode-nls';
 const localize = nls.loadMessageBundle();
+
+export function ParseSchema(schemaString: string): JSONSchema {
+	return Json.parse(schemaString);
+}
 
 export interface IJSONSchemaService {
 
