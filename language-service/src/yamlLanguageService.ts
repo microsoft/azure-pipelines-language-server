@@ -74,7 +74,7 @@ export interface WorkspaceContextService {
  * in case of an error, a displayable error string
  */
 export interface SchemaRequestService {
-	(uri: string): Thenable<string>;
+	(uri: string): Thenable<JSONSchema>;
 }
 
 export interface SchemaConfiguration {

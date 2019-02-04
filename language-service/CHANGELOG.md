@@ -1,4 +1,7 @@
 
+#### 0.5.4
+Change schema service to use a schema object instead of a JSON string [#PR-53](https://github.com/Microsoft/azure-pipelines-language-server/pull/53)
+
 #### 0.5.3
 Improve performance [#PR-51](https://github.com/Microsoft/azure-pipelines-language-server/pull/51)
 Improve error messages and suggestions [#PR-52](https://github.com/Microsoft/azure-pipelines-language-server/pull/52)

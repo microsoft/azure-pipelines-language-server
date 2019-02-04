@@ -1,6 +1,7 @@
 import fs = require('fs');
 import { YAMLValidation } from '../../src/services/yamlValidation';
 import * as JSONSchemaService from '../../src/services/jsonSchemaService';
+import { JSONSchema } from '../../src/jsonSchema';
 import * as URL from 'url';
 import { TextDocument, Position, Diagnostic } from 'vscode-languageserver-types';
 import * as yamlparser from '../../src/parser/yamlParser'
@@ -36,8 +37,8 @@ const requestService = (path: string): Thenable<string> => {
     });
 };
 
-const schemaResolver = (url: string): Promise<string> => {
-    return Promise.resolve(url);
+const schemaResolver = (url: string): Promise<JSONSchema> => {
+    return Promise.resolve(JSONSchemaService.ParseSchema(url));
 }
 
 
