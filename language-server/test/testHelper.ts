@@ -11,7 +11,7 @@ import URI from 'vscode-uri';
 import * as URL from 'url';
 import fs = require('fs');
 import { JSONSchema } from "azure-pipelines-language-service";
-import Json = require('jsonc-parser');
+import { ParseSchema } from "azure-pipelines-language-service";
 
 namespace VSCodeContentRequest {
 	export const type: RequestType<{}, {}, {}, {}> = new RequestType('vscode/content');
@@ -53,7 +53,7 @@ export let schemaRequestService = (uri: string): Thenable<JSONSchema> => {
 		let fsPath = URI.parse(uri).fsPath;
 		return new Promise<JSONSchema>((c, e) => {
 			fs.readFile(fsPath, 'UTF-8', (err, result) => {
-				err ? e('') : c(Json.parse(result.toString()));
+				err ? e('') : c(ParseSchema(result.toString()));
 			});
 		});
 	} else if (Strings.startsWith(uri, 'vscode://')) {
@@ -64,7 +64,7 @@ export let schemaRequestService = (uri: string): Thenable<JSONSchema> => {
 		});
 	}
 	return xhr({ url: uri, followRedirects: 5 }).then(response => {
-		return Json.parse(response.responseText);
+		return ParseSchema(response.responseText);
 	}, (error: XHRResponse) => {
 		return Promise.reject(error.responseText || getErrorStatusDescription(error.status) || error.toString());
 	});
