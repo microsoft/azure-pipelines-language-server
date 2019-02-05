@@ -30,6 +30,7 @@ import { FilePatternAssociation } from "azure-pipelines-language-service";
 import { parse as parseYAML } from "azure-pipelines-language-service";
 import { JSONDocument } from "azure-pipelines-language-service";
 import { JSONSchema } from "azure-pipelines-language-service";
+import { ParseSchema } from "azure-pipelines-language-service";
 
 nls.config(<any>process.env['VSCODE_NLS_CONFIG']);
 
@@ -115,7 +116,7 @@ let workspaceContext = {
 	}
 };
 
-let schemaRequestService = (uri: string): Thenable<string> => {
+let schemaRequestService = (uri: string): Thenable<JSONSchema> => {
 	//For the case when we are multi root and specify a workspace location
 	if(hasWorkspaceFolderCapability){
 		for(let folder in workspaceFolders){
@@ -136,9 +137,9 @@ let schemaRequestService = (uri: string): Thenable<string> => {
 	}
 	if (Strings.startsWith(uri, 'file://')) {
 		let fsPath = URI.parse(uri).fsPath;
-		return new Promise<string>((c, e) => {
+		return new Promise<JSONSchema>((c, e) => {
 			fs.readFile(fsPath, 'UTF-8', (err, result) => {
-				err ? e('') : c(result.toString());
+				err ? e('') : c(ParseSchema(result.toString()));
 			});
 		});
 	} else if (Strings.startsWith(uri, 'vscode://')) {
@@ -151,7 +152,7 @@ let schemaRequestService = (uri: string): Thenable<string> => {
 		let scheme = URI.parse(uri).scheme.toLowerCase();
 		if (scheme !== 'http' && scheme !== 'https') {
 			// custom scheme
-			return <Thenable<string>>connection.sendRequest(CustomSchemaContentRequest.type, uri);
+			return connection.sendRequest(CustomSchemaContentRequest.type, uri).then((content:string) => ParseSchema(content));
 		}
 	}
 	if (uri.indexOf('//schema.management.azure.com/') !== -1) {
@@ -164,7 +165,7 @@ let schemaRequestService = (uri: string): Thenable<string> => {
 	}
 	let headers = { 'Accept-Encoding': 'gzip, deflate' };
 	return xhr({ url: uri, followRedirects: 5, headers }).then(response => {
-		return response.responseText;
+		return ParseSchema(response.responseText);
 	}, (error: XHRResponse) => {
 		return Promise.reject(error.responseText || getErrorStatusDescription(error.status) || error.toString());
 	});
