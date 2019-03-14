@@ -358,8 +358,6 @@ export class JSONSchemaService implements IJSONSchemaService {
 	}
 
 	public loadSchema(url: string): Thenable<UnresolvedSchema> {
-		console.log('loadSchema');
-
 		if (!this.requestService) {
 			let errorMessage = localize('json.schema.norequestservice', 'Unable to load schema from \'{0}\'. No schema request service available', toDisplayString(url));
 			return this.promise.resolve(new UnresolvedSchema(<JSONSchema>{}, [errorMessage]));
@@ -491,9 +489,6 @@ export class JSONSchemaService implements IJSONSchemaService {
 	}
 
 	public getSchemaForResource(resource: string ): Thenable<ResolvedSchema> {
-		console.log('getSchemaForResource');
-		console.log('resource: ' + resource);
-
 		const resolveSchema = () => {
 			// check for matching file names, last to first
 
@@ -512,14 +507,12 @@ export class JSONSchemaService implements IJSONSchemaService {
 		};
 
 		if (this.customSchemaProvider) {
-			console.log('this.customSchemaProvider: yes');
 			return this.customSchemaProvider(resource).then(schemaUri => {
 				return this.loadSchema(schemaUri).then(unsolvedSchema => this.resolveSchemaContent(unsolvedSchema, schemaUri));
 			}).then(schema => schema, err => {
 				return resolveSchema();
 			});
 		} else {
-			console.log('this.customSchemaProvider: no');
 			return resolveSchema();
 		}
 	}

@@ -441,7 +441,6 @@ export class YAMLCompletion {
     }
 
     private addEnumValueCompletions(schema: JSONSchema, collector: CompletionsCollector, separatorAfter: string): void {
-        console.log('addEnumValueCompletions');
         if (Array.isArray(schema.enum)) {
             for (let i = 0, length = schema.enum.length; i < length; i++) {
                 let enm = schema.enum[i];
