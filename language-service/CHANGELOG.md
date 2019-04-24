@@ -1,4 +1,7 @@
 
+#### 0.5.5
+Better handling of YAML structure errors
+
 #### 0.5.4
 Change schema service to use a schema object instead of a JSON string [#PR-53](https://github.com/Microsoft/azure-pipelines-language-server/pull/53)
 
