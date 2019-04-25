@@ -8,7 +8,7 @@
 import { JSONSchemaService } from './jsonSchemaService';
 import { Diagnostic, DiagnosticSeverity } from 'vscode-languageserver-types';
 import { PromiseConstructor, Thenable, LanguageSettings} from '../yamlLanguageService';
-import { TextDocument } from "vscode-languageserver-types";
+import { TextDocument, Position } from "vscode-languageserver-types";
 import { YAMLDocument, SingleYAMLDocument } from "../parser/yamlParser";
 import { IProblem, ProblemSeverity } from '../parser/jsonParser';
 
@@ -45,6 +45,33 @@ export class YAMLValidation {
 		}
 
 		if (yamlDocument.documents.length > 1) {
+			//The YAML parser is a little over-eager to call things different documents
+			// see https://github.com/Microsoft/azure-pipelines-vscode/issues/219
+			//so search for a specific error so that we can offer the user better guidance
+			for (let document of yamlDocument.documents) {
+				for (let docError of document.errors) {
+					if (docError.getMessage().includes("end of the stream or a document separator is expected")) {
+						const docErrorPosition : Position = textDocument.positionAt(docError.start);
+						const errorLine: number = (docErrorPosition.line > 0) ? docErrorPosition.line - 1 : docErrorPosition.line;
+						
+						return this.promise.resolve([{
+							severity: DiagnosticSeverity.Error,
+							range: {
+								start: {
+									line: errorLine,
+									character: 0
+								},
+								end: {
+									line: errorLine + 1,
+									character: 0
+								}
+							},
+							message: localize('documentFormatError', 'Invalid YAML structure')
+						}]);
+					}
+				}
+			}
+
 			return this.promise.resolve([{
 				severity: DiagnosticSeverity.Error,
 				range: {
@@ -55,7 +82,7 @@ export class YAMLValidation {
 					end: textDocument.positionAt(textDocument.getText().length)
 				},
 				message: localize('multiDocumentError', 'Only single-document files are supported')
-			}])
+			}]);
 		}
 
 		const translateSeverity = (problemSeverity: ProblemSeverity): DiagnosticSeverity => {
