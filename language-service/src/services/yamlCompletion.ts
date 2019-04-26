@@ -17,7 +17,7 @@ import { nodeHolder } from "../utils/yamlServiceUtils";
 import { CompletionItem, CompletionItemKind, CompletionList, TextDocument, Position, Range, TextEdit, InsertTextFormat } from 'vscode-languageserver-types';
 
 import * as nls from 'vscode-nls';
-import { YAMLDocument } from '../parser/yamlParser';
+import { YAMLDocument, SingleYAMLDocument } from '../parser/yamlParser';
 
 const localize = nls.loadMessageBundle();
 
@@ -63,7 +63,7 @@ export class YAMLCompletion {
             return Promise.resolve(result);
         }
 
-        const jsonDocument = yamlDocument.documents.length > 0 ? yamlDocument.documents[0] : null;
+        const jsonDocument: SingleYAMLDocument = yamlDocument.documents.length > 0 ? yamlDocument.documents[0] : null;
         if (jsonDocument === null) {
             return Promise.resolve(result);
         }
@@ -229,7 +229,7 @@ export class YAMLCompletion {
         return !!stringArray.some(arrayEntry => arrayEntry === key);
     }
 
-    private getPropertyCompletions(schema: SchemaService.ResolvedSchema, doc, node: Parser.ASTNode, addValue: boolean, collector: CompletionsCollector, separatorAfter: string): void {
+    private getPropertyCompletions(schema: SchemaService.ResolvedSchema, doc: SingleYAMLDocument, node: Parser.ASTNode, addValue: boolean, collector: CompletionsCollector, separatorAfter: string): void {
         const nodeProperties: Parser.PropertyASTNode[] = (<Parser.ObjectASTNode>node).properties;
         const hasMatchingProperty = (key: string, propSchema: JSONSchema): boolean => {
             return nodeProperties.some((propertyNode: Parser.PropertyASTNode): boolean => {
@@ -265,7 +265,7 @@ export class YAMLCompletion {
                 if (schemaProperties) {
                     Object.keys(schemaProperties).forEach((key: string) => {
                         //check for more than one property because the placeholder will always be in the list
-                        if (s.node.properties.length > 1 || this.arrayIsEmptyOrContainsKey(s.schema.firstProperty, key)) {
+                        if (s.node['properties'].length > 1 || this.arrayIsEmptyOrContainsKey(s.schema.firstProperty, key)) {
                             const propertySchema = schemaProperties[key];
                             if (!propertySchema.deprecationMessage &&
                                 !propertySchema["doNotSuggest"] &&
@@ -285,7 +285,7 @@ export class YAMLCompletion {
         });
     }
 
-    private getValueCompletions(schema: SchemaService.ResolvedSchema, doc, node: Parser.ASTNode, offset: number, document: TextDocument, collector: CompletionsCollector, types: { [type: string]: boolean }): void {
+    private getValueCompletions(schema: SchemaService.ResolvedSchema, doc: SingleYAMLDocument, node: Parser.ASTNode, offset: number, document: TextDocument, collector: CompletionsCollector, types: { [type: string]: boolean }): void {
 
 
         let offsetForSeparator = offset;
