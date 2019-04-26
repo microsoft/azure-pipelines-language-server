@@ -227,6 +227,8 @@ export class JSONSchemaService implements IJSONSchemaService {
 	private promiseConstructor: PromiseConstructor;
 	private customSchemaProvider: CustomSchemaProvider;
 
+	private schemaCache: {[resource: string]: ResolvedSchema};
+
 	constructor(requestService: SchemaRequestService, contextService?: WorkspaceContextService, customSchemaProvider?: CustomSchemaProvider, promiseConstructor?: PromiseConstructor) {
 		this.contextService = contextService;
 		this.requestService = requestService;
@@ -239,6 +241,7 @@ export class JSONSchemaService implements IJSONSchemaService {
 		this.filePatternAssociations = [];
 		this.filePatternAssociationById = {};
 		this.registeredSchemasIds = {};
+		this.schemaCache = {};
 	}
 
 	public getRegisteredSchemaIds(filter?: (scheme) => boolean): string[] {
@@ -491,6 +494,11 @@ export class JSONSchemaService implements IJSONSchemaService {
 	}
 
 	public getSchemaForResource(resource: string ): Thenable<ResolvedSchema> {
+
+		if (this.schemaCache.hasOwnProperty(resource)) {
+			return this.promise.resolve(this.schemaCache[resource]);
+		}
+
 		console.log('getSchemaForResource');
 		console.log('resource: ' + resource);
 
@@ -505,7 +513,10 @@ export class JSONSchemaService implements IJSONSchemaService {
 			for (let i = this.filePatternAssociations.length - 1; i >= 0; i--) {
 				let entry = this.filePatternAssociations[i];
 				if (entry.matchesPattern(resource)) {
-					return entry.getCombinedSchema(this).getResolvedSchema();
+					return entry.getCombinedSchema(this).getResolvedSchema().then(resolvedSchema => {
+						this.schemaCache[resource] = resolvedSchema;
+						return this.promise.resolve(resolvedSchema);
+					});
 				}
 			}
 			return this.promise.resolve(null);
