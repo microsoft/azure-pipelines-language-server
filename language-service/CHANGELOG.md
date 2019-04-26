@@ -1,6 +1,7 @@
 
 #### 0.5.5
-Better handling of YAML structure errors
+Better handling of YAML structure errors [#PR-58](https://github.com/Microsoft/azure-pipelines-language-server/pull/58)
+Cache schemas to improve performance [#PR-59](https://github.com/Microsoft/azure-pipelines-language-server/pull/59)
 
 #### 0.5.4
 Change schema service to use a schema object instead of a JSON string [#PR-53](https://github.com/Microsoft/azure-pipelines-language-server/pull/53)
