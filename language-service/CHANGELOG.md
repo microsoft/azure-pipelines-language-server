@@ -1,4 +1,7 @@
 
+#### 0.5.6
+Cache schemas when using a custom schema provider to improve performance [#PR-60](https://github.com/Microsoft/azure-pipelines-language-server/pull/60)
+
 #### 0.5.5
 Better handling of YAML structure errors [#PR-58](https://github.com/Microsoft/azure-pipelines-language-server/pull/58)
 Cache schemas to improve performance [#PR-59](https://github.com/Microsoft/azure-pipelines-language-server/pull/59)
