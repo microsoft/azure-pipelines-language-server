@@ -1,6 +1,12 @@
 
+<<<<<<< HEAD
 #### 0.5.6
 Cache schemas when using a custom schema provider to improve performance [#PR-60](https://github.com/Microsoft/azure-pipelines-language-server/pull/60)
+=======
+#### 0.5.6 
+Cache schemas when using a custom schema provider to improve performance [#PR-60](https://github.com/Microsoft/azure-pipelines-language-server/pull/60)
+update dependencies for security fixes [#PR-61](https://github.com/Microsoft/azure-pipelines-language-server/pull/61)
+>>>>>>> update changelog
 
 #### 0.5.5
 Better handling of YAML structure errors [#PR-58](https://github.com/Microsoft/azure-pipelines-language-server/pull/58)
