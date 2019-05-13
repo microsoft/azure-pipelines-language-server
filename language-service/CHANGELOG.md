@@ -1,4 +1,7 @@
 
+#### 0.5.7
+Allow boolean values to validate against string schema [#PR-62](https://github.com/microsoft/azure-pipelines-language-server/pull/62)
+
 #### 0.5.6
 Cache schemas when using a custom schema provider to improve performance [#PR-60](https://github.com/Microsoft/azure-pipelines-language-server/pull/60)
 update dependencies for security fixes [#PR-61](https://github.com/Microsoft/azure-pipelines-language-server/pull/61)
