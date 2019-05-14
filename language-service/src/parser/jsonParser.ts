@@ -349,6 +349,7 @@ export class NullASTNode extends ASTNode {
 	public getValue(): any {
 		return null;
 	}
+
 	public validate(schema: JSONSchema, validationResult: ValidationResult, matchingSchemas: ISchemaCollector): void {
 		if (!matchingSchemas.include(this)) {
 			return;
@@ -375,6 +376,24 @@ export class BooleanASTNode extends ASTNode {
 
 	public getValue(): any {
 		return this.value;
+	}
+
+	public validate(schema: JSONSchema, validationResult: ValidationResult, matchingSchemas: ISchemaCollector): void {
+		if (!matchingSchemas.include(this)) {
+			return;
+		}
+
+		//allow empty values to validate as strings
+		if (schema.type === 'string') {
+			//The pipeline parser allows expressions that evaulate to booleans and right now
+			//the generated schema is not prescise about that and allows any string.  The
+			//values 'true' and 'false' get parsed into BooleanASTNode's but we need to
+			//allow them to match against 'string' in the schema.
+			this.validateStringValue(schema, '' + this.getValue(), validationResult);
+		}
+		else {
+			super.validate(schema, validationResult, matchingSchemas);
+		}
 	}
 
 }
