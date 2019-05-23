@@ -2,6 +2,7 @@
 #### 0.5.7
 Allow boolean values to validate against string schema [#PR-62](https://github.com/microsoft/azure-pipelines-language-server/pull/62)
 Remove consideration of firstProperty schema element when generating errors [#PR-63](https://github.com/microsoft/azure-pipelines-language-server/pull/63)
+Improve positioning of unexpected property errors [#PR-64](https://github.com/microsoft/azure-pipelines-language-server/pull/64)
 
 #### 0.5.6
 Cache schemas when using a custom schema provider to improve performance [#PR-60](https://github.com/Microsoft/azure-pipelines-language-server/pull/60)
