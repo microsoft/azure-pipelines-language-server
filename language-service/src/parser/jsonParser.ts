@@ -840,23 +840,6 @@ export class ObjectASTNode extends ASTNode {
 			}
 		};
 
-		const firstPropertyContains = (propertyName: string): boolean => {
-			return schema.firstProperty && schema.firstProperty.indexOf(propertyName) >= 0;
-		}
-
-		const isFirstProperty = (propertySchema: JSONSchema, propertyName: string): boolean => {
-			if (!schema.firstProperty || !schema.firstProperty.length) {
-				return false;
-			}
-
-			if (ASTNode.getIgnoreKeyCase(propertySchema)) {
-				const upperPropName: string = propertyName.toUpperCase();
-				return !!schema.firstProperty.some(listProperty => listProperty.toUpperCase() === upperPropName);
-			}
-
-			return firstPropertyContains(propertyName);
-		}
-
 		if (schema.properties) {
 			Object.keys(schema.properties).forEach((schemaPropertyName: string) => {
 				const propSchema: JSONSchema = schema.properties[schemaPropertyName];
@@ -905,9 +888,6 @@ export class ObjectASTNode extends ASTNode {
 				if (child) {
 					let propertyValidationResult = new ValidationResult();
 					child.validate(propSchema, propertyValidationResult, matchingSchemas);
-					if (propertyValidationResult.hasProblems() && firstPropertyContains(schemaPropertyName)) {
-						propertyValidationResult.firstPropertyProblems++;
-					}
 					validationResult.mergePropertyMatch(propertyValidationResult);
 				}
 			});
@@ -925,9 +905,6 @@ export class ObjectASTNode extends ASTNode {
 							let propertyValidationResult = new ValidationResult();
 							const childSchema: JSONSchema = schema.patternProperties[propertyPattern];
 							child.validate(childSchema, propertyValidationResult, matchingSchemas);
-							if (propertyValidationResult.hasProblems() && isFirstProperty(childSchema, propertyName)) {
-								propertyValidationResult.firstPropertyProblems++;
-							}
 							validationResult.mergePropertyMatch(propertyValidationResult);
 						}
 					}
@@ -941,9 +918,6 @@ export class ObjectASTNode extends ASTNode {
 				if (child) {
 					let propertyValidationResult = new ValidationResult();
 					child.validate(<any>schema.additionalProperties, propertyValidationResult, matchingSchemas);
-					if (propertyValidationResult.hasProblems() && isFirstProperty(<any>schema.additionalProperties, propertyName)) {
-						validationResult.firstPropertyProblems++;
-					}
 					validationResult.mergePropertyMatch(propertyValidationResult);
 				}
 			});
@@ -1054,8 +1028,6 @@ export class ObjectASTNode extends ASTNode {
 
 					return false;
 				})) {
-					validationResult.firstPropertyProblems++;
-
 					if (schema.firstProperty.length == 1) {
 						validationResult.addProblem({
 							location: { start: firstProperty.start, end: firstProperty.end },
@@ -1189,7 +1161,6 @@ export class ValidationResult {
 	public problems: IProblem[];
 	public problemDepths: number[];  //count of problems found at each level of the parse tree.  problemDepths[0] is the root, problemDepths[1] is one level down, etc.
 
-	public firstPropertyProblems: number;
 	public propertiesMatches: number;
 	public propertiesValueMatches: number;
 	public primaryValueMatches: number;
@@ -1199,7 +1170,6 @@ export class ValidationResult {
 	constructor() {
 		this.problems = [];
 		this.problemDepths = [0];
-		this.firstPropertyProblems = 0;
 		this.propertiesMatches = 0;
 		this.propertiesValueMatches = 0;
 		this.primaryValueMatches = 0;
@@ -1246,7 +1216,6 @@ export class ValidationResult {
 
 	public mergePropertyMatch(propertyValidationResult: ValidationResult): void {
 		this.mergeSubResult(propertyValidationResult);
-		this.firstPropertyProblems += propertyValidationResult.firstPropertyProblems;
 		this.propertiesMatches++;
 		if (propertyValidationResult.enumValueMatch || !this.hasProblems() && propertyValidationResult.propertiesMatches) {
 			this.propertiesValueMatches++;
@@ -1257,10 +1226,6 @@ export class ValidationResult {
 	}
 
 	public compareGeneric(other: ValidationResult): number {
-		if (this.firstPropertyProblems !== other.firstPropertyProblems) {
-			return other.firstPropertyProblems - this.firstPropertyProblems;
-		}
-
 		let hasProblems = this.hasProblems();
 		if (hasProblems !== other.hasProblems()) {
 			return hasProblems ? -1 : 1;
