@@ -914,7 +914,7 @@ export class ObjectASTNode extends ASTNode {
 
 		if (typeof schema.additionalProperties === 'object') {
 			unprocessedProperties.forEach((propertyName: string) => {
-				let child = seenKeys[propertyName];
+				const child = seenKeys[propertyName];
 				if (child) {
 					let propertyValidationResult = new ValidationResult();
 					child.validate(<any>schema.additionalProperties, propertyValidationResult, matchingSchemas);
@@ -927,7 +927,7 @@ export class ObjectASTNode extends ASTNode {
 					//Auto-complete can insert a "holder" node when parsing, do not count it as an error
 					//against additionalProperties
 					if (propertyName !== nodeHolder) {
-						let child: ASTNode = seenKeys[propertyName];
+						const child: ASTNode = seenKeys[propertyName];
 						if (child) {
 							let errorLocation: IRange = null;
 							let errorNode: ASTNode = child;
@@ -939,7 +939,7 @@ export class ObjectASTNode extends ASTNode {
 								} else if (errorNode.parent.type === "object") {
 									//The tree structure and parent links can be weird
 									//NullASTNode's parent will be the object and not the property
-									let parentObject: ObjectASTNode = <ObjectASTNode>errorNode.parent;
+									const parentObject: ObjectASTNode = <ObjectASTNode>errorNode.parent;
 									parentObject.properties.some((propNode: PropertyASTNode) => {
 										if (propNode.value == child) {
 											errorNode = propNode;
@@ -951,7 +951,7 @@ export class ObjectASTNode extends ASTNode {
 							}
 
 							if (errorNode.type === "property") {
-								let propertyNode: PropertyASTNode = <PropertyASTNode>errorNode;
+								const propertyNode: PropertyASTNode = <PropertyASTNode>errorNode;
 								errorLocation = {
 									start: propertyNode.key.start,
 									end: propertyNode.key.end
@@ -960,7 +960,7 @@ export class ObjectASTNode extends ASTNode {
 								errorLocation = {
 									start: errorNode.start,
 									end: errorNode.end
-								}
+								};
 							}
 
 							validationResult.addProblem({
