@@ -914,7 +914,7 @@ export class ObjectASTNode extends ASTNode {
 
 		if (typeof schema.additionalProperties === 'object') {
 			unprocessedProperties.forEach((propertyName: string) => {
-				let child = seenKeys[propertyName];
+				const child = seenKeys[propertyName];
 				if (child) {
 					let propertyValidationResult = new ValidationResult();
 					child.validate(<any>schema.additionalProperties, propertyValidationResult, matchingSchemas);
@@ -927,19 +927,44 @@ export class ObjectASTNode extends ASTNode {
 					//Auto-complete can insert a "holder" node when parsing, do not count it as an error
 					//against additionalProperties
 					if (propertyName !== nodeHolder) {
-						let child = seenKeys[propertyName];
+						const child: ASTNode = seenKeys[propertyName];
 						if (child) {
-							let propertyNode = null;
-							if(child.type !== "property"){
-								propertyNode = <PropertyASTNode>child.parent;
-								if(propertyNode.type === "object"){
-									propertyNode = propertyNode.properties[0];
+							let errorLocation: IRange = null;
+							let errorNode: ASTNode = child;
+
+							if (errorNode.type !== "property" && errorNode.parent) {
+								if (errorNode.parent.type === "property") {
+									//This works for StringASTNode
+									errorNode = errorNode.parent;
+								} else if (errorNode.parent.type === "object") {
+									//The tree structure and parent links can be weird
+									//NullASTNode's parent will be the object and not the property
+									const parentObject: ObjectASTNode = <ObjectASTNode>errorNode.parent;
+									parentObject.properties.some((propNode: PropertyASTNode) => {
+										if (propNode.value == child) {
+											errorNode = propNode;
+											return true;
+										}
+										return false;
+									});
 								}
-							}else{
-								propertyNode = child;
 							}
+
+							if (errorNode.type === "property") {
+								const propertyNode: PropertyASTNode = <PropertyASTNode>errorNode;
+								errorLocation = {
+									start: propertyNode.key.start,
+									end: propertyNode.key.end
+								};
+							} else {
+								errorLocation = {
+									start: errorNode.start,
+									end: errorNode.end
+								};
+							}
+
 							validationResult.addProblem({
-								location: { start: propertyNode.key.start, end: propertyNode.key.end },
+								location: errorLocation,
 								severity: ProblemSeverity.Warning,
 								getMessage: () => schema.errorMessage || localize('DisallowedExtraPropWarning', 'Unexpected property {0}', propertyName)
 							});
