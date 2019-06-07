@@ -16,12 +16,12 @@ export class YAMLTraversal {
 
     public findNodes(document: TextDocument, yamlDocument: YAMLDocument, key: string): Thenable<YamlNodeInfo[]> {
         if(!document){
-            this.promise.resolve(void 0);
+            this.promise.resolve([]);
         }
 
         const jsonDocument = yamlDocument.documents.length > 0 ? yamlDocument.documents[0] : null;
         if(jsonDocument === null){
-            return this.promise.resolve(void 0);
+            return this.promise.resolve([]);
         }
 
         let nodes: YamlNodeInfo[] = [];
@@ -40,15 +40,15 @@ export class YAMLTraversal {
         return this.promise.resolve(nodes);
     }
 
-    public getNodeInputValues(document: TextDocument, yamlDocument: YAMLDocument, position: Position) {
+    public getNodeInputValues(document: TextDocument, yamlDocument: YAMLDocument, position: Position): {[key: string]: string} {
         if(!document){
-            this.promise.resolve(void 0);
+            return null;
         }
 
         const offset: number = document.offsetAt(position);
         const jsonDocument = yamlDocument.documents.length > 0 ? yamlDocument.documents[0] : null;
         if(jsonDocument === null){
-            return this.promise.resolve(void 0);
+            return null;
         }
 
         // get the node by position and then walk up until we find an object node with properties
@@ -58,13 +58,13 @@ export class YAMLTraversal {
         }
 
         if (!node) {
-            return this.promise.resolve(void 0);
+            return null;
         }
 
         // see if this object has an inputs property
         const propertiesArray = (node as Parser.ObjectASTNode).properties.filter(p => p.key.value === "inputs");
         if (!propertiesArray || propertiesArray.length !== 1) {
-            this.promise.resolve(void 0);
+            return null;
         }
 
         // get the values contained within inputs
