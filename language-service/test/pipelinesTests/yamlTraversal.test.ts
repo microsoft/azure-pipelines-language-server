@@ -1,7 +1,6 @@
 import * as assert from 'assert';
 import * as yamlparser from '../../src/parser/yamlParser'
-import { YamlNodeInfo } from '../../src/yamlLanguageService';
-import { YAMLTraversal } from '../../src/services/yamlTraversal';
+import { YAMLTraversal, YamlNodeInfo, YamlNodePropertyValues } from '../../src/services/yamlTraversal';
 import { TextDocument, Position } from 'vscode-languageserver-types';
 
 suite("Yaml Traversal Service Tests", function () {
@@ -49,7 +48,7 @@ suite("Yaml Traversal Service Tests", function () {
 
     test('realistic example', async function () {
         const results = await findNodes(testYaml(), "task");
-        assert.equal(results.length, 3, "length");
+        assert.equal(results.length, 4, "length");
         assert.equal(results[0].key, "task", "key0");
         assert.equal(results[0].value, "DotNetCoreCLI@2", "value0");
         assert.equal(results[0].position.character, 8, "character0");
@@ -62,20 +61,24 @@ suite("Yaml Traversal Service Tests", function () {
         assert.equal(results[2].value, "PublishBuildArtifacts@1", "value2");
         assert.equal(results[2].position.character, 8, "character2");
         assert.equal(results[2].position.line, 19, "line2");
+        assert.equal(results[3].key, "task", "key3");
+        assert.equal(results[3].value, null);
+        assert.equal(results[3].position.character, 8, "character3");
+        assert.equal(results[3].position.line, 29, "line3");
     });
 
     test('get inputs', async function () {
-        const results = await findInputs(testYaml(), { line: 5, character: 8 });
-        assert.equal(Object.keys(results).length, 4);
-        assert.equal(results["command"], "test");
-        assert.equal(results["projects"], "**/*Test*/*.csproj");
-        assert.equal(results["arguments"], "--configuration $(BuildConfiguration)");
-        assert.equal(results["publishTestResults"], true);
+        const results = findInputs(testYaml(), { line: 5, character: 8 });
+        assert.equal(Object.keys(results.values).length, 4);
+        assert.equal(results.values["command"], "test");
+        assert.equal(results.values["projects"], "**/*Test*/*.csproj");
+        assert.equal(results.values["arguments"], "--configuration $(BuildConfiguration)");
+        assert.equal(results.values["publishTestResults"], true);
     });
     
     test('fail to get inputs', async function () {
-      const results = await findInputs(testYaml(), { line: 3, character: 2 });
-      assert.equal(results, null);
+      const results = findInputs(testYaml(), { line: 3, character: 2 });
+      assert.equal(results.values, null);
   });
 });
 
@@ -87,12 +90,12 @@ async function findNodes(content: string, key: string): Promise<YamlNodeInfo[]> 
     return yamlTraversal.findNodes(textDocument, yamlDoc, key);
 }
 
-async function findInputs(content: string, position: Position) {
+function findInputs(content: string, position: Position): YamlNodePropertyValues {
     const schemaUri: string = "test/pipelinesTests/schema.json";
     const yamlTraversal = new YAMLTraversal(Promise);
     const textDocument: TextDocument = TextDocument.create(schemaUri, "azure-pipelines", 1, content);
     const yamlDoc = yamlparser.parse(content);
-    return yamlTraversal.getNodeInputValues(textDocument, yamlDoc, position);
+    return yamlTraversal.getNodePropertyValues(textDocument, yamlDoc, position, "inputs");
 }
 
 function testYaml(): string {

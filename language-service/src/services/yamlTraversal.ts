@@ -4,7 +4,16 @@ import * as Parser from "../parser/jsonParser";
 import { YAMLDocument } from "../parser/yamlParser";
 import { PromiseConstructor, Thenable } from "vscode-json-languageservice";
 import { TextDocument, Position } from "vscode-languageserver-types";
-import { YamlNodeInfo } from "../yamlLanguageService";
+
+export interface YamlNodeInfo {
+    position: Position;
+    key: string;
+    value: string;
+}
+
+export interface YamlNodePropertyValues {
+    values: {[key: string]: string};
+}
 
 export class YAMLTraversal {
 
@@ -27,7 +36,7 @@ export class YAMLTraversal {
         let nodes: YamlNodeInfo[] = [];
         jsonDocument.visit((node => {
             const propertyNode = node as Parser.PropertyASTNode;
-            if (propertyNode.key && propertyNode.key.value === key && propertyNode.value.start !== propertyNode.value.end) {
+            if (propertyNode.key && propertyNode.key.value === key) {
                 nodes.push({
                     position: document.positionAt(node.start),
                     key: propertyNode.key.value,
@@ -40,15 +49,15 @@ export class YAMLTraversal {
         return this.promise.resolve(nodes);
     }
 
-    public getNodeInputValues(document: TextDocument, yamlDocument: YAMLDocument, position: Position): {[key: string]: string} {
+    public getNodePropertyValues(document: TextDocument, yamlDocument: YAMLDocument, position: Position, propertyName: string): YamlNodePropertyValues {
         if(!document){
-            return null;
+            return { values: null };
         }
 
         const offset: number = document.offsetAt(position);
         const jsonDocument = yamlDocument.documents.length > 0 ? yamlDocument.documents[0] : null;
         if(jsonDocument === null){
-            return null;
+            return { values: null };
         }
 
         // get the node by position and then walk up until we find an object node with properties
@@ -58,13 +67,13 @@ export class YAMLTraversal {
         }
 
         if (!node) {
-            return null;
+            return { values: null };
         }
 
         // see if this object has an inputs property
-        const propertiesArray = (node as Parser.ObjectASTNode).properties.filter(p => p.key.value === "inputs");
+        const propertiesArray = (node as Parser.ObjectASTNode).properties.filter(p => p.key.value === propertyName);
         if (!propertiesArray || propertiesArray.length !== 1) {
-            return null;
+            return { values: null };
         }
 
         // get the values contained within inputs
@@ -74,7 +83,9 @@ export class YAMLTraversal {
             valueMap[p.key.value] = p.value.getValue();
         });
 
-        return valueMap;
+        return {
+            values: valueMap
+        };
     }
 }
 
