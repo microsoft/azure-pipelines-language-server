@@ -1,3 +1,5 @@
+#### 0.5.8
+Extending language service to make task codelens possible [#PR-66](https://github.com/microsoft/azure-pipelines-language-server/pull/66)
 
 #### 0.5.7
 Allow boolean values to validate against string schema [#PR-62](https://github.com/microsoft/azure-pipelines-language-server/pull/62)
