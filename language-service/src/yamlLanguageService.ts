@@ -15,6 +15,7 @@ import { YAMLValidation } from "./services/yamlValidation";
 import { format } from './services/yamlFormatter';
 import { JSONWorkerContribution } from './jsonContributions';
 import { YAMLDocument } from './parser/yamlParser';
+import { YAMLTraversal, YamlNodeInfo, YamlNodePropertyValues } from './services/yamlTraversal';
 
 export interface LanguageSettings {
   validate?: boolean; //Setting for whether we want to validate the schema
@@ -102,6 +103,8 @@ export interface LanguageService {
   doResolve(completionItem: CompletionItem): Thenable<CompletionItem>;
   resetSchema(uri: string): boolean;
   doFormat(document: TextDocument, options: FormattingOptions, customTags: Array<String>): TextEdit[];
+  findNodes(document: TextDocument, doc: YAMLDocument, key: string): Thenable<YamlNodeInfo[]>;
+  getNodePropertyValues(document: TextDocument, doc: YAMLDocument, position: Position, propertyName: string): YamlNodePropertyValues;
 }
 
 export function getLanguageService(
@@ -119,6 +122,7 @@ export function getLanguageService(
   let hover = new YAMLHover(schemaService, contributions, promise);
   let yamlDocumentSymbols = new YAMLDocumentSymbols();
   let yamlValidation = new YAMLValidation(schemaService, promise);
+  let yamlTraversal = new YAMLTraversal(promise);
 
   return {
       configure: (settings) => {
@@ -138,6 +142,8 @@ export function getLanguageService(
       doHover: hover.doHover.bind(hover),
       findDocumentSymbols: yamlDocumentSymbols.findDocumentSymbols.bind(yamlDocumentSymbols),
       resetSchema: (uri: string) => schemaService.onResourceChange(uri),
-      doFormat: format
+      doFormat: format,
+      findNodes: yamlTraversal.findNodes.bind(yamlTraversal),
+      getNodePropertyValues: yamlTraversal.getNodePropertyValues.bind(yamlTraversal)
   }
 }
