@@ -6,7 +6,8 @@ import { PromiseConstructor, Thenable } from "vscode-json-languageservice";
 import { TextDocument, Position } from "vscode-languageserver-types";
 
 export interface YamlNodeInfo {
-    position: Position;
+    startPosition: Position;
+    endPosition: Position;
     key: string;
     value: string;
 }
@@ -38,7 +39,8 @@ export class YAMLTraversal {
             const propertyNode = node as Parser.PropertyASTNode;
             if (propertyNode.key && propertyNode.key.value === key) {
                 nodes.push({
-                    position: document.positionAt(node.start),
+                    startPosition: document.positionAt(node.parent.start),
+                    endPosition: document.positionAt(node.parent.end),
                     key: propertyNode.key.value,
                     value: propertyNode.value.getValue()
                 });
@@ -79,7 +81,7 @@ export class YAMLTraversal {
         // get the values contained within inputs
         let valueMap: {[key: string]: string} = {};
         const parameterValueArray = (propertiesArray[0].value as Parser.ObjectASTNode).properties;
-        parameterValueArray.forEach(p => {
+        parameterValueArray && parameterValueArray.forEach(p => {
             valueMap[p.key.value] = p.value.getValue();
         });
 

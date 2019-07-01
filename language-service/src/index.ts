@@ -6,4 +6,5 @@ export * from "./utils/arrUtils";
 export * from "./utils/strings";
 export * from "./utils/yamlServiceUtils";
 export * from "./yamlLanguageService";
+export * from "./services/yamlTraversal";
 export * from "vscode-languageserver-types";
