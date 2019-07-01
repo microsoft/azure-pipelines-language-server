@@ -16,8 +16,10 @@ suite("Yaml Traversal Service Tests", function () {
         assert.equal(results.length, 1, "length");
         assert.equal(results[0].key, "testnode", "key");
         assert.equal(results[0].value, "test", "value");
-        assert.equal(results[0].position.character, 2, "character");
-        assert.equal(results[0].position.line, 0, "line");
+        assert.equal(results[0].startPosition.character, 2, "character");
+        assert.equal(results[0].startPosition.line, 0, "line");
+        assert.equal(results[0].endPosition.character, 16, "character");
+        assert.equal(results[0].endPosition.line, 0, "line");
     });
 
     test('find a node in the middle of the document', async function () {
@@ -25,8 +27,10 @@ suite("Yaml Traversal Service Tests", function () {
         assert.equal(results.length, 1, "length");
         assert.equal(results[0].key, "testnode", "key");
         assert.equal(results[0].value, "test", "value");
-        assert.equal(results[0].position.character, 2, "character");
-        assert.equal(results[0].position.line, 1, "line");
+        assert.equal(results[0].startPosition.character, 2, "character");
+        assert.equal(results[0].startPosition.line, 1, "line");
+        assert.equal(results[0].endPosition.character, 16, "character");
+        assert.equal(results[0].endPosition.line, 1, "line");
     });
 
     test('find multiple nodes', async function () {
@@ -34,16 +38,22 @@ suite("Yaml Traversal Service Tests", function () {
         assert.equal(results.length, 3, "length");
         assert.equal(results[0].key, "testnode", "key0");
         assert.equal(results[0].value, "test", "value0");
-        assert.equal(results[0].position.character, 2, "character0");
-        assert.equal(results[0].position.line, 1, "line0");
+        assert.equal(results[0].startPosition.character, 2, "character0");
+        assert.equal(results[0].startPosition.line, 1, "line0");
+        assert.equal(results[0].endPosition.character, 16, "character0");
+        assert.equal(results[0].endPosition.line, 1, "line0");
         assert.equal(results[1].key, "testnode", "key1");
         assert.equal(results[1].value, "test2", "value1");
-        assert.equal(results[1].position.character, 2, "character1");
-        assert.equal(results[1].position.line, 3, "line1");
+        assert.equal(results[1].startPosition.character, 2, "character1");
+        assert.equal(results[1].startPosition.line, 3, "line1");
+        assert.equal(results[1].endPosition.character, 17, "character1");
+        assert.equal(results[1].endPosition.line, 3, "line1");
         assert.equal(results[2].key, "testnode", "key2");
         assert.equal(results[2].value, "test3", "value2");
-        assert.equal(results[2].position.character, 2, "character2");
-        assert.equal(results[2].position.line, 4, "line2");
+        assert.equal(results[2].startPosition.character, 2, "character2");
+        assert.equal(results[2].startPosition.line, 4, "line2");
+        assert.equal(results[2].endPosition.character, 17, "character2");
+        assert.equal(results[2].endPosition.line, 4, "line2");
     });
 
     test('realistic example', async function () {
@@ -51,20 +61,28 @@ suite("Yaml Traversal Service Tests", function () {
         assert.equal(results.length, 4, "length");
         assert.equal(results[0].key, "task", "key0");
         assert.equal(results[0].value, "DotNetCoreCLI@2", "value0");
-        assert.equal(results[0].position.character, 8, "character0");
-        assert.equal(results[0].position.line, 5, "line0");
+        assert.equal(results[0].startPosition.character, 8, "character0");
+        assert.equal(results[0].startPosition.line, 5, "line0");
+        assert.equal(results[0].endPosition.character, 34, "character0");
+        assert.equal(results[0].endPosition.line, 11, "line0");
         assert.equal(results[1].key, "task", "key1");
         assert.equal(results[1].value, "DotNetCoreCLI@2", "value1");
-        assert.equal(results[1].position.character, 8, "character1");
-        assert.equal(results[1].position.line, 13, "line1");
+        assert.equal(results[1].startPosition.character, 8, "character1");
+        assert.equal(results[1].startPosition.line, 13, "line1");
+        assert.equal(results[1].endPosition.character, 103, "character1");
+        assert.equal(results[1].endPosition.line, 17, "line1");
         assert.equal(results[2].key, "task", "key2");
         assert.equal(results[2].value, "PublishBuildArtifacts@1", "value2");
-        assert.equal(results[2].position.character, 8, "character2");
-        assert.equal(results[2].position.line, 19, "line2");
+        assert.equal(results[2].startPosition.character, 8, "character2");
+        assert.equal(results[2].startPosition.line, 19, "line2");
+        assert.equal(results[2].endPosition.character, 30, "character2");
+        assert.equal(results[2].endPosition.line, 24, "line2");
         assert.equal(results[3].key, "task", "key3");
         assert.equal(results[3].value, null);
-        assert.equal(results[3].position.character, 8, "character3");
-        assert.equal(results[3].position.line, 29, "line3");
+        assert.equal(results[3].startPosition.character, 8, "character3");
+        assert.equal(results[3].startPosition.line, 29, "line3");
+        assert.equal(results[3].endPosition.character, 13, "character3");
+        assert.equal(results[3].endPosition.line, 29, "line3");
     });
 
     test('get inputs', async function () {
