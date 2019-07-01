@@ -1,5 +1,6 @@
 #### 0.5.8
 Extending language service to make task codelens possible [#PR-66](https://github.com/microsoft/azure-pipelines-language-server/pull/66)
+Yaml traversal: export interfaces and return both the start and end positions [#PR-67](https://github.com/microsoft/azure-pipelines-language-server/pull/67/files)
 
 #### 0.5.7
 Allow boolean values to validate against string schema [#PR-62](https://github.com/microsoft/azure-pipelines-language-server/pull/62)
