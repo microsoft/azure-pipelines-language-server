@@ -209,14 +209,6 @@ suite("Validation Tests", () => {
 				}).then(done, done);
 			});
 
-			it('Error on incorrect value type (boolean)', (done) => {
-				let content = `cwd: False`;
-				let validator = parseSetup(content);
-				validator.then(function(result){
-					assert.notEqual(result.length, 0);
-				}).then(done, done);
-			});
-
 			it('Error on incorrect value type (string)', (done) => {
 				let content = `analytics: hello`;
 				let validator = parseSetup(content);

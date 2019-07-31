@@ -131,14 +131,6 @@ suite("Kubernetes Integration Tests", () => {
 				}).then(done, done);
 			});
 
-			it('Error on incorrect value type (boolean)', (done) => {
-				let content = `apiVersion: False`;
-				let validator = parseSetup(content);
-				validator.then(function(result){
-					assert.notEqual(result.length, 0);
-				}).then(done, done);
-			});
-
 			it('Error on incorrect value type (string)', (done) => {
 				let content = `isNonResourceURL: hello_world`;
 				let validator = parseSetup(content);
@@ -148,7 +140,7 @@ suite("Kubernetes Integration Tests", () => {
 			});
 
 			it('Error on incorrect value type (object)', (done) => {
-				let content = `apiVersion: v1\nkind: Pod\nmetadata:\n  name: False`;
+				let content = `apiVersion: v1\nkind: Pod\nmetadata:\n  fake_field: False`;
 				let validator = parseSetup(content);
 				validator.then(function(result){
 					assert.notEqual(result.length, 0);
