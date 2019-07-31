@@ -1,5 +1,5 @@
 #### 0.5.9
-Update dependencies for a security issue
+Update dependencies for a security issue[#PR-68](https://github.com/microsoft/azure-pipelines-language-server/pull/68)
 
 #### 0.5.8
 Extending language service to make task codelens possible [#PR-66](https://github.com/microsoft/azure-pipelines-language-server/pull/66)
