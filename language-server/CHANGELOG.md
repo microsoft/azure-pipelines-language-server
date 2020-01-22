@@ -1,3 +1,6 @@
+#### 0.5.10
+Update dependencies for a security issue[#PR-73](https://github.com/microsoft/azure-pipelines-language-server/pull/73)
+
 #### 0.5.9
 Consume version 0.5.9 of the language service [#PR-69](https://github.com/Microsoft/azure-pipelines-language-server/pull/69)
 
