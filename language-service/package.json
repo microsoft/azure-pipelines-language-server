@@ -1,7 +1,7 @@
 {
   "name": "azure-pipelines-language-service",
   "description": "Azure Pipelines language service",
-  "version": "0.5.9",
+  "version": "0.5.10",
   "author": "Microsoft",
   "license": "MIT",
   "main": "./lib/src/index.js",
@@ -53,7 +53,8 @@
     "ts-loader": "5.2.1",
     "ts-node": "7.0.1",
     "typescript": "2.7.2",
-    "webpack": "4.20.2",
+    "uglifyjs-webpack-plugin": "^2.2.0",
+    "webpack": "^4.41.5",
     "webpack-cli": "3.1.2"
   },
   "scripts": {
