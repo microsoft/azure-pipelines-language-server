@@ -1,3 +1,6 @@
+#### 0.5.10
+Update dependencies for a security issue[#PR-72](https://github.com/microsoft/azure-pipelines-language-server/pull/72)
+
 #### 0.5.9
 Update dependencies for a security issue[#PR-68](https://github.com/microsoft/azure-pipelines-language-server/pull/68)
 
