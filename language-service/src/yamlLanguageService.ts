@@ -128,8 +128,8 @@ export function getLanguageService(
       configure: (settings) => {
         schemaService.clearExternalSchemas();
         if (settings.schemas) {
-          settings.schemas.forEach(settings => {
-            schemaService.registerExternalSchema(settings.uri, settings.fileMatch, settings.schema);
+          settings.schemas.forEach(schema => {
+            schemaService.registerExternalSchema(schema.uri, schema.fileMatch, schema.schema);
           });
         }
         yamlValidation.configure(settings);
