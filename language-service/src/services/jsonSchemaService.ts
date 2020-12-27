@@ -336,6 +336,7 @@ export class JSONSchemaService implements IJSONSchemaService {
 		this.filePatternAssociations = [];
 		this.filePatternAssociationById = {};
 		this.registeredSchemasIds = {};
+		this.schemaCache = {};
 
 		for (let id in this.contributionSchemas) {
 			this.schemasById[id] = this.contributionSchemas[id];
