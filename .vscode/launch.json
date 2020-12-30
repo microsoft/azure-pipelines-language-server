@@ -35,7 +35,7 @@
             "request": "launch",
             "name": "Launch Server Tests",
             "cwd": "${workspaceFolder}/language-server",
-            "program": "${workspaceRoot}/language-server/node_modules/mocha/bin/_mocha",
+            "program": "${workspaceFolder}/language-server/node_modules/mocha/bin/_mocha",
             "args": [
                 "-u",
                 "tdd",
