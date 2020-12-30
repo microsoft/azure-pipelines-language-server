@@ -39,7 +39,7 @@ In order to tighten the dev loop you can utilize `npm link` that will sync chang
 2. Next, link the language service to the language server and start watching for changes:
     * `cd ../language-server`
     * `npm install`
-    * `npm link ../azure-pipelines-language-service`
+    * `npm link ../language-service`
     * `npm run watch`
 3. Now, any changes you make in the service will automatically be reflected in the server
 
