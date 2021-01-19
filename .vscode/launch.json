@@ -7,13 +7,10 @@
             "type": "node",
             "request": "attach",
             "port": 6009,
-            "sourceMaps": true,
             "outFiles": [
-                "${workspaceFolder}/language-server/out/src/**/*.js",
-                "${workspaceFolder}/language-service/lib/src/**/*.js",
+                "${workspaceFolder}/language-server/out/**/*.ts",
+                "${workspaceFolder}/language-service/lib/**/*.ts"
             ],
-            "protocol": "inspector",
-            "trace": true
         },
         {
             "type": "node",

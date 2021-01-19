@@ -8,8 +8,7 @@
 		"lib" : [ "es2016" ],
 		"outDir": "./out"
 	},
-	"exclude": [
-		"node_modules",
-		"out"
+	"include": [
+		"src"
 	]
 }

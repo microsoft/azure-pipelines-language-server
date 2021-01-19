@@ -4,8 +4,8 @@
   "version": "0.5.10",
   "author": "Microsoft",
   "license": "MIT",
-  "main": "./lib/src/index.js",
-  "typings": "./lib/src/index",
+  "main": "./lib/index.js",
+  "typings": "./lib/index",
   "contributors": [
     {
       "name": "Stephen Franceschelli",
