@@ -10,5 +10,5 @@ jobs:
     name: 'build_language_server'
     root: 'language-server'
     packagename: 'azure-pipelines-language-server'
-    tarballPath: 'language-server/out/src'
+    tarballPath: 'language-server'
     configuration: 'release'
