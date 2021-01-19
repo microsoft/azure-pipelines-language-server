@@ -1,3 +1,7 @@
+#### 0.6.0
+- Improved debuggability - thanks @50Wliu
+- Several security fixes as recommended by dependabot
+
 #### 0.5.10
 Update dependencies for a security issue[#PR-72](https://github.com/microsoft/azure-pipelines-language-server/pull/72)
 

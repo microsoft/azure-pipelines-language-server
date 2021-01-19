@@ -1,3 +1,10 @@
+#### 0.6.0
+- Improved debuggability - thanks @50Wliu
+- Several security fixes as recommended by dependabot
+
+**🚨 BREAKING CHANGE 🚨**: the internal directory structure has changed a bit in this release (hence the bump from 0.5.x -> 0.6.x).
+Where you previously said `path.join('node_modules', 'azure-pipelines-language-server', 'server.js')`, you'll now need to say `path.join('node_modules', 'azure-pipelines-language-server', 'out', 'server.js')`.
+
 #### 0.5.10
 Update dependencies for a security issue[#PR-73](https://github.com/microsoft/azure-pipelines-language-server/pull/73)
 
