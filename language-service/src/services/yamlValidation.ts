@@ -16,7 +16,7 @@ import * as nls from 'vscode-nls';
 const localize = nls.loadMessageBundle();
 
 export class YAMLValidation {
-	
+
 	private jsonSchemaService: JSONSchemaService;
 	private promise: PromiseConstructor;
 	private validationEnabled: boolean;
@@ -27,12 +27,12 @@ export class YAMLValidation {
 		this.validationEnabled = true;
 	}
 
-	public configure(shouldValidate: LanguageSettings): void {
-		if(shouldValidate){
-			this.validationEnabled = shouldValidate.validate;
+	public configure(settings: LanguageSettings): void {
+		if (settings) {
+			this.validationEnabled = settings.validate;
 		}
 	}
-	
+
 	public doValidation(textDocument: TextDocument, yamlDocument: YAMLDocument): Thenable<Diagnostic[]> {
 
 		if(!this.validationEnabled){
@@ -53,7 +53,7 @@ export class YAMLValidation {
 					if (docError.getMessage().includes("end of the stream or a document separator is expected")) {
 						const docErrorPosition : Position = textDocument.positionAt(docError.start);
 						const errorLine: number = (docErrorPosition.line > 0) ? docErrorPosition.line - 1 : docErrorPosition.line;
-						
+
 						return this.promise.resolve([{
 							severity: DiagnosticSeverity.Error,
 							range: {
@@ -92,7 +92,7 @@ export class YAMLValidation {
 			 if (problemSeverity == ProblemSeverity.Warning) {
 				 return DiagnosticSeverity.Warning;
 			 }
-	
+
 			 return DiagnosticSeverity.Hint;
 		};
 

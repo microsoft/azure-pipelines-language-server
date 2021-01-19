@@ -8,7 +8,10 @@
             "request": "attach",
             "port": 6009,
             "sourceMaps": true,
-            "outFiles": [ "${workspaceRoot}/out/server/**/*.ts" ],
+            "outFiles": [
+                "${workspaceFolder}/language-server/out/src/**/*.js",
+                "${workspaceFolder}/language-service/lib/src/**/*.js",
+            ],
             "protocol": "inspector",
             "trace": true
         },
@@ -35,7 +38,7 @@
             "request": "launch",
             "name": "Launch Server Tests",
             "cwd": "${workspaceFolder}/language-server",
-            "program": "${workspaceRoot}/language-server/node_modules/mocha/bin/_mocha",
+            "program": "${workspaceFolder}/language-server/node_modules/mocha/bin/_mocha",
             "args": [
                 "-u",
                 "tdd",
