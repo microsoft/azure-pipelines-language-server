@@ -7,16 +7,16 @@
 'use strict';
 
 import {
-	createConnection, IConnection,
-	TextDocuments, TextDocument, InitializeParams, InitializeResult, NotificationType, RequestType,
-	DocumentFormattingRequest, Disposable, Range, IPCMessageReader, IPCMessageWriter, DiagnosticSeverity, Position,
-	Proposed, ProposedFeatures, CompletionList
-} from "vscode-languageserver";
+	createConnection, Connection,
+	TextDocuments, InitializeParams, InitializeResult, NotificationType, RequestType,
+	DocumentFormattingRequest, Disposable, ProposedFeatures, CompletionList, TextDocumentSyncKind, ClientCapabilities
+} from "vscode-languageserver/node";
+import { TextDocument } from 'vscode-languageserver-textdocument';
 
 import { xhr, XHRResponse, configure as configureHttpRequests, getErrorStatusDescription } from "request-light";
 import * as path from "path";
 import * as fs from "fs";
-import URI from "vscode-uri";
+import { URI } from "vscode-uri";
 import * as URL from "url";
 import * as nls from "vscode-nls";
 
@@ -39,27 +39,27 @@ interface ISchemaAssociations {
 }
 
 namespace SchemaAssociationNotification {
-	export const type: NotificationType<{}, {}> = new NotificationType('json/schemaAssociations');
+	export const type: NotificationType<{}> = new NotificationType('json/schemaAssociations');
 }
 
 namespace VSCodeContentRequest {
-	export const type: RequestType<{}, {}, {}, {}> = new RequestType('vscode/content');
+	export const type: RequestType<{}, {}, {}> = new RequestType('vscode/content');
 }
 
 namespace CustomSchemaContentRequest {
-	export const type: RequestType<{}, {}, {}, {}> = new RequestType('custom/schema/content');
+	export const type: RequestType<{}, {}, {}> = new RequestType('custom/schema/content');
 }
 
 namespace CustomSchemaRequest {
-	export const type: RequestType<{}, string, {}, {}> = new RequestType('custom/schema/request');
+	export const type: RequestType<{}, string, {}> = new RequestType('custom/schema/request');
 }
 
 namespace ColorSymbolRequest {
-	export const type: RequestType<{}, {}, {}, {}> = new RequestType('json/colorSymbols');
+	export const type: RequestType<{}, {}, {}> = new RequestType('json/colorSymbols');
 }
 
 // Create a connection for the server.
-let connection: IConnection = null;
+let connection: Connection = null;
 if (process.argv.indexOf('--stdio') == -1) {
 	connection = createConnection(ProposedFeatures.all);
 } else {
@@ -71,7 +71,7 @@ console.error = connection.console.error.bind(connection.console);
 
 // Create a simple text document manager. The text document manager
 // supports full document sync only
-let documents: TextDocuments = new TextDocuments();
+let documents = new TextDocuments(TextDocument);
 // Make the text document manager listen on the connection
 // for open, change and close text document events
 documents.listen(connection);
@@ -81,7 +81,7 @@ let hasWorkspaceFolderCapability = false;
 
 // After the server has started the client sends an initilize request. The server receives
 // in the passed params the rootPath of the workspace plus the client capabilities.
-let capabilities;
+let capabilities: ClientCapabilities;
 let workspaceFolders = [];
 let workspaceRoot: URI;
 connection.onInitialize((params: InitializeParams): InitializeResult => {
@@ -101,7 +101,7 @@ connection.onInitialize((params: InitializeParams): InitializeResult => {
 	clientDynamicRegisterSupport = hasClientCapability('textDocument', 'formatting', 'dynamicRegistration');
 	return {
 		capabilities: {
-			textDocumentSync: documents.syncKind,
+			textDocumentSync: TextDocumentSyncKind.Full,
 			completionProvider: { resolveProvider: true },
 			hoverProvider: true,
 			documentSymbolProvider: true,
@@ -371,7 +371,7 @@ function isKubernetes(textDocument){
 }
 
 documents.onDidChangeContent((change) => {
-	
+
 
 	triggerValidation(change.document);
 });
@@ -439,7 +439,7 @@ connection.onDidChangeWatchedFiles((change) => {
 
 connection.onCompletion(textDocumentPosition =>  {
 	let textDocument = documents.get(textDocumentPosition.textDocument.uri);
-	
+
 	let result: CompletionList = {
 		items: [],
 		isIncomplete: false
@@ -448,7 +448,7 @@ connection.onCompletion(textDocumentPosition =>  {
 	if(!textDocument){
 		return Promise.resolve(result);
 	}
-	
+
 	let completionFix = completionHelper(textDocument, textDocumentPosition.position);
 	let newText = completionFix.newText;
 	let jsonDocument = parseYAML(newText);
@@ -466,7 +466,7 @@ connection.onCompletionResolve(completionItem => {
 
 connection.onHover(textDocumentPositionParams => {
 	let document = documents.get(textDocumentPositionParams.textDocument.uri);
-	
+
 	if(!document){
 		return Promise.resolve(void 0);
 	}

@@ -165,7 +165,7 @@ export class ASTNode {
 		if (!matchingSchemas.include(this)) {
 			return;
 		}
-		
+
 		if (Array.isArray(schema.type)) {
 			if ((<string[]>schema.type).indexOf(this.type) === -1) {
 				//allow numbers to be validated as strings
@@ -189,7 +189,7 @@ export class ASTNode {
 					validationResult.addProblem({
 						location: { start: this.start, end: this.end },
 						severity: ProblemSeverity.Warning,
-						getMessage: () => schema.errorMessage || localize('typeMismatchWarning', 'Incorrect type. Expected "{0}".', schema.type)
+						getMessage: () => schema.errorMessage || localize('typeMismatchWarning', 'Incorrect type. Expected "{0}".', schema.type as string)
 					});
 				}
 			}
@@ -313,7 +313,7 @@ export class ASTNode {
 				getMessage: () => localize('minLengthWarning', 'String is shorter than the minimum length of {0}.', schema.minLength)
 			});
 		}
-	
+
 		if (schema.maxLength && value.length > schema.maxLength) {
 			validationResult.addProblem({
 				location: { start: this.start, end: this.end },
@@ -321,7 +321,7 @@ export class ASTNode {
 				getMessage: () => localize('maxLengthWarning', 'String is longer than the maximum length of {0}.', schema.maxLength)
 			});
 		}
-	
+
 		if (schema.pattern) {
 			const flags: string = ASTNode.getIgnoreValueCase(schema) ? "i" : "";
 			const regex: RegExp = new RegExp(schema.pattern, flags);
@@ -732,7 +732,7 @@ export class ObjectASTNode extends ASTNode {
 		let seenKeys: ASTNodeMap = Object.create(null);
 		let unprocessedProperties: string[] = [];
 		this.properties.forEach((node) => {
-			
+
 			const key: string = node.key.value;
 
 			//Replace the merge key with the actual values of what the node value points to in seen keys
@@ -814,7 +814,7 @@ export class ObjectASTNode extends ASTNode {
 					}
 				}
 			}
-			
+
 			return false;
 		}
 
