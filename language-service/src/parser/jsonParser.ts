@@ -773,6 +773,8 @@ export class ObjectASTNode extends ASTNode {
 		});
 
 		if (compileTimeExpressionASTNode) {
+			// TODO: This isn't correct, see "conditionally set a task input" for counter-examples.
+			// Need to validate all of them.
 			if (this.properties.length > 1) {
 				validationResult.addProblem({
 					location: { start: this.start, end: this.end },
@@ -1158,15 +1160,29 @@ export class CompileTimeExpressionASTNode extends PropertyASTNode {
 		this.type = "cte";
 	}
 
-	// public validate(schema: JSONSchema, validationResult: ValidationResult, matchingSchemas: ISchemaCollector): void {
-	// 	return;
-	// 	// if (!matchingSchemas.include(this)) {
-	// 	// 	return;
-	// 	// }
-	// 	// if (this.value) {
-	// 	// 	this.value.validate(schema, validationResult, matchingSchemas);
-	// 	// }
-	// }
+	public validate(schema: JSONSchema, validationResult: ValidationResult, matchingSchemas: ISchemaCollector): void {
+		if (this.value instanceof ArrayASTNode) {
+			for (const item of this.value.items) {
+				item.validate(schema, validationResult, matchingSchemas);
+			}
+		} else if (this.value instanceof ObjectASTNode) {
+			for (const property of this.value.properties) {
+				property.validate(schema, validationResult, matchingSchemas);
+			}
+		} else {
+			validationResult.addProblem({
+				location: { start: this.key.start, end: this.key.end },
+				severity: ProblemSeverity.Error,
+				getMessage: () => localize('unexpectedCTEError', "A compile-time expression cannot appear here")
+			});
+		}
+		// if (!matchingSchemas.include(this)) {
+		// 	return;
+		// }
+		// if (this.value) {
+		// 	this.value.validate(schema, validationResult, matchingSchemas);
+		// }
+	}
 }
 
 export interface IApplicableSchema {
