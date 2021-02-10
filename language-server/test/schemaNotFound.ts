@@ -2,7 +2,7 @@
  *  Copyright (c) Red Hat. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
-import { TextDocument } from 'vscode-languageserver';
+import { TextDocument } from 'vscode-languageserver-textdocument';
 import {getLanguageService} from 'azure-pipelines-language-service'
 import {schemaRequestService, workspaceContext}  from './testHelper';
 import { parse as parseYAML } from 'azure-pipelines-language-service';
@@ -25,7 +25,7 @@ suite("Validation Tests", () => {
 
 	// Tests for validator
 	describe('Validation', function() {
-		
+
 		function setup(content: string){
 			return TextDocument.create("file://~/Desktop/vscode-k8s/test.yaml", "yaml", 0, content);
 		}
@@ -38,7 +38,7 @@ suite("Validation Tests", () => {
 
 		//Validating basic nodes
 		describe('Test that validation throws error when schema is not found', function(){
-			
+
 			it('Basic test', (done) => {
 				let content = `testing: true`;
 				let validator = parseSetup(content);

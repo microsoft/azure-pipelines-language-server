@@ -2,8 +2,7 @@
  *  Copyright (c) Red Hat. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
-import {
-    TextDocument} from 'vscode-languageserver';
+import { TextDocument } from 'vscode-languageserver-textdocument';
 import { getLanguageService } from 'azure-pipelines-language-service'
 import { schemaRequestService, workspaceContext } from './testHelper';
 var assert = require('assert');

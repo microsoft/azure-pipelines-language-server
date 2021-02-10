@@ -2,23 +2,23 @@
 
 import {
 	IPCMessageReader, IPCMessageWriter,
-	createConnection, IConnection, TextDocumentSyncKind,
+	createConnection, Connection, TextDocumentSyncKind,
 	InitializeResult, RequestType
-} from 'vscode-languageserver';
+} from 'vscode-languageserver/node';
 import { xhr, XHRResponse, getErrorStatusDescription } from 'request-light';
 import Strings = require( 'azure-pipelines-language-service');
-import URI from 'vscode-uri';
+import { URI } from 'vscode-uri';
 import * as URL from 'url';
 import fs = require('fs');
 import { JSONSchema } from "azure-pipelines-language-service";
 import { ParseSchema } from "azure-pipelines-language-service";
 
 namespace VSCodeContentRequest {
-	export const type: RequestType<{}, {}, {}, {}> = new RequestType('vscode/content');
+	export const type: RequestType<{}, {}, {}> = new RequestType('vscode/content');
 }
 
 // Create a connection for the server.
-let connection: IConnection = null;
+let connection: Connection = null;
 if (process.argv.indexOf('--stdio') == -1) {
 	connection = createConnection(new IPCMessageReader(process), new IPCMessageWriter(process));
 } else {

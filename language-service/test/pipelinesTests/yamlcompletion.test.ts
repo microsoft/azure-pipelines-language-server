@@ -3,7 +3,8 @@ import { YAMLCompletion } from '../../src/services/yamlCompletion';
 import * as JSONSchemaService from '../../src/services/jsonSchemaService';
 import { JSONSchema } from '../../src/jsonSchema';
 import * as URL from 'url';
-import { TextDocument, Position, CompletionList } from 'vscode-languageserver-types';
+import { TextDocument } from 'vscode-languageserver-textdocument';
+import { Position, CompletionList } from 'vscode-languageserver-types';
 import * as yamlparser from '../../src/parser/yamlParser'
 import { Thenable } from '../../src/yamlLanguageService';
 import * as assert from 'assert';
@@ -51,7 +52,7 @@ suite("Yaml Completion Service Tests", function () {
     });
 
     test ('case insensitive matching keys are not suggested', async function() {
-        //first make sure that the azureAppServiceManage is still in the schema and has an Action input 
+        //first make sure that the azureAppServiceManage is still in the schema and has an Action input
         {
             const list = await runTaskCompletionItemsTest('steps:\n- task: azureAppServiceManage@0\n  inputs:\n    ', {line: 3, character: 4}, {minimum: 6});
             const labels = list.items.map(item => item.label);

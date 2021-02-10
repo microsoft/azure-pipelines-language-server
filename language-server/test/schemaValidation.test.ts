@@ -2,7 +2,7 @@
  *  Copyright (c) Red Hat. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
-import { TextDocument } from 'vscode-languageserver';
+import { TextDocument } from 'vscode-languageserver-textdocument';
 import {getLanguageService} from 'azure-pipelines-language-service'
 import {schemaRequestService, workspaceContext}  from './testHelper';
 import { parse as parseYAML } from 'azure-pipelines-language-service';
@@ -27,7 +27,7 @@ suite("Validation Tests", () => {
 
 	// Tests for validator
 	describe('Validation', function() {
-		
+
 		function setup(content: string){
 			return TextDocument.create("file://~/Desktop/vscode-k8s/test.yaml", "yaml", 0, content);
 		}
@@ -40,7 +40,7 @@ suite("Validation Tests", () => {
 
 		//Validating basic nodes
 		describe('Test that validation does not throw errors', function(){
-			
+
 			it('Basic test', (done) => {
 				let content = `analytics: true`;
 				let validator = parseSetup(content);
@@ -71,7 +71,7 @@ suite("Validation Tests", () => {
 				validator.then(function(result){
 					assert.equal(result.length, 0);
 				}).then(done, done);
-			});	
+			});
 
             it('Include with value should not error', (done) => {
 				let content = `customize: !include customize.yaml`;
@@ -161,7 +161,7 @@ suite("Validation Tests", () => {
 					validator.then(function(result){
 						assert.equal(result.length, 0);
 					}).then(done, done);
-				});			
+				});
 
 				it('Type Object does not error on valid node', (done) => {
 					let content = `registry:\n  search: test_url`;
@@ -169,7 +169,7 @@ suite("Validation Tests", () => {
 					validator.then(function(result){
 						assert.equal(result.length, 0);
 					}).then(done, done);
-				});		
+				});
 
 				it('Type Array does not error on valid node', (done) => {
 					let content = `resolvers:\n  - test\n  - test\n  - test`;
@@ -187,10 +187,10 @@ suite("Validation Tests", () => {
 					});
 					done();
 				});
-				
+
 			});
 
-		});	
+		});
 
 		describe('Test that validation DOES throw errors', function(){
 			it('Error when theres a finished untyped item', (done) => {
@@ -242,6 +242,6 @@ suite("Validation Tests", () => {
 			});
 
 		});
-	
+
 	});
 });

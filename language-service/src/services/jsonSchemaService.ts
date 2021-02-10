@@ -7,7 +7,7 @@
 
 import Json = require('jsonc-parser');
 import {JSONSchema, JSONSchemaMap} from '../jsonSchema';
-import URI from 'vscode-uri';
+import {URI} from 'vscode-uri';
 import Strings = require('../utils/strings');
 import {SchemaRequestService, WorkspaceContextService, PromiseConstructor, Thenable} from '../yamlLanguageService';
 

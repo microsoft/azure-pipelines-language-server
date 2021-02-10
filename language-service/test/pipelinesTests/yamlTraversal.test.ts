@@ -1,7 +1,8 @@
 import * as assert from 'assert';
 import * as yamlparser from '../../src/parser/yamlParser'
 import { YAMLTraversal, YamlNodeInfo, YamlNodePropertyValues } from '../../src/services/yamlTraversal';
-import { TextDocument, Position } from 'vscode-languageserver-types';
+import { TextDocument } from 'vscode-languageserver-textdocument';
+import { Position } from 'vscode-languageserver-types';
 
 suite("Yaml Traversal Service Tests", function () {
     this.timeout(20000);
@@ -93,7 +94,7 @@ suite("Yaml Traversal Service Tests", function () {
         assert.equal(results.values["arguments"], "--configuration $(BuildConfiguration)");
         assert.equal(results.values["publishTestResults"], true);
     });
-    
+
     test('fail to get inputs', async function () {
       const results = findInputs(testYaml(), { line: 3, character: 2 });
       assert.equal(results.values, null);
@@ -119,9 +120,9 @@ function findInputs(content: string, position: Position): YamlNodePropertyValues
 function testYaml(): string {
     return `variables:
       BuildConfiguration: Release
-    
+
     steps:
-    
+
       - task: DotNetCoreCLI@2
         name: Test
         inputs:
@@ -129,13 +130,13 @@ function testYaml(): string {
           projects: "**/*Test*/*.csproj"
           arguments: "--configuration $(BuildConfiguration)"
           publishTestResults: true
-    
+
       - task: DotNetCoreCLI@2
         name: Publish
         inputs:
           command: publish
           arguments: "--configuration $(BuildConfiguration) --output $(Build.ArtifactStagingDirectory)"
-    
+
       - task: PublishBuildArtifacts@1
         name: Artifacts
         inputs:

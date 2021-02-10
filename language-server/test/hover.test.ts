@@ -2,7 +2,8 @@
  *  Copyright (c) Red Hat. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
-import { TextDocument, Hover, MarkupContent, MarkedString} from 'vscode-languageserver';
+import { Hover, MarkupContent, MarkedString} from 'vscode-languageserver/node';
+import { TextDocument } from 'vscode-languageserver-textdocument';
 import {getLanguageService} from 'azure-pipelines-language-service'
 import {schemaRequestService, workspaceContext}  from './testHelper';
 import { parse as parseYAML } from 'azure-pipelines-language-service';
@@ -50,11 +51,11 @@ export function assertHasContents(result: Hover): void {
 
 suite("Hover Tests", () => {
 
-	
+
 	describe('Yaml Hover with bowerrc', function(){
-		
+
 		describe('doComplete', function(){
-			
+
 			function setup(content: string): TextDocument{
 				return TextDocument.create("file://~/Desktop/vscode-k8s/test.yaml", "yaml", 0, content);
 			}
@@ -72,7 +73,7 @@ suite("Hover Tests", () => {
 					assertHasContents(result);
 				}).then(done, done);
             });
-            
+
             it('Hover on value on root', (done) => {
 				let content: string = "cwd: test";
 				let hover: Thenable<Hover> = parseSetup(content, 6);
@@ -99,12 +100,12 @@ suite("Hover Tests", () => {
 
             it('Hover works on both root node and child nodes works', (done) => {
 				let content: string = "scripts:\n  postinstall: test";
-                
+
                 let firstHover: Thenable<Hover> = parseSetup(content, 3);
                 firstHover.then(function(result: Hover){
 					assertHasContents(result);
                 });
-                
+
                 let secondHover: Thenable<Hover> = parseSetup(content, 15);
 				secondHover.then(function(result: Hover){
 					assertHasContents(result);

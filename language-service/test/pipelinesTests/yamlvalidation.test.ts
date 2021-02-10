@@ -3,7 +3,8 @@ import { YAMLValidation } from '../../src/services/yamlValidation';
 import * as JSONSchemaService from '../../src/services/jsonSchemaService';
 import { JSONSchema } from '../../src/jsonSchema';
 import * as URL from 'url';
-import { TextDocument, Position, Diagnostic } from 'vscode-languageserver-types';
+import { TextDocument } from 'vscode-languageserver-textdocument';
+import { Position, Diagnostic } from 'vscode-languageserver-types';
 import * as yamlparser from '../../src/parser/yamlParser'
 import { Thenable } from '../../src/yamlLanguageService';
 import * as assert from 'assert';
