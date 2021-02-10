@@ -1,7 +1,7 @@
 # CI and PR build script for language-service and language-server
 
 trigger:
-- master
+- main
 
 jobs:
 - template: build-package.yml
