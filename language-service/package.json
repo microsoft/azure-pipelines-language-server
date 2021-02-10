@@ -1,7 +1,7 @@
 {
   "name": "azure-pipelines-language-service",
   "description": "Azure Pipelines language service",
-  "version": "0.6.0",
+  "version": "0.6.1",
   "author": "Microsoft",
   "license": "MIT",
   "main": "./lib/index.js",
@@ -18,6 +18,10 @@
     {
       "name": "Ruslan Semenov",
       "email": "ruslan@rsemenov.com"
+    },
+    {
+      "name": "Winston Liu",
+      "email": "Wliu1402@gmail.com"
     }
   ],
   "engines": {
@@ -29,7 +33,7 @@
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/Microsoft/azure-pipelines-language-server.git"
+    "url": "https://github.com/microsoft/azure-pipelines-language-server.git"
   },
   "dependencies": {
     "js-yaml": "3.13.1",

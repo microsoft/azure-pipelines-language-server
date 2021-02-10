@@ -1,7 +1,7 @@
 {
   "name": "azure-pipelines-language-server",
   "description": "Azure Pipelines language server",
-  "version": "0.6.0",
+  "version": "0.6.1",
   "author": "Microsoft",
   "license": "MIT",
   "contributors": [
@@ -16,6 +16,10 @@
     {
       "name": "Ruslan Semenov",
       "email": "ruslan@rsemenov.com"
+    },
+    {
+      "name": "Winston Liu",
+      "email": "Wliu1402@gmail.com"
     }
   ],
   "engines": {
@@ -27,10 +31,10 @@
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/Microsoft/azure-pipelines-language-server.git"
+    "url": "https://github.com/microsoft/azure-pipelines-language-server.git"
   },
   "dependencies": {
-    "azure-pipelines-language-service": "0.6.0",
+    "azure-pipelines-language-service": "0.6.1",
     "request-light": "^0.4.0",
     "vscode-languageserver": "^7.0.0",
     "vscode-languageserver-textdocument": "^1.0.1",
