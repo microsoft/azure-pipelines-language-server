@@ -731,9 +731,14 @@ export class ObjectASTNode extends ASTNode {
 		super.validate(schema, validationResult, matchingSchemas);
 		let seenKeys: ASTNodeMap = Object.create(null);
 		let unprocessedProperties: string[] = [];
-		this.properties.forEach((node) => {
-
+		let compileTimeExpressionASTNode: CompileTimeExpressionASTNode;
+		this.properties.forEach(node => {
 			const key: string = node.key.value;
+
+			if (node instanceof CompileTimeExpressionASTNode) {
+				compileTimeExpressionASTNode = node;
+				return;
+			}
 
 			//Replace the merge key with the actual values of what the node value points to in seen keys
 			if(key === "<<" && node.value) {
@@ -766,6 +771,21 @@ export class ObjectASTNode extends ASTNode {
 				unprocessedProperties.push(key);
 			}
 		});
+
+		if (compileTimeExpressionASTNode) {
+			if (this.properties.length > 1) {
+				validationResult.addProblem({
+					location: { start: this.start, end: this.end },
+					severity: ProblemSeverity.Error,
+					getMessage: () => localize('cteWithExtraPropertiesError', "Compile-time expressions must be standalone")
+				});
+			} else {
+				// Compile-time expressions get compiled away with its children moving up to its level,
+				// so pass the same schema down to its children for validation.
+				compileTimeExpressionASTNode.validate(schema, validationResult, matchingSchemas);
+			}
+			return;
+		}
 
 		const findMatchingProperties = (propertyKey: string): ASTNodeMap => {
 			let result: ASTNodeMap = Object.create(null);
@@ -1130,6 +1150,23 @@ export class ObjectASTNode extends ASTNode {
 
 		return matches;
 	}
+}
+
+export class CompileTimeExpressionASTNode extends PropertyASTNode {
+	constructor(parent: ASTNode, key: StringASTNode) {
+		super(parent, key);
+		this.type = "cte";
+	}
+
+	// public validate(schema: JSONSchema, validationResult: ValidationResult, matchingSchemas: ISchemaCollector): void {
+	// 	return;
+	// 	// if (!matchingSchemas.include(this)) {
+	// 	// 	return;
+	// 	// }
+	// 	// if (this.value) {
+	// 	// 	this.value.validate(schema, validationResult, matchingSchemas);
+	// 	// }
+	// }
 }
 
 export interface IApplicableSchema {

@@ -5,7 +5,7 @@
  *--------------------------------------------------------------------------------------------*/
 'use strict';
 
-import { ASTNode, BooleanASTNode, NullASTNode, ArrayASTNode, NumberASTNode, ObjectASTNode, PropertyASTNode, StringASTNode, JSONDocument } from './jsonParser';
+import { ASTNode, BooleanASTNode, NullASTNode, ArrayASTNode, NumberASTNode, ObjectASTNode, PropertyASTNode, StringASTNode, JSONDocument, CompileTimeExpressionASTNode } from './jsonParser';
 
 import * as nls from 'vscode-nls';
 const localize = nls.loadMessageBundle();
@@ -89,11 +89,10 @@ function recursivelyBuildAst(parent: ASTNode, node: Yaml.YAMLNode): ASTNode {
 		case Yaml.Kind.MAP: {
 			const instance = <Yaml.YamlMap>node;
 
-			const result = new ObjectASTNode(parent, null, node.startPosition, node.endPosition)
-			result.addProperty
+			const result = new ObjectASTNode(parent, null, node.startPosition, node.endPosition);
 
 			for (const mapping of instance.mappings) {
-				result.addProperty(<PropertyASTNode>recursivelyBuildAst(result, mapping))
+				result.addProperty(<PropertyASTNode>recursivelyBuildAst(result, mapping));
 			}
 
 			return result;
@@ -107,13 +106,13 @@ function recursivelyBuildAst(parent: ASTNode, node: Yaml.YAMLNode): ASTNode {
 			const keyNode = new StringASTNode(null, null, true, key.startPosition, key.endPosition);
 			keyNode.value = key.value;
 
-			const result = new PropertyASTNode(parent, keyNode)
-			result.end = instance.endPosition
+			const result = key.value.startsWith("${{") ? new CompileTimeExpressionASTNode(parent, keyNode) : new PropertyASTNode(parent, keyNode);
+			result.end = instance.endPosition;
 
-			const valueNode = (instance.value) ? recursivelyBuildAst(result, instance.value) : new NullASTNode(parent, key.value, instance.endPosition, instance.endPosition)
-			valueNode.location = key.value
+			const valueNode = (instance.value) ? recursivelyBuildAst(result, instance.value) : new NullASTNode(parent, key.value, instance.endPosition, instance.endPosition);
+			valueNode.location = key.value;
 
-			result.setValue(valueNode)
+			result.setValue(valueNode);
 
 			return result;
 		}
