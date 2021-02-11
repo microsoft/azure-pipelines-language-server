@@ -691,17 +691,24 @@ export class ObjectASTNode extends ASTNode {
 		return true;
 	}
 
-	public getFirstProperty(key: string): PropertyASTNode {
-		for (let i = 0; i < this.properties.length; i++) {
-			if (this.properties[i].key.value === key) {
-				return this.properties[i];
+	public getFirstProperty(): PropertyASTNode | undefined {
+		if (this.properties.length === 0) {
+			return undefined;
+		}
+
+		let firstProperty = this.properties[0];
+		while (firstProperty instanceof CompileTimeExpressionASTNode) {
+			// TODO: Do we need to check to see if properties actually has anything?
+			if (firstProperty.value instanceof ObjectASTNode) {
+				firstProperty = firstProperty.value.properties[0];
+			} else if (firstProperty.value instanceof ArrayASTNode) {
+				firstProperty = (firstProperty.value.items[0] as ObjectASTNode).properties[0];
+			} else {
+				// Unknown case - bail
+				return undefined;
 			}
 		}
-		return null;
-	}
-
-	public getKeyList(): string[] {
-		return this.properties.map((p) => p.key.getValue());
+		return firstProperty;
 	}
 
 	public getValue(): any {
@@ -731,17 +738,16 @@ export class ObjectASTNode extends ASTNode {
 		super.validate(schema, validationResult, matchingSchemas);
 		let seenKeys: ASTNodeMap = Object.create(null);
 		let unprocessedProperties: string[] = [];
-		let compileTimeExpressionASTNode: CompileTimeExpressionASTNode;
 		this.properties.forEach(node => {
 			const key: string = node.key.value;
 
-			if (node instanceof CompileTimeExpressionASTNode) {
-				compileTimeExpressionASTNode = node;
-				return;
-			}
-
-			//Replace the merge key with the actual values of what the node value points to in seen keys
-			if(key === "<<" && node.value) {
+			// Replace the merge key with the actual values of what the node value points to in seen keys
+			// Same thing with CTEs
+			if(key === "<<" || node instanceof CompileTimeExpressionASTNode) {
+				// Validate the CTE independently
+				if (node instanceof CompileTimeExpressionASTNode) {
+					node.validate(schema, validationResult, matchingSchemas);
+				}
 
 				switch(node.value.type) {
 					case "object": {
@@ -753,6 +759,8 @@ export class ObjectASTNode extends ASTNode {
 						break;
 					}
 					case "array": {
+						// TODO: This doesn't work correctly, this adds _all_ properties under the same object,
+						// even though in the original representation they're in different objects :/.
 						node.value["items"].forEach(sequenceNode => {
 							sequenceNode["properties"].forEach(propASTNode => {
 								const seqKey = propASTNode.key.value;
@@ -766,28 +774,11 @@ export class ObjectASTNode extends ASTNode {
 						break;
 					}
 				}
-			}else{
+			} else {
 				seenKeys[key] = node.value;
 				unprocessedProperties.push(key);
 			}
 		});
-
-		if (compileTimeExpressionASTNode) {
-			// TODO: This isn't correct, see "conditionally set a task input" for counter-examples.
-			// Need to validate all of them.
-			if (this.properties.length > 1) {
-				validationResult.addProblem({
-					location: { start: this.start, end: this.end },
-					severity: ProblemSeverity.Error,
-					getMessage: () => localize('cteWithExtraPropertiesError', "Compile-time expressions must be standalone")
-				});
-			} else {
-				// Compile-time expressions get compiled away with its children moving up to its level,
-				// so pass the same schema down to its children for validation.
-				compileTimeExpressionASTNode.validate(schema, validationResult, matchingSchemas);
-			}
-			return;
-		}
 
 		const findMatchingProperties = (propertyKey: string): ASTNodeMap => {
 			let result: ASTNodeMap = Object.create(null);
@@ -1041,11 +1032,9 @@ export class ObjectASTNode extends ASTNode {
 			});
 		}
 
-		if (schema.firstProperty && schema.firstProperty.length &&
-			this.properties && this.properties.length) {
-			const firstProperty: PropertyASTNode = this.properties[0];
-
-			if (firstProperty.key && firstProperty.key.value) {
+		if (schema.firstProperty?.length) {
+			const firstProperty = this.getFirstProperty();
+			if (firstProperty?.key?.value) {
 				let firstPropKey: string = firstProperty.key.value;
 
 				if (!schema.firstProperty.some((listProperty: string) => {
@@ -1098,12 +1087,8 @@ export class ObjectASTNode extends ASTNode {
 	}
 
 	protected getFirstPropertyMatches(subSchemas: JSONSchema[]): JSONSchema[] {
-		if (!this.properties || !this.properties.length) {
-			return [];
-		}
-
-		const firstProperty: PropertyASTNode = this.properties[0];
-		if (!firstProperty.key || !firstProperty.key.value) {
+		const firstProperty = this.getFirstProperty();
+		if (!(firstProperty?.key?.value)) {
 			return [];
 		}
 
@@ -1161,21 +1146,7 @@ export class CompileTimeExpressionASTNode extends PropertyASTNode {
 	}
 
 	public validate(schema: JSONSchema, validationResult: ValidationResult, matchingSchemas: ISchemaCollector): void {
-		if (this.value instanceof ArrayASTNode) {
-			for (const item of this.value.items) {
-				item.validate(schema, validationResult, matchingSchemas);
-			}
-		} else if (this.value instanceof ObjectASTNode) {
-			for (const property of this.value.properties) {
-				property.validate(schema, validationResult, matchingSchemas);
-			}
-		} else {
-			validationResult.addProblem({
-				location: { start: this.key.start, end: this.key.end },
-				severity: ProblemSeverity.Error,
-				getMessage: () => localize('unexpectedCTEError', "A compile-time expression cannot appear here")
-			});
-		}
+		return;
 		// if (!matchingSchemas.include(this)) {
 		// 	return;
 		// }
