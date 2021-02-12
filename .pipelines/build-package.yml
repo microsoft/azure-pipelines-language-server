@@ -18,6 +18,8 @@ parameters:
 
 jobs:
 - job: ${{ parameters.name }}
+  pool:
+    vmImage: 'ubuntu-20.04'
   steps:
     - bash: |
         PACKAGE_VERSION=$(node -p "require('./package.json').version")

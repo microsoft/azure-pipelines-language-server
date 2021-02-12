@@ -1,3 +1,6 @@
+#### 0.6.1
+- Webpack
+
 #### 0.6.0
 - Improved debuggability - thanks @50Wliu
 - Several security fixes as recommended by dependabot
