@@ -468,13 +468,12 @@ export class ArrayASTNode extends ASTNode {
 					});
 				}
 			}
-		}
-		else if (schema.items) {
-			this.items.forEach((item) => {
+		} else if (schema.items) {
+			for (let item of this.items) {
 				let itemValidationResult = new ValidationResult();
 				item.validate(<JSONSchema>schema.items, itemValidationResult, matchingSchemas);
 				validationResult.mergePropertyMatch(itemValidationResult);
-			});
+			}
 		}
 
 		if (schema.minItems && this.items.length < schema.minItems) {
@@ -738,6 +737,7 @@ export class ObjectASTNode extends ASTNode {
 		super.validate(schema, validationResult, matchingSchemas);
 		let seenKeys: ASTNodeMap = Object.create(null);
 		let unprocessedProperties: string[] = [];
+		let hasSpecialArrayKey = false;
 		this.properties.forEach(node => {
 			const key: string = node.key.value;
 
@@ -759,15 +759,11 @@ export class ObjectASTNode extends ASTNode {
 						break;
 					}
 					case "array": {
-						// TODO: This doesn't work correctly, this adds _all_ properties under the same object,
-						// even though in the original representation they're in different objects :/.
+						// Ignore this property and hoist everything under it as children of the parent array
 						node.value["items"].forEach(sequenceNode => {
-							sequenceNode["properties"].forEach(propASTNode => {
-								const seqKey = propASTNode.key.value;
-								seenKeys[seqKey] = propASTNode.value;
-								unprocessedProperties.push(seqKey);
-							});
+							(this.parent as ArrayASTNode).items.push(sequenceNode);
 						});
+						hasSpecialArrayKey = true;
 						break;
 					}
 					default: {
@@ -779,6 +775,17 @@ export class ObjectASTNode extends ASTNode {
 				unprocessedProperties.push(key);
 			}
 		});
+
+		if (hasSpecialArrayKey) {
+			if (this.properties.length > 1) {
+				validationResult.addProblem({
+					location: { start: this.start, end: this.end },
+					severity: ProblemSeverity.Error,
+					getMessage: () => localize('MultipleSpecialKeysError', 'Expected at most one merge key or compile-time expression, found {0}.', this.properties.length)
+				});
+			}
+			return;
+		}
 
 		const findMatchingProperties = (propertyKey: string): ASTNodeMap => {
 			let result: ASTNodeMap = Object.create(null);
@@ -1146,13 +1153,77 @@ export class CompileTimeExpressionASTNode extends PropertyASTNode {
 	}
 
 	public validate(schema: JSONSchema, validationResult: ValidationResult, matchingSchemas: ISchemaCollector): void {
-		return;
-		// if (!matchingSchemas.include(this)) {
-		// 	return;
-		// }
-		// if (this.value) {
-		// 	this.value.validate(schema, validationResult, matchingSchemas);
-		// }
+		if (!this.key.value.endsWith("}}")) {
+			validationResult.addProblem({
+				location: { start: this.start, end: this.end },
+				severity: ProblemSeverity.Error,
+				getMessage: () => localize('cteInvalidEndingError', "Compile-time expressions must end in }}")
+			});
+			return;
+		}
+
+		// Slice the beginning ${{ and ending }}
+		const expression = this.key.value.slice(3, -2).trim();
+		if (!expression.length) {
+			validationResult.addProblem({
+				location: { start: this.start, end: this.end },
+				severity: ProblemSeverity.Error,
+				getMessage: () => localize('cteNoExpressionError', "Compile-time expressions must contain an expression")
+			});
+			return;
+		}
+
+		// TODO: Locations from here on out can be improved
+		const keyword = /^(if|each)\b/.exec(expression)?.[1];
+		if (keyword === undefined) {
+			validationResult.addProblem({
+				location: { start: this.start, end: this.end },
+				severity: ProblemSeverity.Error,
+				getMessage: () => localize('cteNoKeywordError', "Compile-time expressions must begin with an 'if' or 'each' keyword")
+			});
+			return;
+		}
+
+		const condition = expression.substring(expression.indexOf(keyword) + keyword.length).trim();
+		if (!condition.length) {
+			validationResult.addProblem({
+				location: { start: this.start, end: this.end },
+				severity: ProblemSeverity.Error,
+				getMessage: () => localize('cteNoConditionError', "Missing condition after {0}", keyword)
+			});
+			return;
+		}
+
+		if (keyword === "each") {
+			const conditionParts = condition.split(" ");
+			if (conditionParts.length !== 3) {
+				validationResult.addProblem({
+					location: { start: this.start, end: this.end },
+					severity: ProblemSeverity.Error,
+					getMessage: () => localize('cteMalformedEachError', "Each condition must be in the format '<value> in <array>'")
+				});
+			} else {
+				if (!/^[a-z_][\w_]*$/i.test(conditionParts?.[0])) {
+					validationResult.addProblem({
+						location: { start: this.start, end: this.end },
+						severity: ProblemSeverity.Error,
+						getMessage: () => localize('cteMissingVariableError', "Each condition must start with a variable")
+					});
+				}
+
+				if (conditionParts?.[1] !== "in") {
+					validationResult.addProblem({
+						location: { start: this.start, end: this.end },
+						severity: ProblemSeverity.Error,
+						getMessage: () => localize('cteMissingInError', "Each condition is missing the 'in' keyword")
+					});
+				}
+
+				// TODO: Validation for the third part
+			}
+		} else {
+			// TODO: Validation for if
+		}
 	}
 }
 
