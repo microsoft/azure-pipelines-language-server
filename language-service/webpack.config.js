@@ -1,7 +1,11 @@
-const path = require('path');
-const webpack = require('webpack');
-const UglifyJsPlugin = require('uglifyjs-webpack-plugin');
+// @ts-check
 
+'use strict';
+
+const path = require('path');
+const TerserPlugin = require('terser-webpack-plugin');
+
+/** @type {import('webpack').Configuration} */
 module.exports = {
   entry: {
     'azure-pipelines-language-service': './src/index.ts',
@@ -15,16 +19,20 @@ module.exports = {
     umdNamedDefine: true
   },
   resolve: {
-    extensions: ['.ts', '.tsx', '.js']
+    extensions: ['.ts', '.tsx', '.js'],
+    fallback: {
+      buffer: require.resolve('buffer/'),
+      fs: false,
+      os: require.resolve('os-browserify/browser'),
+    }
   },
+  mode: 'production',
   devtool: 'source-map',
   optimization: {
-    minimizer: [
-      new UglifyJsPlugin({
-        sourceMap: true,
-        include: /\.min\.js$/,
-      })
-    ]
+    minimize: true,
+    minimizer: [new TerserPlugin({
+      include: /\.min\.js$/,
+    })],
   },
   module: {
     rules: [
@@ -33,8 +41,5 @@ module.exports = {
         loader: "ts-loader"
       }
     ]
-  },
-  node: {
-    fs: 'empty'
   }
 }
