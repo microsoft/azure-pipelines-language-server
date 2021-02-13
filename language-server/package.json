@@ -56,8 +56,8 @@
     "build": "npm run compile && npm pack",
     "compile": "tsc -p .",
     "watch": "tsc -watch -p .",
-    "test": "mocha --require ts-node/register --ui bdd ./test/*.test.ts",
-    "coverage": "nyc mocha --require ts-node/register --require source-map-support/register --recursive --ui bdd ./test/*.test.ts"
+    "test": "mocha --require ts-node/register --ui bdd ./test/**/*.test.ts",
+    "coverage": "nyc mocha --require ts-node/register --require source-map-support/register --recursive --ui bdd ./test/**/*.test.ts"
   },
   "nyc": {
     "extension": [

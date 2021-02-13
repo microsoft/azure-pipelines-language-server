@@ -67,7 +67,7 @@
     "watch": "tsc -watch -p .",
     "clean": "rimraf lib _bundles",
     "test": "mocha --require ts-node/register --ui bdd ./test/**/*.test.ts",
-    "coverage": "nyc mocha --require ts-node/register --require source-map-support/register --recursive --ui bdd ./test/*.test.ts"
+    "coverage": "nyc mocha --require ts-node/register --require source-map-support/register --recursive --ui bdd ./test/**/*.test.ts"
   },
   "nyc": {
     "extension": [
