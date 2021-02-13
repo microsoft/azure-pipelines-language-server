@@ -11,42 +11,6 @@
                 "${workspaceFolder}/language-server/out/**/*.ts",
                 "${workspaceFolder}/language-service/lib/**/*.ts"
             ],
-        },
-        {
-            "type": "node",
-            "request": "launch",
-            "name": "Launch Service Tests",
-            "cwd": "${workspaceFolder}/language-service",
-            "program": "${workspaceFolder}/language-service/node_modules/mocha/bin/_mocha",
-            "args": [
-                "-r",
-                "ts-node/register",
-                "--ui",
-                "bdd",
-                "--timeout",
-                "999999",
-                "--colors",
-                "test/**/*.test.ts"
-            ],
-            "internalConsoleOptions": "openOnSessionStart"
-        },
-        {
-            "type": "node",
-            "request": "launch",
-            "name": "Launch Server Tests",
-            "cwd": "${workspaceFolder}/language-server",
-            "program": "${workspaceFolder}/language-server/node_modules/mocha/bin/_mocha",
-            "args": [
-                "-u",
-                "bdd",
-                "--timeout",
-                "999999",
-                "--colors",
-                "-r",
-                "ts-node/register",
-                "test/*.test.ts"
-            ],
-            "internalConsoleOptions": "openOnSessionStart"
         }
     ]
 }
