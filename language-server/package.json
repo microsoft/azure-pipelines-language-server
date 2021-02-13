@@ -58,7 +58,7 @@
     "build": "npm run compile && npm pack",
     "compile": "tsc -p .",
     "watch": "tsc -watch -p .",
-    "test": "npm run compile && mocha --require ts-node/register --ui tdd ./test/*.test.ts",
+    "test": "mocha --require ts-node/register --ui tdd ./test/*.test.ts",
     "coverage": "nyc mocha --require ts-node/register --require source-map-support/register --recursive --ui tdd ./test/*.test.ts",
     "coveralls": "nyc npm test && nyc report --reporter=text-lcov | coveralls"
   },
