@@ -49,7 +49,7 @@ export function assertHasContents(result: Hover): void {
 	}
 }
 
-suite("Hover Tests", () => {
+describe("Hover Tests", () => {
 
 
 	describe('Yaml Hover with bowerrc', function(){

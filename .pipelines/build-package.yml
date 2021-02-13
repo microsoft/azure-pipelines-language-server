@@ -43,10 +43,10 @@ jobs:
       workingDirectory: ${{ parameters.root }}
 
     # Run tests and generate ./test-results.xml in JUnit format
-    - script: npx mocha --require ts-node/register --ui tdd ./test/*.test.ts --reporter mocha-junit-reporter
+    - script: npx mocha --require ts-node/register --ui bdd ./test/*.test.ts --reporter mocha-junit-reporter
       displayName: Run tests
       workingDirectory: ${{ parameters.root }}
-    
+
     # Publish test results
     - task: PublishTestResults@2
       displayName: Publish test results
@@ -59,7 +59,7 @@ jobs:
       displayName: Stage the npm module
       inputs:
         sourceFolder: ${{ parameters.tarballPath }}
-        contents: '*.tgz' 
+        contents: '*.tgz'
         targetFolder: ${{ format('$(Build.ArtifactStagingDirectory)/{0}', parameters.packageName) }}
 
     - ${{ if eq( parameters.configuration, 'release') }}:

@@ -25,7 +25,7 @@ let fileMatch = ["*.yml", "*.yaml"];
 languageSettings.schemas.push({ uri, fileMatch: fileMatch });
 languageService.configure(languageSettings);
 
-suite("Non-standard validation Tests", () => {
+describe("Non-standard validation Tests", () => {
 
 	function parseSetup(content: string): Thenable<Diagnostic[]> {
 		let document: TextDocument = TextDocument.create("file://~/Desktop/vscode-k8s/test.yaml", "yaml", 0, content);

@@ -22,7 +22,7 @@
                 "-r",
                 "ts-node/register",
                 "--ui",
-                "tdd",
+                "bdd",
                 "--timeout",
                 "999999",
                 "--colors",
@@ -38,7 +38,7 @@
             "program": "${workspaceFolder}/language-server/node_modules/mocha/bin/_mocha",
             "args": [
                 "-u",
-                "tdd",
+                "bdd",
                 "--timeout",
                 "999999",
                 "--colors",

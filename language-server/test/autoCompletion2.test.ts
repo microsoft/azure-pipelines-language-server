@@ -20,7 +20,7 @@ let fileMatch = ["*.yml", "*.yaml"];
 languageSettings.schemas.push({ uri, fileMatch: fileMatch });
 languageService.configure(languageSettings);
 
-suite("Auto Completion Tests", () => {
+describe("Auto Completion Tests", () => {
 
 	function parseSetup(content: string, position){
 		let document = TextDocument.create("file://~/Desktop/vscode-k8s/test.yaml", "yaml", 0, content);

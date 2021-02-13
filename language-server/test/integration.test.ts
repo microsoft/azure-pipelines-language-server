@@ -21,7 +21,7 @@ languageSettings.schemas.push({ uri, fileMatch: fileMatch });
 languageService.configure(languageSettings);
 
 // Defines a Mocha test suite to group tests of similar kind together
-suite("Kubernetes Integration Tests", () => {
+describe("Kubernetes Integration Tests", () => {
 
 	// Tests for validator
 	describe('Yaml Validation with kubernetes', function() {
