@@ -5,7 +5,7 @@
 import {startsWith, endsWith, convertSimple2RegExp} from '../src/utils/strings';
 var assert = require('assert');
 
-suite("String Tests", () => {
+describe("String Tests", () => {
 
 		describe('startsWith', function(){
 
@@ -40,7 +40,7 @@ suite("String Tests", () => {
             });
 
         });
-        
+
         describe('endsWith', function(){
 
 			it('String with different lengths', () => {
@@ -74,7 +74,7 @@ suite("String Tests", () => {
             });
 
         });
-        
+
         describe('convertSimple2RegExp', function(){
 
 			it('Test of convertRegexString2RegExp', () => {

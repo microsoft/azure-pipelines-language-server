@@ -9,16 +9,16 @@ import * as yamlparser from '../../src/parser/yamlParser'
 import { Thenable } from '../../src/yamlLanguageService';
 import * as assert from 'assert';
 
-suite("Yaml Validation Service Tests", function () {
+describe("Yaml Validation Service Tests", function () {
     this.timeout(20000);
 
-    test('Given empty file validation should pass', async function () {
-       const list = await runValidationTest("", {line: 0, character: 0});
+    it('Given empty file validation should pass', async function () {
+       const list = await runValidationit("", {line: 0, character: 0});
        assert.equal(list.length, 0);
     });
 
-    test('multi-document file should be rejected', async function () {
-        const list = await runValidationTest("---\njobs:\n- job: some_job\n  invalid_parameter: bad value\n  invalid_parameter: duplicate key\n  another_invalid_parameter: whatever\n===\n---\njobs:\n- job: some_job\n  invalid_parameter: bad value\n  invalid_parameter: duplicate key\n  another_invalid_parameter: whatever\n===\n", {line: 0, character: 0});
+    it('multi-document file should be rejected', async function () {
+        const list = await runValidationit("---\njobs:\n- job: some_job\n  invalid_parameter: bad value\n  invalid_parameter: duplicate key\n  another_invalid_parameter: whatever\n===\n---\njobs:\n- job: some_job\n  invalid_parameter: bad value\n  invalid_parameter: duplicate key\n  another_invalid_parameter: whatever\n===\n", {line: 0, character: 0});
         assert.equal(list.length, 1);
         assert.ok(list[0].message.indexOf("single-document") >= 0);
     });
@@ -44,7 +44,7 @@ const schemaResolver = (url: string): Promise<JSONSchema> => {
 
 
 // Given a file and a position, this test expects the task list to show as completion items.
-async function runValidationTest(content: string, position: Position): Promise<Diagnostic[]> {
+async function runValidationit(content: string, position: Position): Promise<Diagnostic[]> {
     // Arrange
     const schemaUri: string = "test/pipelinesTests/schema.json";
     const schemaService = new JSONSchemaService.JSONSchemaService(schemaResolver, workspaceContext, requestService);

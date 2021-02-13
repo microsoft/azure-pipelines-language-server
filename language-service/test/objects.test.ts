@@ -5,7 +5,7 @@
 import {equals} from '../src/utils/objects';
 var assert = require('assert');
 
-suite("Object Equals Tests", () => {
+describe("Object Equals Tests", () => {
 
 		describe('Equals', function(){
 
@@ -18,7 +18,7 @@ suite("Object Equals Tests", () => {
                 assert.equal(result, true);
 
             });
-           
+
             it('One is null the other is true', () => {
 
                 let one = null;
@@ -30,7 +30,7 @@ suite("Object Equals Tests", () => {
             });
 
             it('One is string the other is boolean', () => {
-                
+
                 let one = "test";
                 let other = false;
 
@@ -40,7 +40,7 @@ suite("Object Equals Tests", () => {
             });
 
             it('One is not object', () => {
-                
+
                 let one = "test";
                 let other = false;
 
@@ -50,7 +50,7 @@ suite("Object Equals Tests", () => {
             });
 
             it('One is array the other is not', () => {
-                
+
                 let one = new Proxy([], {});
                 let other = Object.keys({
                     1: "2",
@@ -62,7 +62,7 @@ suite("Object Equals Tests", () => {
             });
 
             it('Both are arrays of different length', () => {
-                
+
                 let one = [1,2,3];
                 let other = [1,2,3,4];
 
@@ -72,7 +72,7 @@ suite("Object Equals Tests", () => {
             });
 
             it('Both are arrays of same elements but in different order', () => {
-                
+
                 let one = [1,2,3];
                 let other = [3,2,1];
 
@@ -82,7 +82,7 @@ suite("Object Equals Tests", () => {
             });
 
             it('Arrays that are equal', () => {
-                
+
                 let one = [1,2,3];
                 let other = [1,2,3];
 
@@ -92,7 +92,7 @@ suite("Object Equals Tests", () => {
             });
 
             it('Objects that are equal', () => {
-                
+
                 let one = {
                     "test": 1
                 };
@@ -106,7 +106,7 @@ suite("Object Equals Tests", () => {
             });
 
             it('Objects that have same keys but different values', () => {
-                
+
                 let one = {
                     "test": 1
                 };
@@ -120,7 +120,7 @@ suite("Object Equals Tests", () => {
             });
 
             it('Objects that have different keys', () => {
-                
+
                 let one = {
                     "test_one": 1
                 };

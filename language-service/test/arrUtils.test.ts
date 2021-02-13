@@ -5,10 +5,10 @@
 import {removeDuplicates, getLineOffsets, removeDuplicatesObj} from '../src/utils/arrUtils';
 var assert = require('assert');
 
-suite("Array Utils Tests", () => {
+describe("Array Utils Tests", () => {
 
 	describe('Server - Array Utils', function(){
-		
+
 		describe('removeDuplicates', function(){
 
 			it('Remove one duplicate with property', () => {
@@ -37,7 +37,7 @@ suite("Array Utils Tests", () => {
                 var obj2 = {
                     "test_key": "test_value"
                 }
-            
+
                 var obj3 = {
                     "test_key": "test_value"
                 }
@@ -54,7 +54,7 @@ suite("Array Utils Tests", () => {
             });
 
             it('Do NOT remove items without duplication', () => {
-                
+
                 var obj1 = {
                     "first_key": "test_value"
                 }
@@ -69,7 +69,7 @@ suite("Array Utils Tests", () => {
                 var result = removeDuplicates(arr, prop);
                 assert.equal(result.length, 2);
 
-            });           
+            });
 
 		});
 
@@ -93,7 +93,7 @@ suite("Array Utils Tests", () => {
             });
 
             it('Multiple offsets', () => {
-                var offsets = getLineOffsets("first_offset\n  second_offset\n    third_offset"); 
+                var offsets = getLineOffsets("first_offset\n  second_offset\n    third_offset");
                 assert.equal(offsets.length, 3);
                 assert.equal(offsets[0], 0);
                 assert.equal(offsets[1], 13);
@@ -103,7 +103,7 @@ suite("Array Utils Tests", () => {
         });
 
         describe('removeDuplicatesObj', function(){
-            
+
             it('Remove one duplicate with property', () => {
 
                 var obj1 = {
@@ -124,7 +124,7 @@ suite("Array Utils Tests", () => {
                 var obj1 = {
                     "test_key": "test_value"
                 }
-                
+
                 var obj2 = {
                     "other_key": "test_value"
                 }
@@ -133,10 +133,10 @@ suite("Array Utils Tests", () => {
 
                 var result = removeDuplicatesObj(arr);
                 assert.equal(result.length, 2);
-            });        
+            });
 
         });
-            
+
 	});
 
 });
