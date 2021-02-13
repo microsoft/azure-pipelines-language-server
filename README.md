@@ -2,7 +2,7 @@
 
 | Language server | Language service |
 |--------|---------|
-| [![Server build status](https://dev.azure.com/ms/azure-pipelines-vscode/_apis/build/status/Langserv%20Release%20Server?branchName=master)](https://dev.azure.com/ms/azure-pipelines-vscode/_build/latest?definitionId=34?branchName=master) | [![Service build status](https://dev.azure.com/ms/azure-pipelines-vscode/_apis/build/status/Langserv%20Release%20Service?branchName=master)](https://dev.azure.com/ms/azure-pipelines-vscode/_build/latest?definitionId=33?branchName=master) |
+| [![Server build status](https://dev.azure.com/ms/azure-pipelines-vscode/_apis/build/status/Langserv%20Release%20Server?branchName=main)](https://dev.azure.com/ms/azure-pipelines-vscode/_build/latest?definitionId=34?branchName=main) | [![Service build status](https://dev.azure.com/ms/azure-pipelines-vscode/_apis/build/status/Langserv%20Release%20Service?branchName=main)](https://dev.azure.com/ms/azure-pipelines-vscode/_build/latest?definitionId=33?branchName=main) |
 
 ## Features
 
@@ -27,8 +27,8 @@
 ## Developer Support
 
 This repo consists of 2 separate projects/packages:
-1. * [azure-pipelines-language-service](https://github.com/Microsoft/azure-pipelines-language-server/tree/master/language-service) - language service implementation for azure-pipelines
-2. * [azure-pipelines-language-server](https://github.com/Microsoft/azure-pipelines-language-server/tree/master/language-server) - language server implementation that dependes on azure-pipelines-language-service
+1. * [azure-pipelines-language-service](https://github.com/Microsoft/azure-pipelines-language-server/tree/main/language-service) - language service implementation for azure-pipelines
+2. * [azure-pipelines-language-server](https://github.com/Microsoft/azure-pipelines-language-server/tree/main/language-server) - language server implementation that dependes on azure-pipelines-language-service
 
 In order to tighten the dev loop you can utilize `npm link` that will sync changes to service package without re-installing.
 

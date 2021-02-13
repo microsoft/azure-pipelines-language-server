@@ -78,7 +78,7 @@ yaml.schemas: {
 ## Dependents/Clients
 This repository only contains the server implementation. Here are some known clients consuming this server:
 
-* [azure-pipelines-language-server](https://github.com/Microsoft/azure-pipelines-language-server/tree/master/language-server)
+* [azure-pipelines-language-server](https://github.com/Microsoft/azure-pipelines-language-server/tree/main/language-server)
 
 ## Thanks
 
