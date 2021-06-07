@@ -10,7 +10,7 @@ var assert = require('assert');
 
 let languageService = getLanguageService(schemaRequestService, [], null, workspaceContext);
 
-suite("Document Symbols Tests", () => {
+describe("Document Symbols Tests", () => {
 
 	describe('Document Symbols Tests', function(){
 

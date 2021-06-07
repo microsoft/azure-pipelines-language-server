@@ -40,8 +40,8 @@ let workspaceContext = {
 	}
 };
 
-suite('JSON Schema', () => {
-	test('Resolving $refs', function (testDone) {
+describe('JSON Schema', () => {
+	it('Resolving $refs', function (testDone) {
 		let service = new SchemaService.JSONSchemaService(requestServiceMock, workspaceContext);
 		service.setSchemaContributions({
 			schemas: {
@@ -73,7 +73,7 @@ suite('JSON Schema', () => {
 		});
 	});
 
-	test('Resolving $refs 2', function (testDone) {
+	it('Resolving $refs 2', function (testDone) {
 		let service = new SchemaService.JSONSchemaService(requestServiceMock, workspaceContext);
 		service.setSchemaContributions({
 			schemas: {
@@ -112,7 +112,7 @@ suite('JSON Schema', () => {
 
 	});
 
-	test('Resolving $refs 3', function (testDone) {
+	it('Resolving $refs 3', function (testDone) {
 		let service = new SchemaService.JSONSchemaService(requestServiceMock, workspaceContext);
 		service.setSchemaContributions({
 			schemas: {
@@ -162,7 +162,7 @@ suite('JSON Schema', () => {
 
 	});
 
-	test('FileSchema', function (testDone) {
+	it('FileSchema', function (testDone) {
 		let service = new SchemaService.JSONSchemaService(requestServiceMock, workspaceContext);
 
 		service.setSchemaContributions({
@@ -193,7 +193,7 @@ suite('JSON Schema', () => {
 		});
 	});
 
-	test('Array FileSchema', function (testDone) {
+	it('Array FileSchema', function (testDone) {
 		let service = new SchemaService.JSONSchemaService(requestServiceMock, workspaceContext);
 
 		service.setSchemaContributions({
@@ -227,7 +227,7 @@ suite('JSON Schema', () => {
 		});
 	});
 
-	test('Missing subschema', function (testDone) {
+	it('Missing subschema', function (testDone) {
 		let service = new SchemaService.JSONSchemaService(requestServiceMock, workspaceContext);
 
 		service.setSchemaContributions({
@@ -252,7 +252,7 @@ suite('JSON Schema', () => {
 		});
 	});
 
-	test('Preloaded Schema', function (testDone) {
+	it('Preloaded Schema', function (testDone) {
 		let service = new SchemaService.JSONSchemaService(requestServiceMock, workspaceContext);
 		let id = 'https://myschemastore/test1';
 		let schema: JsonSchema.JSONSchema = {
@@ -280,7 +280,7 @@ suite('JSON Schema', () => {
 		});
 	});
 
-	test('Null Schema', function (testDone) {
+	it('Null Schema', function (testDone) {
 		let service = new SchemaService.JSONSchemaService(requestServiceMock, workspaceContext);
 
 		service.getSchemaForResource('test.json').then((schema) => {
@@ -290,7 +290,7 @@ suite('JSON Schema', () => {
 		});
 	});
 
-	test('Schema not found', function (testDone) {
+	it('Schema not found', function (testDone) {
 		let service = new SchemaService.JSONSchemaService(requestServiceMock, workspaceContext);
 
 		service.loadSchema('test.json').then((schema) => {

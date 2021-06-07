@@ -2,7 +2,7 @@
 // var path = require('path');
 // var assert = require('assert');
 
-suite("URI Tests", () => {
+describe("URI Tests", () => {
 
 	// describe('URI Parse', function(){
     //     it('Basic', () => {
@@ -86,5 +86,5 @@ suite("URI Tests", () => {
     //         assert.equal(result["scheme"], "file");
     //     });
     // });
-        
+
 });

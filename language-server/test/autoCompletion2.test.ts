@@ -12,7 +12,7 @@ var assert = require('assert');
 let languageService = getLanguageService(schemaRequestService, [], null, workspaceContext);
 
 
-let uri = 'http://json.schemastore.org/composer';
+let uri = 'https://raw.githubusercontent.com/composer/composer/master/res/composer-schema.json';
 let languageSettings = {
 	schemas: []
 };
@@ -20,7 +20,7 @@ let fileMatch = ["*.yml", "*.yaml"];
 languageSettings.schemas.push({ uri, fileMatch: fileMatch });
 languageService.configure(languageSettings);
 
-suite("Auto Completion Tests", () => {
+describe("Auto Completion Tests", () => {
 
 	function parseSetup(content: string, position){
 		let document = TextDocument.create("file://~/Desktop/vscode-k8s/test.yaml", "yaml", 0, content);

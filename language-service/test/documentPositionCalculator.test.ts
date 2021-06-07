@@ -5,7 +5,7 @@
 import {binarySearch, getLineStartPositions, getPosition } from '../src/utils/documentPositionCalculator';
 var assert = require('assert');
 
-suite("DocumentPositionCalculator Tests", () => {
+describe("DocumentPositionCalculator Tests", () => {
 
 		describe('binarySearch', function(){
 

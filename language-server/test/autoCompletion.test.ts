@@ -20,7 +20,7 @@ let fileMatch = ["*.yml", "*.yaml"];
 languageSettings.schemas.push({ uri, fileMatch: fileMatch });
 languageService.configure(languageSettings);
 
-suite("Auto Completion Tests", () => {
+describe("Auto Completion Tests", () => {
 
 
 	describe('yamlCompletion with bowerrc', function(){

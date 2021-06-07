@@ -21,7 +21,7 @@ languageSettings.schemas.push({ uri, fileMatch: fileMatch });
 languageService.configure(languageSettings);
 
 // Defines a Mocha test suite to group tests of similar kind together
-suite("Validation Tests", () => {
+describe("Validation Tests", () => {
 
 	// Tests for validator
 	describe('Validation', function() {
@@ -43,7 +43,7 @@ suite("Validation Tests", () => {
 				let content = `testing: true`;
 				let validator = parseSetup(content);
 				validator.then(function(result){
-					assert.NotEqual(result.length, 0);
+					assert.notEqual(result.length, 0);
 				}).then(done, done);
 			});
 
