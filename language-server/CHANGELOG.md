@@ -1,3 +1,6 @@
+#### 0.6.2
+- Dependency updates
+
 #### 0.6.1
 - Webpack
 
