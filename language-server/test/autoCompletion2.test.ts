@@ -12,7 +12,7 @@ var assert = require('assert');
 let languageService = getLanguageService(schemaRequestService, [], null, workspaceContext);
 
 
-let uri = 'http://json.schemastore.org/composer';
+let uri = 'https://raw.githubusercontent.com/composer/composer/master/res/composer-schema.json';
 let languageSettings = {
 	schemas: []
 };
