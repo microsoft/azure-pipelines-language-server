@@ -1,7 +1,7 @@
 {
   "name": "azure-pipelines-language-service",
   "description": "Azure Pipelines language service",
-  "version": "0.6.1",
+  "version": "0.6.2",
   "author": "Microsoft",
   "license": "MIT",
   "main": "./lib/index.js",
