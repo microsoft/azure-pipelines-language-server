@@ -96,7 +96,7 @@ jobs:
 
 # create a GitHub Release
     - ${{ if eq( parameters.configuration, 'release') }}:
-      - bash: npm install
+      - bash: npm install @octokit/rest
         displayName: Prepare to create GitHub Release
         workingDirectory: '$(Build.SourcesDirectory)/.pipelines/github-release'
 
