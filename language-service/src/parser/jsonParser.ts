@@ -690,26 +690,6 @@ export class ObjectASTNode extends ASTNode {
 		return true;
 	}
 
-	public getFirstProperty(): PropertyASTNode | undefined {
-		if (this.properties.length === 0) {
-			return undefined;
-		}
-
-		let firstProperty = this.properties[0];
-		while (firstProperty instanceof CompileTimeExpressionASTNode) {
-			// TODO: Do we need to check to see if properties actually has anything?
-			if (firstProperty.value instanceof ObjectASTNode) {
-				firstProperty = firstProperty.value.properties[0];
-			} else if (firstProperty.value instanceof ArrayASTNode) {
-				firstProperty = (firstProperty.value.items[0] as ObjectASTNode).properties[0];
-			} else {
-				// Unknown case - bail
-				return undefined;
-			}
-		}
-		return firstProperty;
-	}
-
 	public getValue(): any {
 		let value: any = Object.create(null);
 		this.properties.forEach((p) => {
@@ -737,18 +717,11 @@ export class ObjectASTNode extends ASTNode {
 		super.validate(schema, validationResult, matchingSchemas);
 		let seenKeys: ASTNodeMap = Object.create(null);
 		let unprocessedProperties: string[] = [];
-		let hasSpecialArrayKey = false;
 		this.properties.forEach(node => {
 			const key: string = node.key.value;
 
 			// Replace the merge key with the actual values of what the node value points to in seen keys
-			// Same thing with CTEs
-			if(key === "<<" || node instanceof CompileTimeExpressionASTNode) {
-				// Validate the CTE independently
-				if (node instanceof CompileTimeExpressionASTNode) {
-					node.validate(schema, validationResult, matchingSchemas);
-				}
-
+			if (key === "<<") {
 				switch(node.value.type) {
 					case "object": {
 						node.value["properties"].forEach(propASTNode => {
@@ -759,11 +732,13 @@ export class ObjectASTNode extends ASTNode {
 						break;
 					}
 					case "array": {
-						// Ignore this property and hoist everything under it as children of the parent array
 						node.value["items"].forEach(sequenceNode => {
-							(this.parent as ArrayASTNode).items.push(sequenceNode);
+							sequenceNode["properties"].forEach(propASTNode => {
+								const seqKey = propASTNode.key.value;
+								seenKeys[seqKey] = propASTNode.value;
+								unprocessedProperties.push(seqKey);
+							});
 						});
-						hasSpecialArrayKey = true;
 						break;
 					}
 					default: {
@@ -775,17 +750,6 @@ export class ObjectASTNode extends ASTNode {
 				unprocessedProperties.push(key);
 			}
 		});
-
-		if (hasSpecialArrayKey) {
-			if (this.properties.length > 1) {
-				validationResult.addProblem({
-					location: { start: this.start, end: this.end },
-					severity: ProblemSeverity.Error,
-					getMessage: () => localize('MultipleSpecialKeysError', 'Expected at most one merge key or compile-time expression, found {0}.', this.properties.length)
-				});
-			}
-			return;
-		}
 
 		const findMatchingProperties = (propertyKey: string): ASTNodeMap => {
 			let result: ASTNodeMap = Object.create(null);
@@ -1040,7 +1004,7 @@ export class ObjectASTNode extends ASTNode {
 		}
 
 		if (schema.firstProperty?.length) {
-			const firstProperty = this.getFirstProperty();
+			const firstProperty = this.properties[0];
 			if (firstProperty?.key?.value) {
 				let firstPropKey: string = firstProperty.key.value;
 
@@ -1094,8 +1058,8 @@ export class ObjectASTNode extends ASTNode {
 	}
 
 	protected getFirstPropertyMatches(subSchemas: JSONSchema[]): JSONSchema[] {
-		const firstProperty = this.getFirstProperty();
-		if (!(firstProperty?.key?.value)) {
+		const firstProperty = this.properties[0];
+		if (!firstProperty?.key?.value) {
 			return [];
 		}
 
@@ -1143,87 +1107,6 @@ export class ObjectASTNode extends ASTNode {
 		});
 
 		return matches;
-	}
-}
-
-export class CompileTimeExpressionASTNode extends PropertyASTNode {
-	constructor(parent: ASTNode, key: StringASTNode) {
-		super(parent, key);
-		this.type = "cte";
-	}
-
-	public validate(schema: JSONSchema, validationResult: ValidationResult, matchingSchemas: ISchemaCollector): void {
-		if (!this.key.value.endsWith("}}")) {
-			validationResult.addProblem({
-				location: { start: this.start, end: this.end },
-				severity: ProblemSeverity.Error,
-				getMessage: () => localize('cteInvalidEndingError', "Compile-time expressions must end in }}")
-			});
-			return;
-		}
-
-		// Slice the beginning ${{ and ending }}
-		const expression = this.key.value.slice(3, -2).trim();
-		if (!expression.length) {
-			validationResult.addProblem({
-				location: { start: this.start, end: this.end },
-				severity: ProblemSeverity.Error,
-				getMessage: () => localize('cteNoExpressionError', "Compile-time expressions must contain an expression")
-			});
-			return;
-		}
-
-		// TODO: Locations from here on out can be improved
-		const keyword = /^(if|each)\b/.exec(expression)?.[1];
-		if (keyword === undefined) {
-			validationResult.addProblem({
-				location: { start: this.start, end: this.end },
-				severity: ProblemSeverity.Error,
-				getMessage: () => localize('cteNoKeywordError', "Compile-time expressions must begin with an 'if' or 'each' keyword")
-			});
-			return;
-		}
-
-		const condition = expression.substring(expression.indexOf(keyword) + keyword.length).trim();
-		if (!condition.length) {
-			validationResult.addProblem({
-				location: { start: this.start, end: this.end },
-				severity: ProblemSeverity.Error,
-				getMessage: () => localize('cteNoConditionError', "Missing condition after {0}", keyword)
-			});
-			return;
-		}
-
-		if (keyword === "each") {
-			const conditionParts = condition.split(" ");
-			if (conditionParts.length !== 3) {
-				validationResult.addProblem({
-					location: { start: this.start, end: this.end },
-					severity: ProblemSeverity.Error,
-					getMessage: () => localize('cteMalformedEachError', "Each condition must be in the format '<value> in <array>'")
-				});
-			} else {
-				if (!/^[a-z_][\w_]*$/i.test(conditionParts?.[0])) {
-					validationResult.addProblem({
-						location: { start: this.start, end: this.end },
-						severity: ProblemSeverity.Error,
-						getMessage: () => localize('cteMissingVariableError', "Each condition must start with a variable")
-					});
-				}
-
-				if (conditionParts?.[1] !== "in") {
-					validationResult.addProblem({
-						location: { start: this.start, end: this.end },
-						severity: ProblemSeverity.Error,
-						getMessage: () => localize('cteMissingInError', "Each condition is missing the 'in' keyword")
-					});
-				}
-
-				// TODO: Validation for the third part
-			}
-		} else {
-			// TODO: Validation for if
-		}
 	}
 }
 

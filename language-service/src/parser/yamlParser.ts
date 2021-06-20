@@ -5,7 +5,7 @@
  *--------------------------------------------------------------------------------------------*/
 'use strict';
 
-import { ASTNode, BooleanASTNode, NullASTNode, ArrayASTNode, NumberASTNode, ObjectASTNode, PropertyASTNode, StringASTNode, JSONDocument, CompileTimeExpressionASTNode } from './jsonParser';
+import { ASTNode, BooleanASTNode, NullASTNode, ArrayASTNode, NumberASTNode, ObjectASTNode, PropertyASTNode, StringASTNode, JSONDocument } from './jsonParser';
 
 import * as nls from 'vscode-nls';
 const localize = nls.loadMessageBundle();
@@ -91,9 +91,7 @@ function recursivelyBuildAst(parent: ASTNode, node: Yaml.YAMLNode): ASTNode {
 
 			const result = new ObjectASTNode(parent, null, node.startPosition, node.endPosition);
 
-			for (const mapping of instance.mappings) {
-				result.addProperty(<PropertyASTNode>recursivelyBuildAst(result, mapping));
-			}
+			addPropertiesToObjectNode(result, instance.mappings);
 
 			return result;
 		}
@@ -106,7 +104,7 @@ function recursivelyBuildAst(parent: ASTNode, node: Yaml.YAMLNode): ASTNode {
 			const keyNode = new StringASTNode(null, null, true, key.startPosition, key.endPosition);
 			keyNode.value = key.value;
 
-			const result = key.value.startsWith("${{") ? new CompileTimeExpressionASTNode(parent, keyNode) : new PropertyASTNode(parent, keyNode);
+			const result = new PropertyASTNode(parent, keyNode);
 			result.end = instance.endPosition;
 
 			const valueNode = (instance.value) ? recursivelyBuildAst(result, instance.value) : new NullASTNode(parent, key.value, instance.endPosition, instance.endPosition);
@@ -121,19 +119,7 @@ function recursivelyBuildAst(parent: ASTNode, node: Yaml.YAMLNode): ASTNode {
 
 			const result = new ArrayASTNode(parent, null, instance.startPosition, instance.endPosition);
 
-			let count = 0;
-			for (const item of instance.items) {
-				if (item === null && count === instance.items.length - 1) {
-					break;
-				}
-
-				// Be aware of https://github.com/nodeca/js-yaml/issues/321
-				// Cannot simply work around it here because we need to know if we are in Flow or Block
-				var itemNode = (item === null) ? new NullASTNode(parent, null, instance.endPosition, instance.endPosition) : recursivelyBuildAst(result, item);
-
-				itemNode.location = count++;
-				result.addItem(itemNode);
-			}
+			addItemsToArrayNode(result, instance.items);
 
 			return result;
 		}
@@ -190,6 +176,53 @@ function recursivelyBuildAst(parent: ASTNode, node: Yaml.YAMLNode): ASTNode {
 			result.value = node.value;
 			return result;
 		}
+	}
+}
+
+// These two helper functions exist to add support for compile-time expressions.
+// Basically, they just hoist the entries under the expression to its parent
+// and remove the expression from the parsed YAML.
+function addPropertiesToObjectNode(node: ObjectASTNode, properties: Yaml.YAMLMapping[]): void {
+	for (const property of properties) {
+		if (property.key.value.startsWith("${{")) {
+			if (property.value !== null) {
+				addPropertiesToObjectNode(node, property.value.mappings);
+			}
+		} else {
+			node.addProperty(<PropertyASTNode>recursivelyBuildAst(node, property));
+		}
+	}
+}
+
+function addItemsToArrayNode(node: ArrayASTNode, items: Yaml.YAMLNode[]): void {
+	let count = 0;
+	for (const item of items) {
+		// TODO: What the heck is this check
+		if (item === null && count === items.length - 1) {
+			break;
+		}
+
+		let itemNode: ASTNode;
+		if (item === null) {
+			// Be aware of https://github.com/nodeca/js-yaml/issues/321
+			// Cannot simply work around it here because we need to know if we are in Flow or Block
+			itemNode = new NullASTNode(node.parent, null, node.end, node.end);
+		} else {
+			if (item.kind === Yaml.Kind.MAP && item.mappings[0].key.value.startsWith("${{")) {
+				if (item.mappings[0].value !== null) {
+					addItemsToArrayNode(node, item.mappings[0].value.items);
+					count++;
+				}
+				continue;
+			} else {
+				itemNode = recursivelyBuildAst(node, item);
+			}
+		}
+
+		itemNode.location = node.items.length;
+		node.addItem(itemNode);
+
+		count++;
 	}
 }
 
