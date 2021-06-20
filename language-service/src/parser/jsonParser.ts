@@ -721,7 +721,7 @@ export class ObjectASTNode extends ASTNode {
 			const key: string = node.key.value;
 
 			// Replace the merge key with the actual values of what the node value points to in seen keys
-			if (key === "<<") {
+			if (key === "<<" && node.value) {
 				switch(node.value.type) {
 					case "object": {
 						node.value["properties"].forEach(propASTNode => {
