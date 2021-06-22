@@ -690,6 +690,9 @@ export class ObjectASTNode extends ASTNode {
 		return true;
 	}
 
+	// TODO: This assumes there are no duplicate properties,
+	// but it would be nice if we could provide hover documentation
+	// for all properties, even if they're duplicated later on.
 	public getValue(): any {
 		let value: any = Object.create(null);
 		this.properties.forEach((p) => {
