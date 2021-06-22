@@ -101,7 +101,7 @@ steps:
       a`, {line: 5, character: 7}, {minimum: 1});
         const labels = list.items.map(item => item.label);
         assert.ok(labels.includes('azureSubscription'));
-    })
+    });
 });
 
 const workspaceContext = {

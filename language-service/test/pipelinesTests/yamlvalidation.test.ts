@@ -42,7 +42,12 @@ jobs:
         const diagnostics = await runValidationTest(`
 steps:
 - \${{ if succeeded() }}:
-  - pwsh: Write-Output "Hello"
+  - task: npmAuthenticate@0
+    inputs:
+      \${{ if ne(variables['Build.Reason'], 'PullRequest') }}:
+        workingFile: .npmrc
+      \${{ if eq(variables['Build.Reason'], 'PullRequest') }}:
+        workingFile: .other_npmrc
 `);
         assert.equal(diagnostics.length, 0);
     });
