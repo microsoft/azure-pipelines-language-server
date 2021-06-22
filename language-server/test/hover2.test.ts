@@ -20,7 +20,7 @@ let fileMatch = ["*.yml", "*.yaml"];
 languageSettings.schemas.push({ uri, fileMatch: fileMatch });
 languageService.configure(languageSettings);
 
-suite("Hover Tests", () => {
+describe("Hover Tests", () => {
 
 
 	describe('Yaml Hover with composer schema', function(){

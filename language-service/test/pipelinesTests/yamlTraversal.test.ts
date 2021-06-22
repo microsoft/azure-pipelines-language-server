@@ -4,15 +4,15 @@ import { YAMLTraversal, YamlNodeInfo, YamlNodePropertyValues } from '../../src/s
 import { TextDocument } from 'vscode-languageserver-textdocument';
 import { Position } from 'vscode-languageserver-types';
 
-suite("Yaml Traversal Service Tests", function () {
+describe("Yaml Traversal Service Tests", function () {
     this.timeout(20000);
 
-    test('Empty file should have no results', async function () {
+    it('Empty file should have no results', async function () {
         const results = await findNodes("", "testnode");
         assert.equal(results.length, 0, "length");
     });
 
-    test('find a node', async function () {
+    it('find a node', async function () {
         const results = await findNodes("- testnode: test", "testnode");
         assert.equal(results.length, 1, "length");
         assert.equal(results[0].key, "testnode", "key");
@@ -23,7 +23,7 @@ suite("Yaml Traversal Service Tests", function () {
         assert.equal(results[0].endPosition.line, 0, "line");
     });
 
-    test('find a node in the middle of the document', async function () {
+    it('find a node in the middle of the document', async function () {
         const results = await findNodes("- somecontent: content\n- testnode: test\n- morecontent: content", "testnode");
         assert.equal(results.length, 1, "length");
         assert.equal(results[0].key, "testnode", "key");
@@ -34,7 +34,7 @@ suite("Yaml Traversal Service Tests", function () {
         assert.equal(results[0].endPosition.line, 1, "line");
     });
 
-    test('find multiple nodes', async function () {
+    it('find multiple nodes', async function () {
         const results = await findNodes("- somecontent: content\n- testnode: test\n- morecontent: content\n- testnode: test2\n- testnode: test3", "testnode");
         assert.equal(results.length, 3, "length");
         assert.equal(results[0].key, "testnode", "key0");
@@ -57,7 +57,7 @@ suite("Yaml Traversal Service Tests", function () {
         assert.equal(results[2].endPosition.line, 4, "line2");
     });
 
-    test('realistic example', async function () {
+    it('realistic example', async function () {
         const results = await findNodes(testYaml(), "task");
         assert.equal(results.length, 4, "length");
         assert.equal(results[0].key, "task", "key0");
@@ -86,7 +86,7 @@ suite("Yaml Traversal Service Tests", function () {
         assert.equal(results[3].endPosition.line, 29, "line3");
     });
 
-    test('get inputs', async function () {
+    it('get inputs', async function () {
         const results = findInputs(testYaml(), { line: 5, character: 8 });
         assert.equal(Object.keys(results.values).length, 4);
         assert.equal(results.values["command"], "test");
@@ -95,7 +95,7 @@ suite("Yaml Traversal Service Tests", function () {
         assert.equal(results.values["publishTestResults"], true);
     });
 
-    test('fail to get inputs', async function () {
+    it('fail to get inputs', async function () {
       const results = findInputs(testYaml(), { line: 3, character: 2 });
       assert.equal(results.values, null);
   });

@@ -16,10 +16,10 @@ interface Suggestions {
     maximum?: number
 }
 
-suite("Yaml Completion Service Tests", function () {
+describe("Yaml Completion Service Tests", function () {
     this.timeout(20000);
 
-    test('Given empty file completion should give suggestions', async function () {
+    it('Given empty file completion should give suggestions', async function () {
        const list = await runTaskCompletionItemsTest("", {line: 0, character: 0}, {});
        const labels = list.items.map(item => item.label);
        assert.equal(labels.filter(l => l === "name").length, 1);
@@ -28,30 +28,30 @@ suite("Yaml Completion Service Tests", function () {
        assert.equal(labels.filter(l => l === "server").length, 0, "obsolete should not be suggested");
     });
 
-    test('Given steps context completion should give suggestions of possible steps', async function () {
+    it('Given steps context completion should give suggestions of possible steps', async function () {
         await runTaskCompletionItemsTest("steps:\n- ", {line: 1, character: 2}, {expected: 7});
      });
 
-    test('Given an already valid file with task name, autocomplete should still give all suggestions', async function () {
+    it('Given an already valid file with task name, autocomplete should still give all suggestions', async function () {
         await runTaskCompletionItemsTest('steps:\n- task: npmAuthenticate@0', {line: 1, character: 26}, {minimum: 100});
     });
 
-    test ('Given a new file with steps and task, autocomplete should give suggestions', async function() {
+    it('Given a new file with steps and task, autocomplete should give suggestions', async function() {
          await runTaskCompletionItemsTest('steps:\n  - task: ', {line: 1, character: 10}, {minimum: 100});
     });
 
-    test ('All completion text for properties should end with `:`', async function() {
+    it('All completion text for properties should end with `:`', async function() {
         const list = await runTaskCompletionItemsTest('', {line: 0, character: 0}, {});
         list.items.forEach(item => {
             assert.equal(item.textEdit.newText.search(":") > 0, true, "new text should contain `:`");
         });
     });
 
-    test ('trailing whitespace does not affect suggestions', async function() {
+    it('trailing whitespace does not affect suggestions', async function() {
         await runTaskCompletionItemsTest('strategy:\n   ', {line: 1, character: 2}, {expected: 3});
     });
 
-    test ('case insensitive matching keys are not suggested', async function() {
+    it('case insensitive matching keys are not suggested', async function() {
         //first make sure that the azureAppServiceManage is still in the schema and has an Action input
         {
             const list = await runTaskCompletionItemsTest('steps:\n- task: azureAppServiceManage@0\n  inputs:\n    ', {line: 3, character: 4}, {minimum: 6});
@@ -67,7 +67,7 @@ suite("Yaml Completion Service Tests", function () {
         }
     });
 
-    test ('alias matching keys are not suggested', async function() {
+    it('alias matching keys are not suggested', async function() {
         //first make sure that azureSubscription is still in the schema
         {
             const list = await runTaskCompletionItemsTest('steps:\n- task: azureAppServiceManage@0\n  inputs:\n    ACTION: Restart Azure App Service\n    ', {line: 4, character: 4}, {minimum: 6});

@@ -23,7 +23,7 @@ languageSettings.customTags.push("!Ref sequence");
 languageService.configure(languageSettings);
 
 // Defines a Mocha test suite to group tests of similar kind together
-suite("Validation Tests", () => {
+describe("Validation Tests", () => {
 
 	// Tests for validator
 	describe('Validation', function() {

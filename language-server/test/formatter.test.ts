@@ -22,7 +22,7 @@ languageSettings.customTags.push("!Test");
 languageService.configure(languageSettings);
 
 // Defines a Mocha test suite to group tests of similar kind together
-suite("Formatter Tests", () => {
+describe("Formatter Tests", () => {
 
     // Tests for validator
     describe('Formatter', function () {
