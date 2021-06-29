@@ -4,7 +4,7 @@ import * as JSONSchemaService from '../../src/services/jsonSchemaService';
 import { JSONSchema } from '../../src/jsonSchema';
 import * as URL from 'url';
 import { TextDocument } from 'vscode-languageserver-textdocument';
-import { Position, Diagnostic } from 'vscode-languageserver-types';
+import { Diagnostic } from 'vscode-languageserver-types';
 import * as yamlparser from '../../src/parser/yamlParser'
 import { Thenable } from '../../src/yamlLanguageService';
 import * as assert from 'assert';
@@ -12,15 +12,44 @@ import * as assert from 'assert';
 describe("Yaml Validation Service Tests", function () {
     this.timeout(20000);
 
-    it('Given empty file validation should pass', async function () {
-       const list = await runValidationTest("", {line: 0, character: 0});
-       assert.equal(list.length, 0);
+    it('validates empty files', async function () {
+       const diagnostics = await runValidationTest("");
+       assert.equal(diagnostics.length, 0);
     });
 
-    it('multi-document file should be rejected', async function () {
-        const list = await runValidationTest("---\njobs:\n- job: some_job\n  invalid_parameter: bad value\n  invalid_parameter: duplicate key\n  another_invalid_parameter: whatever\n===\n---\njobs:\n- job: some_job\n  invalid_parameter: bad value\n  invalid_parameter: duplicate key\n  another_invalid_parameter: whatever\n===\n", {line: 0, character: 0});
-        assert.equal(list.length, 1);
-        assert.ok(list[0].message.indexOf("single-document") >= 0);
+    it('rejects multi-document files with only one error', async function () {
+        const diagnostics = await runValidationTest(`
+---
+jobs:
+- job: some_job
+  invalid_parameter: bad value
+  invalid_parameter: duplicate key
+  another_invalid_parameter: whatever
+===
+---
+jobs:
+- job: some_job
+  invalid_parameter: bad value
+  invalid_parameter: duplicate key
+  another_invalid_parameter: whatever
+===
+`);
+        assert.equal(diagnostics.length, 1);
+        assert.ok(diagnostics[0].message.indexOf("single-document") >= 0);
+    });
+
+    it('validates pipelines with expressions', async function () {
+        const diagnostics = await runValidationTest(`
+steps:
+- \${{ if succeeded() }}:
+  - task: npmAuthenticate@0
+    inputs:
+      \${{ if ne(variables['Build.Reason'], 'PullRequest') }}:
+        workingFile: .npmrc
+      \${{ if eq(variables['Build.Reason'], 'PullRequest') }}:
+        workingFile: .other_npmrc
+`);
+        assert.equal(diagnostics.length, 0);
     });
 });
 
@@ -42,17 +71,14 @@ const schemaResolver = (url: string): Promise<JSONSchema> => {
     return Promise.resolve(JSONSchemaService.ParseSchema(url));
 }
 
-
-// Given a file and a position, this test expects the task list to show as completion items.
-async function runValidationTest(content: string, position: Position): Promise<Diagnostic[]> {
-    // Arrange
+// Given a file's content, returns the diagnostics found.
+async function runValidationTest(content: string): Promise<Diagnostic[]> {
     const schemaUri: string = "test/pipelinesTests/schema.json";
     const schemaService = new JSONSchemaService.JSONSchemaService(schemaResolver, workspaceContext, requestService);
 
     const yamlValidation = new YAMLValidation(schemaService, Promise);
     const textDocument: TextDocument = TextDocument.create(schemaUri, "azure-pipelines", 1, content);
     const yamlDoc = yamlparser.parse(content);
-
 
     return await yamlValidation.doValidation(textDocument, yamlDoc);
 }

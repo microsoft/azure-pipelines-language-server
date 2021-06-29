@@ -57,6 +57,15 @@ describe("Yaml Traversal Service Tests", function () {
         assert.equal(results[2].endPosition.line, 4, "line2");
     });
 
+    it('does not include expressions', async function () {
+      const results = await findNodes(`
+steps:
+- \${{ if succeeded() }}:
+  - task: npmAuthenticate@0
+`, "${{ if succeeded() }}");
+      assert.equal(results.length, 0);
+    });
+
     it('realistic example', async function () {
         const results = await findNodes(testYaml(), "task");
         assert.equal(results.length, 4, "length");

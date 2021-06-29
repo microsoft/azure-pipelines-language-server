@@ -82,6 +82,26 @@ describe("Yaml Completion Service Tests", function () {
             assert.equal(labels.filter(l => l.toUpperCase() === "azureSubscription".toUpperCase()).length, 0);
         }
     });
+
+    it('suggests tasks under expressions', async function() {
+        const list = await runTaskCompletionItemsTest(`
+steps:
+- \${{ if succeeded() }}:
+  - `, {line: 3, character: 4}, {expected: 7});
+        const labels = list.items.map(item => item.label);
+        assert.ok(labels.includes('task'));
+    });
+
+    it('suggests properties under expressions', async function() {
+        const list = await runTaskCompletionItemsTest(`
+steps:
+- task: azureAppServiceManage@0
+  inputs:
+    \${{ if succeeded() }}:
+      a`, {line: 5, character: 7}, {minimum: 1});
+        const labels = list.items.map(item => item.label);
+        assert.ok(labels.includes('azureSubscription'));
+    });
 });
 
 const workspaceContext = {

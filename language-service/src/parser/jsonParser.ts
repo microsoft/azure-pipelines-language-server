@@ -468,13 +468,12 @@ export class ArrayASTNode extends ASTNode {
 					});
 				}
 			}
-		}
-		else if (schema.items) {
-			this.items.forEach((item) => {
+		} else if (schema.items) {
+			for (let item of this.items) {
 				let itemValidationResult = new ValidationResult();
 				item.validate(<JSONSchema>schema.items, itemValidationResult, matchingSchemas);
 				validationResult.mergePropertyMatch(itemValidationResult);
-			});
+			}
 		}
 
 		if (schema.minItems && this.items.length < schema.minItems) {
@@ -691,19 +690,9 @@ export class ObjectASTNode extends ASTNode {
 		return true;
 	}
 
-	public getFirstProperty(key: string): PropertyASTNode {
-		for (let i = 0; i < this.properties.length; i++) {
-			if (this.properties[i].key.value === key) {
-				return this.properties[i];
-			}
-		}
-		return null;
-	}
-
-	public getKeyList(): string[] {
-		return this.properties.map((p) => p.key.getValue());
-	}
-
+	// TODO: This assumes there are no duplicate properties,
+	// but it would be nice if we could provide hover documentation
+	// for all properties, even if they're duplicated later on.
 	public getValue(): any {
 		let value: any = Object.create(null);
 		this.properties.forEach((p) => {
@@ -731,13 +720,11 @@ export class ObjectASTNode extends ASTNode {
 		super.validate(schema, validationResult, matchingSchemas);
 		let seenKeys: ASTNodeMap = Object.create(null);
 		let unprocessedProperties: string[] = [];
-		this.properties.forEach((node) => {
-
+		this.properties.forEach(node => {
 			const key: string = node.key.value;
 
-			//Replace the merge key with the actual values of what the node value points to in seen keys
-			if(key === "<<" && node.value) {
-
+			// Replace the merge key with the actual values of what the node value points to in seen keys
+			if (key === "<<" && node.value) {
 				switch(node.value.type) {
 					case "object": {
 						node.value["properties"].forEach(propASTNode => {
@@ -761,7 +748,7 @@ export class ObjectASTNode extends ASTNode {
 						break;
 					}
 				}
-			}else{
+			} else {
 				seenKeys[key] = node.value;
 				unprocessedProperties.push(key);
 			}
@@ -1019,11 +1006,9 @@ export class ObjectASTNode extends ASTNode {
 			});
 		}
 
-		if (schema.firstProperty && schema.firstProperty.length &&
-			this.properties && this.properties.length) {
-			const firstProperty: PropertyASTNode = this.properties[0];
-
-			if (firstProperty.key && firstProperty.key.value) {
+		if (schema.firstProperty?.length) {
+			const firstProperty = this.properties[0];
+			if (firstProperty?.key?.value) {
 				let firstPropKey: string = firstProperty.key.value;
 
 				if (!schema.firstProperty.some((listProperty: string) => {
@@ -1076,12 +1061,8 @@ export class ObjectASTNode extends ASTNode {
 	}
 
 	protected getFirstPropertyMatches(subSchemas: JSONSchema[]): JSONSchema[] {
-		if (!this.properties || !this.properties.length) {
-			return [];
-		}
-
-		const firstProperty: PropertyASTNode = this.properties[0];
-		if (!firstProperty.key || !firstProperty.key.value) {
+		const firstProperty = this.properties[0];
+		if (!firstProperty?.key?.value) {
 			return [];
 		}
 
