@@ -1,3 +1,6 @@
+#### 0.6.3
+- Add basic support for expressions
+
 #### 0.6.2
 - Dependency updates
 
