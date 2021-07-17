@@ -51,6 +51,14 @@ steps:
 `);
         assert.equal(diagnostics.length, 0);
     });
+
+    it('validates pipelines with dynamically-generated variables', async function () {
+        const diagnostics = await runValidationTest(`
+variables:
+  \${{ parameters.environment }}Release: true
+`);
+      assert.equal(diagnostics.length, 0);
+    });
 });
 
 const workspaceContext = {
