@@ -184,7 +184,9 @@ function recursivelyBuildAst(parent: ASTNode, node: Yaml.YAMLNode): ASTNode {
 // and remove the expression from the parsed YAML.
 function addPropertiesToObjectNode(node: ObjectASTNode, properties: Yaml.YAMLMapping[]): void {
 	for (const property of properties) {
-		if (property.key.value.startsWith("${{")) {
+		// The endsWith check is necessary because you can have dynamically-generated variables;
+		// for example, ${{ environment }}Release: true.
+		if (property.key.value.startsWith("${{") && property.key.value.endsWith("}}")) {
 			if (property.value !== null) {
 				addPropertiesToObjectNode(node, property.value.mappings);
 			}
@@ -208,7 +210,9 @@ function addItemsToArrayNode(node: ArrayASTNode, items: Yaml.YAMLNode[]): void {
 			// Cannot simply work around it here because we need to know if we are in Flow or Block
 			itemNode = new NullASTNode(node.parent, null, node.end, node.end);
 		} else {
-			if (item.kind === Yaml.Kind.MAP && item.mappings[0].key.value.startsWith("${{")) {
+			if (item.kind === Yaml.Kind.MAP &&
+				item.mappings[0].key.value.startsWith("${{") &&
+				item.mappings[0].key.value.endsWith("}}")) {
 				if (item.mappings[0].value !== null) {
 					addItemsToArrayNode(node, item.mappings[0].value.items);
 					count++;
