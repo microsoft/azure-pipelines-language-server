@@ -1,7 +1,7 @@
 {
   "name": "azure-pipelines-language-server",
   "description": "Azure Pipelines language server",
-  "version": "0.6.3",
+  "version": "0.6.4",
   "author": "Microsoft",
   "license": "MIT",
   "contributors": [
