@@ -187,7 +187,8 @@ function addPropertiesToObjectNode(node: ObjectASTNode, properties: Yaml.YAMLMap
 		// The endsWith check is necessary because you can have dynamically-generated variables;
 		// for example, ${{ environment }}Release: true.
 		if (property.key.value.startsWith("${{") && property.key.value.endsWith("}}")) {
-			if (property.value !== null) {
+			// Ensure we have a value (object) _and_ that the value has mappings (properties).
+			if (property.value?.mappings !== undefined) {
 				addPropertiesToObjectNode(node, property.value.mappings);
 			}
 		} else {
