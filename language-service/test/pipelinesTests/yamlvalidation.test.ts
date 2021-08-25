@@ -57,7 +57,30 @@ steps:
 variables:
   \${{ parameters.environment }}Release: true
 `);
-      assert.equal(diagnostics.length, 0);
+        assert.equal(diagnostics.length, 0);
+    });
+
+    it.only('validates pipelines with unfinished conditional variable checks', async function () {
+        // Note: the real purpose of this test is to ensure we don't throw,
+        // but I can't figure out how to assert that yet.
+        // diagnostics.length can be whatever, as long as we get to that point :).
+        const diagnostics = await runValidationTest(`
+variables:
+  \${{ if eq(variables['Build.SourceBranch'], 'main') }}:
+`);
+        assert.equal(diagnostics.length, 0);
+  });
+
+    it('validates pipelines with unfinished conditionally-inserted variables', async function () {
+        // Note: the real purpose of this test is to ensure we don't throw,
+        // but I can't figure out how to assert that yet.
+        // diagnostics.length can be whatever, as long as we get to that point :).
+        const diagnostics = await runValidationTest(`
+variables:
+  \${{ if eq(variables['Build.SourceBranch'], 'main') }}:
+    j
+`);
+        assert.equal(diagnostics.length, 0);
     });
 });
 
