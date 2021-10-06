@@ -13,7 +13,15 @@
   1. Get to the right directory. `cd ../language-server`
   2. Update the dependency. `npm i azure-pipelines-language-service@0.1.2`
   3. Manually remove the `^` in `package.json` and `package-lock.json` for the language-service dependency. We release in lock-step and want to require an exact version.
-
+5. Release the server. (You're already in the right directory if you followed the above steps.)
+  1. Bump the language-server version. `npm version --no-git-tag-version 0.1.2`
+  2. Ensure there's an entry for this new version in the server `changelog.md`. (TODO/improvement: we should hardlink the server/service changelog files, as there's never a time when they should differ.)
+  3. Commit and push. `git commit -am "version server" && git push -u origin ship-0.1.2`
+  4. **This step creates a GitHub Release** Run the [server release pipeline][release-server], targeting your ship branch.
+  5. Assuming the build works, download the `.tgz` either from **Artifacts** on the build summary page or from the new GitHub release that was created.
+  6. Publish this to npm. `npm publish azure-pipelines-language-server-0.1.2.tgz`
+6. Create a PR from your ship branch to `main`. Merge it. :tada: you're done!
 
 [azure-pipelines]: https://dev.azure.com/ms/azure-pipelines-vscode/_build "Azure Pipelines project"
-[release-service]: https://dev.azure.com/ms/azure-pipelines-vscode/_build?definitionId=33 "Service release pipeline"
+[release-service]: https://dev.azure.com/ms/azure-pipelines-vscode/_build?definitionId=33 "Language service release pipeline"
+[release-server]: https://dev.azure.com/ms/azure-pipelines-vscode/_build?definitionId=34 "Language server release pipeline"
