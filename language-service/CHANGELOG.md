@@ -1,3 +1,6 @@
+#### 0.6.5
+- Conditional variable fixes - thanks @50Wliu
+
 #### 0.6.4
 - Handle dynamic variables - thanks @50Wliu
 
