@@ -88,6 +88,13 @@ export class YAMLCompletion {
             //console.log('type = string | nuber | boolean');
             const startPosition = document.positionAt(node.start);
             let endPosition = document.positionAt(node.end);
+            
+            // when a collon is already written for the property we don't want to insert one more colon,
+            // so the firts one can be overwritten
+            let hasColon = document.getText().substring(node.start, node.end+1).match(/\w+:/);
+            if(hasColon !=  null && hasColon.length > 0){
+                endPosition = document.positionAt(node.end + 1);
+            }
 
             // when start and end positions are not on the same line and node is a temporary holder then
             // we must have misplaced the end of the range one line below the start of the range
