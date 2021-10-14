@@ -91,8 +91,9 @@ export class YAMLCompletion {
             
             // when a collon is already written for the property we don't want to insert one more colon,
             // so the firts one can be overwritten
-            let hasColon = document.getText().substring(node.start, node.end+1).match(/\w+:/);
-            if(hasColon !=  null && hasColon.length > 0){
+            let hasColonRegex = new RegExp(/\w+:/);
+            let hasColon = hasColonRegex.test(document.getText().substring(node.start, node.end + 1));
+            if(hasColon){
                 endPosition = document.positionAt(node.end + 1);
             }
 
