@@ -60,7 +60,7 @@ variables:
         assert.equal(diagnostics.length, 0);
     });
 
-    it.only('validates pipelines with unfinished conditional variable checks', async function () {
+    it('validates pipelines with unfinished conditional variable checks', async function () {
         // Note: the real purpose of this test is to ensure we don't throw,
         // but I can't figure out how to assert that yet.
         // diagnostics.length can be whatever, as long as we get to that point :).

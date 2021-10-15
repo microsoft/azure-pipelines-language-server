@@ -4,7 +4,7 @@ import * as JSONSchemaService from '../../src/services/jsonSchemaService';
 import { JSONSchema } from '../../src/jsonSchema';
 import * as URL from 'url';
 import { TextDocument } from 'vscode-languageserver-textdocument';
-import { Position, CompletionList } from 'vscode-languageserver-types';
+import { Position, CompletionList, Range } from 'vscode-languageserver-types';
 import * as yamlparser from '../../src/parser/yamlParser'
 import { Thenable } from '../../src/yamlLanguageService';
 import * as assert from 'assert';
@@ -44,6 +44,16 @@ describe("Yaml Completion Service Tests", function () {
         const list = await runTaskCompletionItemsTest('', {line: 0, character: 0}, {});
         list.items.forEach(item => {
             assert.equal(item.textEdit.newText.search(":") > 0, true, "new text should contain `:`");
+        });
+    });
+
+    it('String properties replacement range should include colon', async function() {
+        const list = await runTaskCompletionItemsTest('steps:\n- scrip: ', {line: 1, character: 5}, {});
+        const expectedReplacementLength = "scrip:".length;
+        list.items.forEach(item => {
+            let actualRange: Range = item.textEdit['range'];
+            let actualLength = actualRange.end.character - actualRange.start.character;
+            assert.equal(actualLength, expectedReplacementLength);
         });
     });
 
