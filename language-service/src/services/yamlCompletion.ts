@@ -85,17 +85,8 @@ export class YAMLCompletion {
             nodeEndPos.character += 1;
             overwriteRange = Range.create(nodeStartPos, nodeEndPos);
         } else if (node && (node.type === 'string' || node.type === 'number' || node.type === 'boolean')) {
-            //console.log('type = string | nuber | boolean');
-            const startPosition = document.positionAt(node.start);
-            let endPosition = document.positionAt(node.end);
-
-            // when start and end positions are not on the same line and node is a temporary holder then
-            // we must have misplaced the end of the range one line below the start of the range
-            // because of the mismatch in line length between the temporary currentDoc with holder and actual document.
-            if (startPosition.line + 1 === endPosition.line && endPosition.character === 0 && node.location === nodeHolder) {
-                endPosition = document.positionAt(node.end - 1);
-            }
-            overwriteRange = Range.create(startPosition, endPosition);
+            //console.log('type = string | nuber | boolean');      
+            overwriteRange = this.getRangeForLiteralProperties(document, node);
         } else {
             //console.log('else');
             let overwriteStart = offset - currentWord.length;
@@ -219,6 +210,28 @@ export class YAMLCompletion {
                 return result;
             });
         });
+    }
+
+    private getRangeForLiteralProperties(document: TextDocument, node: Parser.ASTNode): Range {
+        const startPosition = document.positionAt(node.start);
+        let endPosition = document.positionAt(node.end);
+        
+        // when a colon is already written for the property we don't want to insert one more colon,
+        // so the first one can be overwritten
+        let hasColonRegex = new RegExp(/\w+:/);
+        let hasColon = hasColonRegex.test(document.getText().substring(node.start, node.end + 1));
+        if(hasColon){
+            endPosition = document.positionAt(node.end + 1);
+        }
+
+        // when start and end positions are not on the same line and node is a temporary holder then
+        // we must have misplaced the end of the range one line below the start of the range
+        // because of the mismatch in line length between the temporary currentDoc with holder and actual document.
+        if (startPosition.line + 1 === endPosition.line && endPosition.character === 0 && node.location === nodeHolder) {
+            endPosition = document.positionAt(node.end - 1);
+        }
+
+        return Range.create(startPosition, endPosition);
     }
 
     private arrayIsEmptyOrContainsKey(stringArray: string[], key: string): boolean {
