@@ -214,11 +214,27 @@ function addItemsToArrayNode(node: ArrayASTNode, items: Yaml.YAMLNode[]): void {
 			if (item.kind === Yaml.Kind.MAP &&
 				item.mappings[0].key.value.startsWith("${{") &&
 				item.mappings[0].key.value.endsWith("}}")) {
-				if (item.mappings[0].value !== null) {
+				const value = item.mappings[0].value;
+				if (value === null) {
+					continue;
+				}
+
+				if (value.kind === Yaml.Kind.SEQ) {
+					// e.g. conditionally adding steps to a job.
 					addItemsToArrayNode(node, item.mappings[0].value.items);
 					count++;
+					continue;
+				} else if (value.kind === Yaml.Kind.MAP) {
+					// e.g. looping through a stepList parameter and checking each value.
+					// NOTE: We don't have a great story for this as we can't validate
+					// the resulting ${{ pair.key }}: ${{ pair.value }} against the schema,
+					// so we currently just create an empty object with no properties.
+					// We might need to revisit this if we start providing LSP capabilities
+					// for expressions.
+					itemNode = recursivelyBuildAst(node, value);
+				} else {
+					throw new Error(`Unexpected kind ${value.kind}`);
 				}
-				continue;
 			} else {
 				itemNode = recursivelyBuildAst(node, item);
 			}

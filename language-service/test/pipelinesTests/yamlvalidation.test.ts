@@ -38,6 +38,8 @@ jobs:
         assert.ok(diagnostics[0].message.indexOf("single-document") >= 0);
     });
 
+    // In truth, these tests should probably all be rewritten to test parser/yamlParser,
+    // not services/yamlValidation.
     it('validates pipelines with expressions', async function () {
         const diagnostics = await runValidationTest(`
 steps:
@@ -82,6 +84,22 @@ variables:
 `);
         assert.equal(diagnostics.length, 0);
     });
+
+    it('validates pipelines with multiple levels of expression nesting', async function () {
+        // Note: the real purpose of this test is to ensure we don't throw,
+        // but I can't figure out how to assert that yet.
+        // diagnostics.length can be whatever, as long as we get to that point :).
+        const diagnostics = await runValidationTest(`
+steps:
+- \${{ each step in parameters.buildSteps }}:
+  - \${{ each pair in step }}:
+    \${{ if ne(pair.value, 'CmdLine@2') }}:
+      \${{ pair.key }}: \${{ pair.value }}
+    \${{ if eq(pair.value, 'CmdLine@2') }}:
+      '\${{ pair.value }}': error
+`);
+        assert.equal(diagnostics.length, 0);
+    })
 });
 
 const workspaceContext = {
