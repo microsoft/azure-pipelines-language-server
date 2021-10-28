@@ -1,3 +1,7 @@
+#### 0.6.6
+- Fixed property autocomplete adding unnecessary colons [#PR-113](https://github.com/microsoft/azure-pipelines-language-server/pull/113)
+- More conditional expression fixes [#PR-114](https://github.com/microsoft/azure-pipelines-language-server/pull/114)
+
 #### 0.6.5
 - Conditional variable fixes - thanks @50Wliu
 
@@ -59,7 +63,7 @@ Add support for property aliases [#PR-33](https://github.com/Microsoft/azure-pip
 Improve auto-complete suggestions [#PR-44](https://github.com/Microsoft/azure-pipelines-language-server/pull/44)
 Reject multi-document files [#PR-46](https://github.com/Microsoft/azure-pipelines-language-server/pull/46)
 
-#### 0.4.1 
+#### 0.4.1
 Fix bug where enums that looked like numbers would be marked invalid [#PR-29](https://github.com/Microsoft/azure-pipelines-language-server/pull/29)
 do not suggest case insensitive properties when a matching property is present [#PR-28](https://github.com/Microsoft/azure-pipelines-language-server/pull/28)
 Allow empty strings to be validated [#PR-30](https://github.com/Microsoft/azure-pipelines-language-server/pull/30)
