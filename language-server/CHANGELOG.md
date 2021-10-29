@@ -1,3 +1,7 @@
+#### 0.6.6
+- Fixed property autocomplete adding unnecessary colons [#PR-113](https://github.com/microsoft/azure-pipelines-language-server/pull/113)
+- More conditional expression fixes [#PR-114](https://github.com/microsoft/azure-pipelines-language-server/pull/114)
+
 #### 0.6.5
 - Conditional variable fixes - thanks @50Wliu
 
@@ -52,7 +56,7 @@ Changed name to reflect fork
 
 #### 0.0.15
 
-Updated formatter to use prettier [#Commit](https://github.com/redhat-developer/yaml-language-server/commit/feb604c35b8fb11747dfcb79a5d8570bf81b8f67) 
+Updated formatter to use prettier [#Commit](https://github.com/redhat-developer/yaml-language-server/commit/feb604c35b8fb11747dfcb79a5d8570bf81b8f67)
 Fixed dynamic registration of formatter [#74](https://github.com/redhat-developer/yaml-language-server/issues/74)
 
 #### 0.0.14
