@@ -97,6 +97,14 @@ describe("Validation Tests", () => {
 				}).then(done, done);
 			});
 
+			it('Emojis should not error', (done) => {
+				let content = `#comment\nkey: 🔨`;
+				let validator = parseSetup(content);
+				validator.then(function(result){
+					assert.equal(result.length, 0);
+				}).then(done, done);
+			});
+
 			it('Anchor with multiple references should not not error', (done) => {
 				let content = `default: &DEFAULT\n  name: Anchor\nanchor_test:\n  <<: *DEFAULT\nanchor_test2:\n  <<: *DEFAULT`;
 				let validator = parseSetup(content);

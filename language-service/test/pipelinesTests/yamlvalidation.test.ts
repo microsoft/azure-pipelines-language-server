@@ -17,6 +17,11 @@ describe("Yaml Validation Service Tests", function () {
        assert.equal(diagnostics.length, 0);
     });
 
+    it('validates files with emojis', async function () {
+      const diagnostics = await runValidationTest(`key: 🗝`);
+      assert.equal(diagnostics.length, 0);
+   });
+
     it('rejects multi-document files with only one error', async function () {
         const diagnostics = await runValidationTest(`
 ---
