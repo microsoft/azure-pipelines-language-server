@@ -18,7 +18,10 @@ describe("Yaml Validation Service Tests", function () {
     });
 
     it('validates files with emojis', async function () {
-      const diagnostics = await runValidationTest(`key: 🗝`);
+      const diagnostics = await runValidationTest(`
+steps:
+- pwsh: Write-Output 😊
+`);
       assert.equal(diagnostics.length, 0);
    });
 
