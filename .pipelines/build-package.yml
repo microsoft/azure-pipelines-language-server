@@ -32,9 +32,15 @@ jobs:
       parameters:
         root: ${{ parameters.root }}
 
-    # Install dependecies
-    - script: npm install
-      displayName: npm install
+    # Ensure npm 7+
+    - task: NodeTool@0
+      displayName: Install Node 16 LTS or greater
+      inputs:
+        versionSpec: ">=16.13.0"
+
+    # Install dependencies
+    - script: npm ci
+      displayName: npm ci
       workingDirectory: ${{ parameters.root }}
 
     # Build
