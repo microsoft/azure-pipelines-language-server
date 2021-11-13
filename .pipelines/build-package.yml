@@ -39,7 +39,7 @@ jobs:
         versionSpec: ">=16.13.0"
 
     # Install dependencies
-    - script: npm ci --verbose
+    - script: npm ci
       displayName: npm ci
       workingDirectory: ${{ parameters.root }}
 
