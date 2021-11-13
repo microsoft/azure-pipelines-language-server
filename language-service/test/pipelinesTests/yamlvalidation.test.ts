@@ -1,4 +1,4 @@
-import fs = require('fs');
+import * as fs from 'fs/promises';
 import { YAMLValidation } from '../../src/services/yamlValidation';
 import * as JSONSchemaService from '../../src/services/jsonSchemaService';
 import { JSONSchema } from '../../src/jsonSchema';
@@ -6,7 +6,6 @@ import * as URL from 'url';
 import { TextDocument } from 'vscode-languageserver-textdocument';
 import { Diagnostic } from 'vscode-languageserver-types';
 import * as yamlparser from '../../src/parser/yamlParser'
-import { Thenable } from '../../src/yamlLanguageService';
 import * as assert from 'assert';
 
 describe("Yaml Validation Service Tests", function () {
@@ -116,12 +115,8 @@ const workspaceContext = {
     }
 };
 
-const requestService = (path: string): Thenable<string> => {
-    return new Promise<string>((c, e) => {
-        fs.readFile(path, 'UTF-8', (err, result) => {
-            err ? e('') : c(result.toString());
-        });
-    });
+const requestService = (path: string): Promise<string> => {
+  return fs.readFile(path, 'utf-8');
 };
 
 const schemaResolver = (url: string): Promise<JSONSchema> => {

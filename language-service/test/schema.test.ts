@@ -1,11 +1,11 @@
 'use strict';
 
-import assert = require('assert');
+import * as assert from 'assert';
 import * as SchemaService from '../src/services/jsonSchemaService';
 import * as JsonSchema from '../src/jsonSchema';
-import fs = require('fs');
-import url = require('url');
-import path = require('path');
+import * as fs from 'fs/promises';
+import * as url from 'url';
+import * as path from 'path';
 
 const fixtureDocuments = {
 	'http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json': 'deploymentTemplate.json',
@@ -17,18 +17,15 @@ const fixtureDocuments = {
 	'http://schema.management.azure.com/schemas/2014-04-01/SuccessBricks.ClearDB.json': 'SuccessBricks.ClearDB.json',
 	'http://schema.management.azure.com/schemas/2015-08-01/Microsoft.Compute.json': 'Microsoft.Compute.json'
 };
-const requestServiceMock = function (uri: string): Promise<JsonSchema.JSONSchema> {
+const requestServiceMock = async function (uri: string): Promise<JsonSchema.JSONSchema> {
 	if (uri.length && uri[uri.length - 1] === '#') {
 		uri = uri.substr(0, uri.length - 1);
 	}
 	let fileName = fixtureDocuments[uri];
 	if (fileName) {
-		return new Promise<JsonSchema.JSONSchema>((c, e) => {
-			let fixturePath = path.join(__dirname, './fixtures', fileName);
-			fs.readFile(fixturePath, 'UTF-8', (err, result) => {
-				err ? e("Resource not found.") : c(SchemaService.ParseSchema(result.toString()));
-			});
-		});
+		const fixturePath = path.join(__dirname, './fixtures', fileName);
+		const schema = await fs.readFile(fixturePath, 'utf-8');
+		return SchemaService.ParseSchema(schema);
 	}
 	return Promise.reject<JsonSchema.JSONSchema>("Resource not found.");
 };
