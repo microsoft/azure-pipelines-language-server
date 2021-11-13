@@ -56,6 +56,7 @@ jobs:
     # Publish test results
     - task: PublishTestResults@2
       displayName: Publish test results
+      condition: always()
       inputs:
         testRunner: JUnit
         testResultsFiles: ${{ format('./{0}/test-results.xml', parameters.root) }}
