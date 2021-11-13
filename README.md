@@ -1,8 +1,6 @@
 ## Build status
 
-| Language server | Language service |
-|--------|---------|
-| [![Server build status](https://dev.azure.com/ms/azure-pipelines-vscode/_apis/build/status/Langserv%20Release%20Server?branchName=main)](https://dev.azure.com/ms/azure-pipelines-vscode/_build/latest?definitionId=34?branchName=main) | [![Service build status](https://dev.azure.com/ms/azure-pipelines-vscode/_apis/build/status/Langserv%20Release%20Service?branchName=main)](https://dev.azure.com/ms/azure-pipelines-vscode/_build/latest?definitionId=33?branchName=main) |
+[![Build status](https://dev.azure.com/ms/azure-pipelines-vscode/_apis/build/status/Langserv%20CI?branchName=main)](https://dev.azure.com/ms/azure-pipelines-vscode/_build/latest?definitionId=24?branchName=main)
 
 ## Features
 
