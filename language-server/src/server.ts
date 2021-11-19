@@ -15,7 +15,7 @@ import { TextDocument } from 'vscode-languageserver-textdocument';
 
 import { xhr, XHRResponse, configure as configureHttpRequests, getErrorStatusDescription } from "request-light";
 import * as path from "path";
-import * as fs from "fs";
+import * as fs from "fs/promises";
 import { URI } from "vscode-uri";
 import * as URL from "url";
 import * as nls from "vscode-nls";
@@ -47,7 +47,7 @@ namespace VSCodeContentRequest {
 }
 
 namespace CustomSchemaContentRequest {
-	export const type: RequestType<{}, {}, {}> = new RequestType('custom/schema/content');
+	export const type: RequestType<{}, string, {}> = new RequestType('custom/schema/content');
 }
 
 namespace CustomSchemaRequest {
@@ -116,7 +116,7 @@ let workspaceContext = {
 	}
 };
 
-let schemaRequestService = (uri: string): Thenable<JSONSchema> => {
+let schemaRequestService = async (uri: string): Promise<JSONSchema> => {
 	//For the case when we are multi root and specify a workspace location
 	if(hasWorkspaceFolderCapability){
 		for(let folder in workspaceFolders){
@@ -136,12 +136,9 @@ let schemaRequestService = (uri: string): Thenable<JSONSchema> => {
 		}
 	}
 	if (Strings.startsWith(uri, 'file://')) {
-		let fsPath = URI.parse(uri).fsPath;
-		return new Promise<JSONSchema>((c, e) => {
-			fs.readFile(fsPath, 'UTF-8', (err, result) => {
-				err ? e('') : c(ParseSchema(result.toString()));
-			});
-		});
+		const fsPath = URI.parse(uri).fsPath;
+		const schema = await fs.readFile(fsPath, 'utf-8');
+		return ParseSchema(schema);
 	} else if (Strings.startsWith(uri, 'vscode://')) {
 		return connection.sendRequest(VSCodeContentRequest.type, uri).then(responseText => {
 			return responseText;
@@ -152,7 +149,8 @@ let schemaRequestService = (uri: string): Thenable<JSONSchema> => {
 		let scheme = URI.parse(uri).scheme.toLowerCase();
 		if (scheme !== 'http' && scheme !== 'https') {
 			// custom scheme
-			return connection.sendRequest(CustomSchemaContentRequest.type, uri).then((content:string) => ParseSchema(content));
+			const content = await connection.sendRequest(CustomSchemaContentRequest.type, uri);
+			return ParseSchema(content);
 		}
 	}
 	if (uri.indexOf('//schema.management.azure.com/') !== -1) {

@@ -9,7 +9,7 @@ import { xhr, XHRResponse, getErrorStatusDescription } from 'request-light';
 import Strings = require( 'azure-pipelines-language-service');
 import { URI } from 'vscode-uri';
 import * as URL from 'url';
-import fs = require('fs');
+import * as fs from 'fs/promises';
 import { JSONSchema } from "azure-pipelines-language-service";
 import { ParseSchema } from "azure-pipelines-language-service";
 
@@ -48,14 +48,11 @@ export let workspaceContext = {
 	}
 };
 
-export let schemaRequestService = (uri: string): Thenable<JSONSchema> => {
+export const schemaRequestService = async (uri: string): Promise<JSONSchema> => {
 	if (Strings.startsWith(uri, 'file://')) {
-		let fsPath = URI.parse(uri).fsPath;
-		return new Promise<JSONSchema>((c, e) => {
-			fs.readFile(fsPath, 'UTF-8', (err, result) => {
-				err ? e('') : c(ParseSchema(result.toString()));
-			});
-		});
+		const fsPath = URI.parse(uri).fsPath;
+		const schema = await fs.readFile(fsPath, 'utf-8');
+		return ParseSchema(schema);
 	} else if (Strings.startsWith(uri, 'vscode://')) {
 		return connection.sendRequest(VSCodeContentRequest.type, uri).then(responseText => {
 			return responseText;
