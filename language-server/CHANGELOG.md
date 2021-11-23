@@ -1,3 +1,6 @@
+#### 0.6.7
+- Support emojis [#PR-115](https://github.com/microsoft/azure-pipelines-language-server/pull/116) - thanks @PaulTaykalo!
+
 #### 0.6.6
 - Fixed property autocomplete adding unnecessary colons [#PR-113](https://github.com/microsoft/azure-pipelines-language-server/pull/113)
 - More conditional expression fixes [#PR-114](https://github.com/microsoft/azure-pipelines-language-server/pull/114)
