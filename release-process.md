@@ -11,8 +11,7 @@
     6. Publish this to npm. `npm publish azure-pipelines-language-service-0.1.2.tgz`
 4. Bump the dependency in the server.
     1. Get to the right directory. `cd ../language-server`
-    2. Update the dependency. `npm i azure-pipelines-language-service@0.1.2`
-    3. Manually remove the `^` in `package.json` and `package-lock.json` for the language-service dependency. We release in lock-step and want to require an exact version.
+    2. Update the dependency. `npm i azure-pipelines-language-service@0.1.2 --save-exact`
 5. Release the server. (You're already in the right directory if you followed the above steps.)
     1. Bump the language-server version. `npm version --no-git-tag-version 0.1.2`
     2. Ensure there's an entry for this new version in the server `changelog.md`. (TODO/improvement: we should hardlink the server/service changelog files, as there's never a time when they should differ.)
