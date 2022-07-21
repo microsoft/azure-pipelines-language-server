@@ -1,3 +1,6 @@
+#### 0.6.8
+- Updated dependencies
+
 #### 0.6.7
 - Support emojis [#PR-115](https://github.com/microsoft/azure-pipelines-language-server/pull/116) - thanks @PaulTaykalo!
 
