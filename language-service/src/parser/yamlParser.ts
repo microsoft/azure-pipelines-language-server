@@ -211,27 +211,54 @@ function addItemsToArrayNode(node: ArrayASTNode, items: Yaml.YAMLNode[]): void {
 			// Cannot simply work around it here because we need to know if we are in Flow or Block
 			itemNode = new NullASTNode(node.parent, null, node.end, node.end);
 		} else {
+			// Hoisted expressions must be the first (and only) property in an object,
+			// so we can safely check only the first key.
+			// TODO: Confirm the above statement.
 			if (item.kind === Yaml.Kind.MAP &&
 				item.mappings[0].key.value.startsWith("${{") &&
 				item.mappings[0].key.value.endsWith("}}")) {
 				const value = item.mappings[0].value;
 				if (value === null) {
+					// Incomplete object: they're still working on the value :).
+					// e.g. - ${{ if eq(variables['Build.SourceBranch'], 'main') }}:
+					// with nothing (yet) after the colon.
 					continue;
 				}
 
 				if (value.kind === Yaml.Kind.SEQ) {
 					// e.g. conditionally adding steps to a job.
-					addItemsToArrayNode(node, item.mappings[0].value.items);
+					// - ${{ if eq(variables['Build.SourceBranch'], 'main') }}: <-- current item in the sequence
+					//                                                        ^ it's a map (object)
+					//   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ the first key is an expression
+					//   - pwsh: echo 'Hi'
+					//   ^^^^^^^^^^^^^^^^^ the first item in the sequence (array)
+					addItemsToArrayNode(node, value.items);
 					count++;
 					continue;
 				} else if (value.kind === Yaml.Kind.MAP) {
 					// e.g. looping through a stepList parameter and checking each value.
+					// - ${{ each step in userSteps }}:
+					//   - ${{ each pair in step }}: <-- current item in the sequence
+					//                             ^ it's a map (object)
+					//     ^^^^^^^^^^^^^^^^^^^^^^^^ the first key is an expression
+					//     ${{ pair.key }}: ${{ pair.value }}
+					//     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ the first mapping (property) in the map (object)
 					// NOTE: We don't have a great story for this as we can't validate
 					// the resulting ${{ pair.key }}: ${{ pair.value }} against the schema,
 					// so we currently just create an empty object with no properties.
 					// We might need to revisit this if we start providing LSP capabilities
 					// for expressions.
 					itemNode = recursivelyBuildAst(node, value);
+				} else if (value.kind === Yaml.Kind.SCALAR) {
+					// False positive: no children. Add the item directly just like in the no-expression case.
+					// e.g. looping through an array parameter and using each one
+					// as a key or value.
+					// - ${{ each shorthand in parameters.taskShorthands }}:
+					//   - ${{ shorthand }}: echo 'Hi' <-- current item in the sequence
+					//                     ^ it's a map (object)
+					//     ^^^^^^^^^^^^^^^^ the first key is an expression
+					//                       ^^^^^^^^^ but the value is just a scalar, no children
+					itemNode = recursivelyBuildAst(node, item);
 				} else {
 					throw new Error(`Unexpected kind ${value.kind}`);
 				}
