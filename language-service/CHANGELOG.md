@@ -1,3 +1,6 @@
+#### 0.6.9
+- Fixed loops crashing the language server when the first key/value pair had a dynamic expression as the key [#PR-130](https://github.com/microsoft/azure-pipelines-language-server/pull/116)
+
 #### 0.6.8
 - Updated dependencies
 
