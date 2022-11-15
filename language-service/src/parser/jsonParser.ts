@@ -184,8 +184,18 @@ export class ASTNode {
 		}
 		else if (schema.type) {
 			if (this.type !== schema.type) {
+				if (
+					this.type === 'string'
+					&& /^\$({{.*}}|\[.*\]|\(.*\))$/.test(this.getValue())
+				) {
+					validationResult.addProblem({
+						location: { start: this.start, end: this.end },
+						severity: ProblemSeverity.Hint,
+						getMessage: () => localize('typeMismatchWarning', 'Extension can not check types of variables in runtime execution.')
+					});
+				}
 				//count strings that look like numbers as strings
-				if (this.type != "number" || schema.type != "string") {
+				else if (this.type != "number" || schema.type != "string") {
 					validationResult.addProblem({
 						location: { start: this.start, end: this.end },
 						severity: ProblemSeverity.Warning,
