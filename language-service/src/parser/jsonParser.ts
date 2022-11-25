@@ -189,6 +189,7 @@ export class ASTNode {
 					let isVariableExpression = false;
 
 					if (this.type === 'string') {
+						// Ignore expressions as those will be replaced by Azure Pipelines
 						const currentValue = String(this.getValue());
 	
 						isVariableExpression = (currentValue.startsWith('${{') && currentValue.endsWith("}}"))
