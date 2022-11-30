@@ -186,11 +186,24 @@ export class ASTNode {
 			if (this.type !== schema.type) {
 				//count strings that look like numbers as strings
 				if (this.type != "number" || schema.type != "string") {
-					validationResult.addProblem({
-						location: { start: this.start, end: this.end },
-						severity: ProblemSeverity.Warning,
-						getMessage: () => schema.errorMessage || localize('typeMismatchWarning', 'Incorrect type. Expected "{0}".', schema.type as string)
-					});
+					let isVariableExpression = false;
+
+					if (this.type === 'string') {
+						// Ignore expressions as those will be replaced by Azure Pipelines
+						const currentValue = String(this.getValue());
+	
+						isVariableExpression = (currentValue.startsWith('${{') && currentValue.endsWith("}}"))
+							|| (currentValue.startsWith('$[') && currentValue.endsWith("]"))
+							|| (currentValue.startsWith('$(') && currentValue.endsWith(")"));
+					}
+
+					if (!isVariableExpression) {
+						validationResult.addProblem({
+							location: { start: this.start, end: this.end },
+							severity: ProblemSeverity.Warning,
+							getMessage: () => schema.errorMessage || localize('typeMismatchWarning', 'Incorrect type. Expected "{0}".', schema.type as string)
+						});
+					}
 				}
 			}
 		}
