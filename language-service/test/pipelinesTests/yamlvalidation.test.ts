@@ -119,6 +119,22 @@ steps:
 `);
       assert.equal(diagnostics.length, 2);
     });
+
+    it('validates incorrectly-indented pipelines that look like they have an array property', async function () {
+      // Note: the real purpose of this test is to ensure we don't throw,
+      // but I can't figure out how to assert that yet.
+      // diagnostics.length can be whatever, as long as we get to that point :).
+      const diagnostics = await runValidationTest(`
+steps:
+- task: PowerShellOnTargetMachines@3
+  inputs:
+    Machines: EXAMPLE
+    InlineScript: |
+    [System.Reflection.Assembly]::LoadWithPartialName("System.IO.Compression.FileSystem") | Out-Null
+    CommunicationProtocol: Http);
+`);
+      assert.equal(diagnostics.length, 4);
+    });
 });
 
 const workspaceContext = {

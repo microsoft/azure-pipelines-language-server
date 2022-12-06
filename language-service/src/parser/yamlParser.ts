@@ -184,9 +184,7 @@ function recursivelyBuildAst(parent: ASTNode, node: Yaml.YAMLNode): ASTNode {
 // and remove the expression from the parsed YAML.
 function addPropertiesToObjectNode(node: ObjectASTNode, properties: Yaml.YAMLMapping[]): void {
 	for (const property of properties) {
-		// The endsWith check is necessary because you can have dynamically-generated variables;
-		// for example, ${{ environment }}Release: true.
-		if (property.key.value.startsWith("${{") && property.key.value.endsWith("}}")) {
+		if (isCompileTimeExpression(property)) {
 			// Ensure we have a value (object) _and_ that the value has mappings (properties).
 			if (property.value?.mappings !== undefined) {
 				addPropertiesToObjectNode(node, property.value.mappings);
@@ -214,9 +212,7 @@ function addItemsToArrayNode(node: ArrayASTNode, items: Yaml.YAMLNode[]): void {
 			// Hoisted expressions must be the first (and only) property in an object,
 			// so we can safely check only the first key.
 			// TODO: Confirm the above statement.
-			if (item.kind === Yaml.Kind.MAP &&
-				item.mappings[0].key.value.startsWith("${{") &&
-				item.mappings[0].key.value.endsWith("}}")) {
+			if (item.kind === Yaml.Kind.MAP && isCompileTimeExpression(item.mappings[0])) {
 				const value = item.mappings[0].value;
 				if (value === null) {
 					// Incomplete object: they're still working on the value :).
@@ -272,6 +268,12 @@ function addItemsToArrayNode(node: ArrayASTNode, items: Yaml.YAMLNode[]): void {
 
 		count++;
 	}
+}
+
+function isCompileTimeExpression(node: Yaml.YAMLNode): boolean {
+	return node.key.kind === Yaml.Kind.SCALAR &&
+		node.key.value.startsWith("${{") &&
+		node.key.value.endsWith("}}");
 }
 
 function convertError(e: Yaml.YAMLException): YAMLError {
