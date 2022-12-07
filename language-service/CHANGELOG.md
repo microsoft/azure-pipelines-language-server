@@ -1,3 +1,7 @@
+#### 0.7.0
+- Added support for using expressions as values [#PR-138](https://github.com/microsoft/azure-pipelines-language-server/pull/138)
+- Fixed badly-indented files crashing the language server [#PR-141](https://github.com/microsoft/azure-pipelines-language-server/pull/141)
+
 #### 0.6.9
 - Fixed loops crashing the language server when the first key/value pair had a dynamic expression as the key [#PR-130](https://github.com/microsoft/azure-pipelines-language-server/pull/116)
 
