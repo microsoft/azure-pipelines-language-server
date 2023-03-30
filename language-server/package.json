@@ -25,6 +25,9 @@
   "engines": {
     "node": "*"
   },
+  "bin": {
+    "azure-pipelines-language-server": "./bin/azure-pipelines-language-server"
+  },
   "keywords": [
     "azure-pipelines",
     "LSP"
