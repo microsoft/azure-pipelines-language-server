@@ -88,12 +88,12 @@ export class YAMLValidation {
 		const translateSeverity = (problemSeverity: ProblemSeverity): DiagnosticSeverity => {
 			if (problemSeverity === ProblemSeverity.Error) {
 				return DiagnosticSeverity.Error;
-			 }
-			 if (problemSeverity == ProblemSeverity.Warning) {
-				 return DiagnosticSeverity.Warning;
-			 }
+			}
+			if (problemSeverity == ProblemSeverity.Warning) {
+				return DiagnosticSeverity.Warning;
+			}
 
-			 return DiagnosticSeverity.Hint;
+			return DiagnosticSeverity.Hint;
 		};
 
 		return this.jsonSchemaService.getSchemaForResource(textDocument.uri).then(function (schema) {
@@ -142,7 +142,7 @@ export class YAMLValidation {
 					}
 				});
 
-				if(schema.errors.length > 0) {
+				if (schema.errors.length > 0) {
 					for(let curDiagnostic of schema.errors){
 						diagnostics.push({
 							severity: DiagnosticSeverity.Error,
