@@ -289,7 +289,7 @@ export class ASTNode {
 				const ignoreCase: boolean = ASTNode.getIgnoreValueCase(schema);
 				for (const e of schema.enum) {
 					if (objects.equals(val, e) ||
-					   (ignoreCase && typeof e === "string" && typeof val === "string" && e.toUpperCase() === val.toUpperCase())) {
+						(ignoreCase && typeof e === "string" && typeof val === "string" && e.toUpperCase() === val.toUpperCase())) {
 						enumValueMatch = true;
 						break;
 					}
@@ -398,9 +398,9 @@ export class BooleanASTNode extends ASTNode {
 
 		//allow empty values to validate as strings
 		if (schema.type === 'string') {
-			//The pipeline parser allows expressions that evaulate to booleans and right now
-			//the generated schema is not prescise about that and allows any string.  The
-			//values 'true' and 'false' get parsed into BooleanASTNode's but we need to
+			//The pipeline parser allows expressions that evaluate to booleans and right now
+			//the generated schema is not precise about that and allows any string.  The
+			//values 'true' and 'false' get parsed into BooleanASTNodes but we need to
 			//allow them to match against 'string' in the schema.
 			this.validateStringValue(schema, '' + this.getValue(), validationResult);
 		}
@@ -1011,9 +1011,9 @@ export class ObjectASTNode extends ASTNode {
 							}
 						});
 					} else if (propertyDep) {
-						let propertyvalidationResult = new ValidationResult();
-						this.validate(propertyDep, propertyvalidationResult, matchingSchemas);
-						validationResult.mergePropertyMatch(propertyvalidationResult);
+						let propertyValidationResult = new ValidationResult();
+						this.validate(propertyDep, propertyValidationResult, matchingSchemas);
+						validationResult.mergePropertyMatch(propertyValidationResult);
 					}
 				}
 			});
