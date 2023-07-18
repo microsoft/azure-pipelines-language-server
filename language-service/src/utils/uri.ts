@@ -294,13 +294,13 @@ export default class URI {
 			}
 		}
 		if (path) {
-			// lower-case windown drive letters in /C:/fff
+			// lower-case Windows drive letters in /C:/fff
 			const m = URI._upperCaseDrive.exec(path);
 			if (m) {
 				path = m[1] + m[2].toLowerCase() + path.substr(m[1].length + m[2].length);
 			}
 
-			// encode every segement but not slashes
+			// encode every segment but not slashes
 			// make sure that # and ? are always encoded
 			// when occurring in paths - otherwise the result
 			// cannot be parsed back again
