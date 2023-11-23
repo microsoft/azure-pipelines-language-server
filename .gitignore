@@ -1,7 +1,12 @@
-_bundles/
-.nyc_output
-*.tgz
-lib/
+npm-debug.log
 node_modules/
 npm-debug.log
+.nyc_output
 out/
+.DS_Store
+yarn-error.log
+coverage
+lib/
+eslint-result.sarif
+_bundles
+*.tgz

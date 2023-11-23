@@ -1,16 +1,18 @@
 {
 	"compilerOptions": {
-		"forceConsistentCasingInFileNames": true,
-		"target": "es5",
-		"module": "commonjs",
-		"moduleResolution": "node",
-		"sourceMap": true,
-		"declaration": true,
-		"lib" : [ "es2015", "dom" ],
-		"outDir": "./lib",
-		"noUnusedLocals": true
+	  "alwaysStrict": true,
+	  "declaration": true,
+	  "forceConsistentCasingInFileNames": true,
+	  "lib": ["es2020", "WebWorker"],
+	  "module": "commonjs",
+	  "moduleResolution": "node",
+	  "outDir": "lib",
+	  "sourceMap": true,
+	  "target": "es2020",
+	  "allowSyntheticDefaultImports": true,
+	  "skipLibCheck": true
 	},
 	"include": [
-		"src"
+	  "src", "test"
 	]
-}
+  }

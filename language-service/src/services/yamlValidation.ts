@@ -3,166 +3,161 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
-'use strict';
 
-import { JSONSchemaService } from './jsonSchemaService';
-import { Diagnostic, DiagnosticSeverity } from 'vscode-languageserver-types';
-import { PromiseConstructor, Thenable, LanguageSettings} from '../yamlLanguageService';
-import { TextDocument, Position } from "vscode-languageserver-types";
-import { YAMLDocument, SingleYAMLDocument } from "../parser/yamlParser";
-import { IProblem, ProblemSeverity } from '../parser/jsonParser';
+import { Diagnostic, Position } from 'vscode-languageserver-types';
+import { LanguageSettings } from '../yamlLanguageService';
+import { YAMLDocument, YamlVersion, SingleYAMLDocument } from '../parser/yamlParser07';
+import { YAMLSchemaService } from './yamlSchemaService';
+import { YAMLDocDiagnostic } from '../utils/parseUtils';
+import { TextDocument } from 'vscode-languageserver-textdocument';
+import { JSONValidation } from 'vscode-json-languageservice/lib/umd/services/jsonValidation';
+import { YAML_SOURCE } from '../parser/jsonParser07';
+import { TextBuffer } from '../utils/textBuffer';
+import { yamlDocumentsCache } from '../parser/yaml-documents';
+import { convertErrorToTelemetryMsg } from '../utils/objects';
+import { Telemetry } from '../telemetry';
+import { AdditionalValidator } from './validation/types';
+import { UnusedAnchorsValidator } from './validation/unused-anchors';
+import { YAMLStyleValidator } from './validation/yaml-style';
+import { MapKeyOrderValidator } from './validation/map-key-order';
 
-import * as nls from 'vscode-nls';
-const localize = nls.loadMessageBundle();
+/**
+ * Convert a YAMLDocDiagnostic to a language server Diagnostic
+ * @param yamlDiag A YAMLDocDiagnostic from the parser
+ * @param textDocument TextDocument from the language server client
+ */
+export const yamlDiagToLSDiag = (yamlDiag: YAMLDocDiagnostic, textDocument: TextDocument): Diagnostic => {
+  const start = textDocument.positionAt(yamlDiag.location.start);
+  const range = {
+    start,
+    end: yamlDiag.location.toLineEnd
+      ? Position.create(start.line, new TextBuffer(textDocument).getLineLength(start.line))
+      : textDocument.positionAt(yamlDiag.location.end),
+  };
+
+  return Diagnostic.create(range, yamlDiag.message, yamlDiag.severity, yamlDiag.code, YAML_SOURCE);
+};
 
 export class YAMLValidation {
+  private validationEnabled: boolean;
+  private customTags: string[];
+  private jsonValidation;
+  private disableAdditionalProperties: boolean;
+  private yamlVersion: YamlVersion;
+  private validators: AdditionalValidator[] = [];
 
-	private jsonSchemaService: JSONSchemaService;
-	private promise: PromiseConstructor;
-	private validationEnabled: boolean;
+  private MATCHES_MULTIPLE = 'Matches multiple schemas when only one must validate.';
 
-	public constructor(jsonSchemaService: JSONSchemaService, promiseConstructor: PromiseConstructor) {
-		this.jsonSchemaService = jsonSchemaService;
-		this.promise = promiseConstructor;
-		this.validationEnabled = true;
-	}
+  constructor(schemaService: YAMLSchemaService, private readonly telemetry?: Telemetry) {
+    this.validationEnabled = true;
+    this.jsonValidation = new JSONValidation(schemaService, Promise);
+  }
 
-	public configure(settings: LanguageSettings): void {
-		if (settings) {
-			this.validationEnabled = settings.validate;
-		}
-	}
+  public configure(settings: LanguageSettings): void {
+    this.validators = [];
+    if (settings) {
+      this.validationEnabled = settings.validate;
+      this.customTags = settings.customTags;
+      this.disableAdditionalProperties = settings.disableAdditionalProperties;
+      this.yamlVersion = settings.yamlVersion;
+      // Add style validator if flow style is set to forbid only.
+      if (settings.flowMapping === 'forbid' || settings.flowSequence === 'forbid') {
+        this.validators.push(new YAMLStyleValidator(settings));
+      }
+      if (settings.keyOrdering) {
+        this.validators.push(new MapKeyOrderValidator());
+      }
+    }
+    this.validators.push(new UnusedAnchorsValidator());
+  }
 
-	public doValidation(textDocument: TextDocument, yamlDocument: YAMLDocument): Thenable<Diagnostic[]> {
+  public async doValidation(textDocument: TextDocument, isKubernetes = false): Promise<Diagnostic[]> {
+    if (!this.validationEnabled) {
+      return Promise.resolve([]);
+    }
 
-		if(!this.validationEnabled){
-			return this.promise.resolve([]);
-		}
+    const validationResult = [];
+    try {
+      const yamlDocument: YAMLDocument = yamlDocumentsCache.getYamlDocument(
+        textDocument,
+        { customTags: this.customTags, yamlVersion: this.yamlVersion },
+        true
+      );
 
-		if (yamlDocument.documents.length === 0) {
-			//this is strange...
-			return this.promise.resolve([]);
-		}
+      let index = 0;
+      for (const currentYAMLDoc of yamlDocument.documents) {
+        currentYAMLDoc.isKubernetes = isKubernetes;
+        currentYAMLDoc.currentDocIndex = index;
+        currentYAMLDoc.disableAdditionalProperties = this.disableAdditionalProperties;
+        currentYAMLDoc.uri = textDocument.uri;
 
-		if (yamlDocument.documents.length > 1) {
-			//The YAML parser is a little over-eager to call things different documents
-			// see https://github.com/Microsoft/azure-pipelines-vscode/issues/219
-			//so search for a specific error so that we can offer the user better guidance
-			for (let document of yamlDocument.documents) {
-				for (let docError of document.errors) {
-					if (docError.getMessage().includes("end of the stream or a document separator is expected")) {
-						const docErrorPosition : Position = textDocument.positionAt(docError.start);
-						const errorLine: number = (docErrorPosition.line > 0) ? docErrorPosition.line - 1 : docErrorPosition.line;
+        const validation = await this.jsonValidation.doValidation(textDocument, currentYAMLDoc);
 
-						return this.promise.resolve([{
-							severity: DiagnosticSeverity.Error,
-							range: {
-								start: {
-									line: errorLine,
-									character: 0
-								},
-								end: {
-									line: errorLine + 1,
-									character: 0
-								}
-							},
-							message: localize('documentFormatError', 'Invalid YAML structure')
-						}]);
-					}
-				}
-			}
+        const syd = currentYAMLDoc as unknown as SingleYAMLDocument;
+        if (syd.errors.length > 0) {
+          // TODO: Get rid of these type assertions (shouldn't need them)
+          validationResult.push(...syd.errors);
+        }
+        if (syd.warnings.length > 0) {
+          validationResult.push(...syd.warnings);
+        }
 
-			return this.promise.resolve([{
-				severity: DiagnosticSeverity.Error,
-				range: {
-					start: {
-						line: 0,
-						character: 0
-					},
-					end: textDocument.positionAt(textDocument.getText().length)
-				},
-				message: localize('multiDocumentError', 'Only single-document files are supported')
-			}]);
-		}
+        validationResult.push(...validation);
+        validationResult.push(...this.runAdditionalValidators(textDocument, currentYAMLDoc));
+        index++;
+      }
+    } catch (err) {
+      this.telemetry?.sendError('yaml.validation.error', { error: convertErrorToTelemetryMsg(err) });
+    }
 
-		const translateSeverity = (problemSeverity: ProblemSeverity): DiagnosticSeverity => {
-			if (problemSeverity === ProblemSeverity.Error) {
-				return DiagnosticSeverity.Error;
-			}
-			if (problemSeverity == ProblemSeverity.Warning) {
-				return DiagnosticSeverity.Warning;
-			}
+    let previousErr: Diagnostic;
+    const foundSignatures = new Set();
+    const duplicateMessagesRemoved: Diagnostic[] = [];
+    for (let err of validationResult) {
+      /**
+       * A patch ontop of the validation that removes the
+       * 'Matches many schemas' error for kubernetes
+       * for a better user experience.
+       */
+      if (isKubernetes && err.message === this.MATCHES_MULTIPLE) {
+        continue;
+      }
 
-			return DiagnosticSeverity.Hint;
-		};
+      if (Object.prototype.hasOwnProperty.call(err, 'location')) {
+        err = yamlDiagToLSDiag(err, textDocument);
+      }
 
-		return this.jsonSchemaService.getSchemaForResource(textDocument.uri).then(function (schema) {
-			var diagnostics: Diagnostic[] = [];
+      if (!err.source) {
+        err.source = YAML_SOURCE;
+      }
 
-			let jsonDocument: SingleYAMLDocument = yamlDocument.documents[0];
+      if (
+        previousErr &&
+        previousErr.message === err.message &&
+        previousErr.range.end.line === err.range.start.line &&
+        Math.abs(previousErr.range.end.character - err.range.end.character) >= 1
+      ) {
+        previousErr.range.end = err.range.end;
+        continue;
+      } else {
+        previousErr = err;
+      }
 
-			jsonDocument.errors.forEach(err => {
-				diagnostics.push({
-					severity: DiagnosticSeverity.Error,
-					range: {
-						start: textDocument.positionAt(err.start),
-						end: textDocument.positionAt(err.end)
-					},
-					message: err.getMessage()
-				});
-			});
+      const errSig = err.range.start.line + ' ' + err.range.start.character + ' ' + err.message;
+      if (!foundSignatures.has(errSig)) {
+        duplicateMessagesRemoved.push(err);
+        foundSignatures.add(errSig);
+      }
+    }
 
-			jsonDocument.warnings.forEach(warn => {
-				diagnostics.push({
-					severity: DiagnosticSeverity.Warning,
-					range: {
-						start: textDocument.positionAt(warn.start),
-						end: textDocument.positionAt(warn.end)
-					},
-					message: warn.getMessage()
-				});
-			});
+    return duplicateMessagesRemoved;
+  }
+  private runAdditionalValidators(document: TextDocument, yarnDoc: SingleYAMLDocument): Diagnostic[] {
+    const result = [];
 
-			if (schema) {
-				var added: {[key:string]: boolean} = {};
-				const problems: IProblem[] = jsonDocument.getValidationProblems(schema.schema);
-				problems.forEach(function (problem: IProblem, index: number) {
-					const message: string = problem.getMessage();
-					const signature: string = '' + problem.location.start + ' ' + problem.location.end + ' ' + message
-					if (!added[signature]) {
-						added[signature] = true;
-						diagnostics.push({
-							severity: translateSeverity(problem.severity),
-							range: {
-								start: textDocument.positionAt(problem.location.start),
-								end: textDocument.positionAt(problem.location.end)
-							},
-							message: message
-						})
-					}
-				});
-
-				if (schema.errors.length > 0) {
-					for(let curDiagnostic of schema.errors){
-						diagnostics.push({
-							severity: DiagnosticSeverity.Error,
-							range: {
-								start: {
-									line: 0,
-									character: 0
-								},
-								end: {
-									line: 0,
-									character: 1
-								}
-							},
-							message: curDiagnostic
-						});
-					}
-				}
-			}
-
-			return diagnostics;
-		});
-	}
+    for (const validator of this.validators) {
+      result.push(...validator.validate(document, yarnDoc));
+    }
+    return result;
+  }
 }

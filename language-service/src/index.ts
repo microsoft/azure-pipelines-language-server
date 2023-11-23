@@ -1,10 +1,3 @@
-export * from "./jsonSchema";
-export * from "./parser/jsonParser";
-export * from "./parser/yamlParser";
-export * from "./services/jsonSchemaService";
-export * from "./utils/arrUtils";
-export * from "./utils/strings";
-export * from "./utils/yamlServiceUtils";
-export * from "./yamlLanguageService";
-export * from "./services/yamlTraversal";
-export * from "vscode-languageserver-types";
+export * from './yamlLanguageService';
+export { getLanguageService as getJSONLanguageService } from 'vscode-json-languageservice';
+export * from 'vscode-languageserver-types';

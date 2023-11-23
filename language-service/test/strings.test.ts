@@ -2,98 +2,109 @@
  *  Copyright (c) Red Hat. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
-import {startsWith, endsWith, convertSimple2RegExp} from '../src/utils/strings';
-var assert = require('assert');
+import { startsWith, endsWith, convertSimple2RegExp, safeCreateUnicodeRegExp } from '../src/utils/strings';
+import * as assert from 'assert';
+import { expect } from 'chai';
 
-describe("String Tests", () => {
+describe('String Tests', () => {
+  describe('startsWith', function () {
+    it('String with different lengths', () => {
+      const one = 'hello';
+      const other = 'goodbye';
 
-		describe('startsWith', function(){
+      const result = startsWith(one, other);
+      assert.equal(result, false);
+    });
 
-			it('String with different lengths', () => {
+    it('String with same length different first letter', () => {
+      const one = 'hello';
+      const other = 'jello';
 
-                let one = "hello";
-                let other = "goodbye";
+      const result = startsWith(one, other);
+      assert.equal(result, false);
+    });
 
-                var result = startsWith(one, other);
-                assert.equal(result, false);
+    it('Same string', () => {
+      const one = 'hello';
+      const other = 'hello';
 
-            });
+      const result = startsWith(one, other);
+      assert.equal(result, true);
+    });
+  });
 
-            it('String with same length different first letter', () => {
+  describe('endsWith', function () {
+    it('String with different lengths', () => {
+      const one = 'hello';
+      const other = 'goodbye';
 
-                let one = "hello";
-                let other = "jello";
+      const result = endsWith(one, other);
+      assert.equal(result, false);
+    });
 
-                var result = startsWith(one, other);
-                assert.equal(result, false);
+    it('Strings that are the same', () => {
+      const one = 'hello';
+      const other = 'hello';
 
-            });
+      const result = endsWith(one, other);
+      assert.equal(result, true);
+    });
 
-            it('Same string', () => {
+    it('Other is smaller then one', () => {
+      const one = 'hello';
+      const other = 'hi';
 
-                let one = "hello";
-                let other = "hello";
+      const result = endsWith(one, other);
+      assert.equal(result, false);
+    });
+  });
 
-                var result = startsWith(one, other);
-                assert.equal(result, true);
+  describe('convertSimple2RegExp', function () {
+    it('Test of convertRegexString2RegExp', () => {
+      const result = convertSimple2RegExp('/toc\\.yml/i').test('TOC.yml');
+      assert.equal(result, true);
+    });
 
-            });
+    it('Test of convertGlobalPattern2RegExp', () => {
+      let result = convertSimple2RegExp('toc.yml').test('toc.yml');
+      assert.equal(result, true);
 
-        });
+      result = convertSimple2RegExp('toc.yml').test('TOC.yml');
+      assert.equal(result, false);
+    });
+  });
 
-        describe('endsWith', function(){
+  describe('safeCreateUnicodeRegExp', () => {
+    it('should create unicode RegExp for non unicode patterns', () => {
+      const result = safeCreateUnicodeRegExp(
+        // eslint-disable-next-line prettier/prettier
+        '^([2-9])\\.([0-9]+)\\.([0-9]+)(\\-[0-9a-z-]+(\\.[0-9a-z-]+)*)?(\\+[0-9A-Za-z-]+(\\.[0-9A-Za-z-]+)*)?$'
+      );
+      expect(result).is.not.undefined;
+    });
 
-			it('String with different lengths', () => {
+    it('should create unicode RegExp for non unicode patterns2', () => {
+      // eslint-disable-next-line prettier/prettier
+      const result = safeCreateUnicodeRegExp('^[^\\/~\\^\\: \\[\\]\\\\]+(\\/[^\\/~\\^\\: \\[\\]\\\\]+)*$');
+      expect(result).is.not.undefined;
+    });
 
-                let one = "hello";
-                let other = "goodbye";
+    it('should create unicode RegExp for non unicode patterns3', () => {
+      // eslint-disable-next-line prettier/prettier
+      const result = safeCreateUnicodeRegExp('^(\\s?)+=[^\\=](.+)');
+      expect(result).is.not.undefined;
+    });
 
-                var result = endsWith(one, other);
-                assert.equal(result, false);
+    it('should create unicode RegExp for non unicode patterns4', () => {
+      // eslint-disable-next-line prettier/prettier
+      const result = safeCreateUnicodeRegExp('^x-[\\w\\d\\.\\-\\_]+$');
+      expect(result).is.not.undefined;
+    });
 
-            });
-
-            it('Strings that are the same', () => {
-
-                let one = "hello";
-                let other = "hello";
-
-                var result = endsWith(one, other);
-                assert.equal(result, true);
-
-            });
-
-            it('Other is smaller then one', () => {
-
-                let one = "hello";
-                let other = "hi";
-
-                var result = endsWith(one, other);
-                assert.equal(result, false);
-
-            });
-
-        });
-
-        describe('convertSimple2RegExp', function(){
-
-			it('Test of convertRegexString2RegExp', () => {
-
-                var result = convertSimple2RegExp("/toc\\.yml/i").test("TOC.yml");
-                assert.equal(result, true);
-
-            });
-
-            it('Test of convertGlobalPattern2RegExp', () => {
-
-                var result = convertSimple2RegExp("toc.yml").test("toc.yml");
-                assert.equal(result, true);
-
-                result = convertSimple2RegExp("toc.yml").test("TOC.yml");
-                assert.equal(result, false);
-
-            });
-
-	    });
-
+    it('should create unicode RegExp for non unicode patterns5', () => {
+      // eslint-disable-next-line prettier/prettier
+      const result = safeCreateUnicodeRegExp('^[\\w\\-_]+$');
+      expect(result).is.not.undefined;
+    });
+  });
 });

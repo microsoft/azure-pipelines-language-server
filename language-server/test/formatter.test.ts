@@ -2,59 +2,132 @@
  *  Copyright (c) Red Hat. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
-import { TextDocument } from 'vscode-languageserver-textdocument';
-import { getLanguageService } from 'azure-pipelines-language-service'
-import { schemaRequestService, workspaceContext } from './testHelper';
-var assert = require('assert');
+import { setupLanguageService, setupTextDocument } from '../../language-service/test/utils/testHelper';
+import { ServiceSetup } from '../../language-service/test/utils/serviceSetup';
+import * as assert from 'assert';
+import { TextEdit } from 'vscode-languageserver-types';
+import { SettingsState, TextDocumentTestManager } from '../src/yamlSettings';
+import { LanguageHandlers } from '../src/languageserver/handlers/languageHandlers';
 
-let languageService = getLanguageService(schemaRequestService, [], null, workspaceContext);
+describe('Formatter Tests', () => {
+  let languageHandler: LanguageHandlers;
+  let yamlSettings: SettingsState;
 
+  before(() => {
+    const languageSettingsSetup = new ServiceSetup().withFormat();
+    const { languageHandler: langHandler, yamlSettings: settings } = setupLanguageService(languageSettingsSetup.languageSettings);
+    languageHandler = langHandler;
+    yamlSettings = settings;
+  });
 
-let uri = 'http://json.schemastore.org/bowerrc';
-let languageSettings = {
-    schemas: [],
-    validate: true,
-    customTags: []
-};
-let fileMatch = ["*.yml", "*.yaml"];
-languageSettings.schemas.push({ uri, fileMatch: fileMatch });
-languageSettings.customTags.push("!Test");
-languageService.configure(languageSettings);
+  // Tests for formatter
+  describe('Formatter', function () {
+    describe('Test that formatter works with custom tags', function () {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      function parseSetup(content: string, options: any = {}): TextEdit[] {
+        const testTextDocument = setupTextDocument(content);
+        yamlSettings.documents = new TextDocumentTestManager();
+        (yamlSettings.documents as TextDocumentTestManager).set(testTextDocument);
+        yamlSettings.yamlFormatterSettings = options;
+        return languageHandler.formatterHandler({
+          options,
+          textDocument: testTextDocument,
+        });
+      }
 
-// Defines a Mocha test suite to group tests of similar kind together
-describe("Formatter Tests", () => {
+      it('Formatting works without custom tags', () => {
+        const content = 'cwd: test';
+        const edits = parseSetup(content);
+        assert.notEqual(edits.length, 0);
+        assert.equal(edits[0].newText, 'cwd: test\n');
+      });
 
-    // Tests for validator
-    describe('Formatter', function () {
+      it('Formatting works with custom tags', () => {
+        const content = 'cwd:       !Test test';
+        const edits = parseSetup(content);
+        assert.notEqual(edits.length, 0);
+        assert.equal(edits[0].newText, 'cwd: !Test test\n');
+      });
 
-        function setup(content: string) {
-            return TextDocument.create("file://~/Desktop/vscode-k8s/test.yaml", "yaml", 0, content);
-        }
+      it('Formatting wraps text', () => {
+        const content = `comments: >
+                test test test test test test test test test test test test`;
+        const edits = parseSetup(content, {
+          printWidth: 20,
+          proseWrap: 'always',
+        });
+        assert.equal(edits[0].newText, 'comments: >\n  test test test\n  test test test\n  test test test\n  test test test\n');
+      });
 
-        describe('Test that formatter works with custom tags', function () {
+      it('Formatting uses tabSize', () => {
+        const content = `map:
+  k1: v1
+  k2: v2
+list:
+  - item1
+  - item2
+`;
 
-            it('Formatting works without custom tags', () => {
-                let content = `cwd: test`;
-                let testTextDocument = setup(content);
-                let edits = languageService.doFormat(testTextDocument, {
-                    insertSpaces: true,
-                    tabSize: 4
-                }, languageSettings.customTags);
-                assert.notEqual(edits.length, 0);
-                assert.equal(edits[0].newText, "cwd: test\n");
-            });
-
-            it('Formatting works without custom tags', () => {
-                let content = `cwd:       !Test test`;
-                let testTextDocument = setup(content);
-                let edits = languageService.doFormat(testTextDocument, {
-                    insertSpaces: true,
-                    tabSize: 4
-                }, languageSettings.customTags);
-                assert.notEqual(edits.length, 0);
-            });
-
+        const edits = parseSetup(content, {
+          tabSize: 5,
         });
 
+        const expected = `map:
+     k1: v1
+     k2: v2
+list:
+     - item1
+     - item2
+`;
+        assert.equal(edits[0].newText, expected);
+      });
+
+      it('Formatting uses tabWidth', () => {
+        const content = `map:
+  k1: v1
+  k2: v2
+list:
+  - item1
+  - item2
+`;
+
+        const edits = parseSetup(content, {
+          tabWidth: 5,
+        });
+
+        const expected = `map:
+     k1: v1
+     k2: v2
+list:
+     - item1
+     - item2
+`;
+        assert.equal(edits[0].newText, expected);
+      });
+
+      it('Formatting uses tabWidth over tabSize', () => {
+        const content = `map:
+  k1: v1
+  k2: v2
+list:
+  - item1
+  - item2
+`;
+
+        const edits = parseSetup(content, {
+          tabSize: 3,
+          tabWidth: 5,
+        });
+
+        const expected = `map:
+     k1: v1
+     k2: v2
+list:
+     - item1
+     - item2
+`;
+        assert.equal(edits[0].newText, expected);
+      });
     });
+  });
 });

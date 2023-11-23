@@ -1,14 +1,18 @@
 {
-	"compilerOptions": {
-		"forceConsistentCasingInFileNames": true,
-		"target": "es6",
-		"module": "commonjs",
-		"moduleResolution": "node",
-		"sourceMap": true,
-		"lib" : [ "es2016" ],
-		"outDir": "./out"
-	},
-	"include": [
-		"src"
-	]
+  "compilerOptions": {
+    "alwaysStrict": true,
+    "declaration": true,
+    "forceConsistentCasingInFileNames": true,
+    "lib": ["es2020", "WebWorker"],
+    "module": "commonjs",
+    "moduleResolution": "node",
+    "outDir": "out",
+    "sourceMap": true,
+    "target": "es2020",
+    "allowSyntheticDefaultImports": true,
+    "skipLibCheck": true
+  },
+  "include": [
+    "src", "test"
+  ]
 }

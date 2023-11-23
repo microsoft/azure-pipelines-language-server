@@ -3,45 +3,51 @@
  *  Copyright (c) Adam Voss. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
-'use strict';
 
-import * as jsyaml from 'js-yaml';
-import * as Yaml from 'yaml-ast-parser'
-import { EOL } from 'os';
-import { TextDocument, Range, Position, FormattingOptions, TextEdit } from 'vscode-languageserver-types';
+import { Range, Position, TextEdit, FormattingOptions } from 'vscode-languageserver-types';
+import { CustomFormatterOptions, LanguageSettings } from '../yamlLanguageService';
+import * as prettier from 'prettier';
+import { Options } from 'prettier';
+import * as parser from 'prettier/parser-yaml';
+import { TextDocument } from 'vscode-languageserver-textdocument';
 
-export function format(document: TextDocument, options: FormattingOptions, customTags: Array<String>): TextEdit[] {
-    const text = document.getText();
+export class YAMLFormatter {
+  private formatterEnabled = true;
 
-    let schemaWithAdditionalTags = jsyaml.Schema.create(customTags.map((tag) => {
-		const typeInfo = tag.split(' ');
-		return new jsyaml.Type(typeInfo[0], { kind: typeInfo[1] || 'scalar' });
-	}));
-
-	//We need compiledTypeMap to be available from schemaWithAdditionalTags before we add the new custom properties
-	customTags.map((tag) => {
-		const typeInfo = tag.split(' ');
-		schemaWithAdditionalTags.compiledTypeMap[typeInfo[0]] = new jsyaml.Type(typeInfo[0], { kind: typeInfo[1] || 'scalar' });
-	});
-
-	let additionalOptions: Yaml.LoadOptions = {
-		schema: schemaWithAdditionalTags
-	}
-
-    const documents = []
-    jsyaml.loadAll(text, doc => documents.push(doc), additionalOptions)
-
-    const dumpOptions = { indent: options.tabSize, noCompatMode: true };
-
-    let newText;
-    if (documents.length == 1) {
-        const yaml = documents[0]
-        newText = jsyaml.safeDump(yaml, dumpOptions)
+  public configure(shouldFormat: LanguageSettings): void {
+    if (shouldFormat) {
+      this.formatterEnabled = shouldFormat.format;
     }
-    else {
-        const formatted = documents.map(d => jsyaml.safeDump(d, dumpOptions))
-        newText = '%YAML 1.2' + EOL + '---' + EOL + formatted.join('...' + EOL + '---' + EOL) + '...' + EOL
+  }
+
+  public format(document: TextDocument, options: Partial<FormattingOptions> & CustomFormatterOptions = {}): TextEdit[] {
+    if (!this.formatterEnabled) {
+      return [];
     }
 
-    return [TextEdit.replace(Range.create(Position.create(0, 0), document.positionAt(text.length)), newText)]
+    try {
+      const text = document.getText();
+
+      const prettierOptions: Options = {
+        parser: 'yaml',
+        plugins: [parser],
+
+        // --- FormattingOptions ---
+        tabWidth: (options.tabWidth as number) || options.tabSize,
+
+        // --- CustomFormatterOptions ---
+        singleQuote: options.singleQuote,
+        bracketSpacing: options.bracketSpacing,
+        // 'preserve' is the default for Options.proseWrap. See also server.ts
+        proseWrap: 'always' === options.proseWrap ? 'always' : 'never' === options.proseWrap ? 'never' : 'preserve',
+        printWidth: options.printWidth,
+      };
+
+      const formatted = prettier.format(text, prettierOptions);
+
+      return [TextEdit.replace(Range.create(Position.create(0, 0), document.positionAt(text.length)), formatted)];
+    } catch (error) {
+      return [];
+    }
+  }
 }

@@ -2,242 +2,326 @@
  *  Copyright (c) Red Hat. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
-import { TextDocument } from 'vscode-languageserver-textdocument';
-import { LanguageService, getLanguageService } from 'azure-pipelines-language-service'
-import { schemaRequestService, workspaceContext }  from './testHelper';
-import { parse as parseYAML } from 'azure-pipelines-language-service';
-import { completionHelper } from 'azure-pipelines-language-service';
-var assert = require('assert');
+import { setupLanguageService, setupTextDocument } from '../../language-service/test/utils/testHelper';
+import * as assert from 'assert';
+import { Diagnostic, CompletionList, Hover, MarkupContent } from 'vscode-languageserver-types';
+import { ServiceSetup } from '../../language-service/test/utils/serviceSetup';
+import { LanguageHandlers } from '../src/languageserver/handlers/languageHandlers';
+import { SettingsState, TextDocumentTestManager } from '../src/yamlSettings';
+import { ValidationHandler } from '../src/languageserver/handlers/validationHandlers';
 
-let languageService: LanguageService = getLanguageService(schemaRequestService, [], null, workspaceContext);
+// Defines a Mocha test describe to group tests of similar kind together
+describe('Kubernetes Integration Tests', () => {
+  let languageSettingsSetup: ServiceSetup;
+  let languageHandler: LanguageHandlers;
+  let validationHandler: ValidationHandler;
+  let yamlSettings: SettingsState;
 
-let uri = "https://gist.githubusercontent.com/JPinkney/ccaf3909ef811e5657ca2e2e1fa05d76/raw/f85e51bfb67fdb99ab7653c2953b60087cc871ea/openshift_schema_all.json";
-let languageSettings = {
-	schemas: [],
-	validate: true
-};
-let fileMatch = ["*.yml", "*.yaml"];
-languageSettings.schemas.push({ uri, fileMatch: fileMatch });
-languageService.configure(languageSettings);
+  before(() => {
+    const uri = 'https://raw.githubusercontent.com/yannh/kubernetes-json-schema/master/v1.22.4-standalone-strict/all.json';
+    const fileMatch = ['*.yml', '*.yaml'];
+    languageSettingsSetup = new ServiceSetup()
+      .withHover()
+      .withValidate()
+      .withCompletion()
+      .withSchemaFileMatch({
+        fileMatch,
+        uri,
+      })
+      .withKubernetes();
+    const {
+      validationHandler: valHandler,
+      languageHandler: langHandler,
+      yamlSettings: settings,
+    } = setupLanguageService(languageSettingsSetup.languageSettings);
+    validationHandler = valHandler;
+    languageHandler = langHandler;
+    yamlSettings = settings;
+  });
 
-// Defines a Mocha test suite to group tests of similar kind together
-describe("Kubernetes Integration Tests", () => {
+  // Tests for validator
+  describe('Yaml Validation with kubernetes', function () {
+    function parseSetup(content: string): Promise<Diagnostic[]> {
+      const testTextDocument = setupTextDocument(content);
+      yamlSettings.documents = new TextDocumentTestManager();
+      (yamlSettings.documents as TextDocumentTestManager).set(testTextDocument);
+      yamlSettings.specificValidatorPaths = ['*.yml', '*.yaml'];
+      return validationHandler.validateTextDocument(testTextDocument);
+    }
 
-	// Tests for validator
-	describe('Yaml Validation with kubernetes', function() {
+    //Validating basic nodes
+    describe('Test that validation does not throw errors', function () {
+      it('Basic test', (done) => {
+        const content = 'apiVersion: v1';
+        const validator = parseSetup(content);
+        validator
+          .then(function (result) {
+            assert.equal(result.length, 0);
+          })
+          .then(done, done);
+      });
 
-		function setup(content: string){
-			return TextDocument.create("file://~/Desktop/vscode-k8s/test.yaml", "yaml", 0, content);
-		}
+      it('Basic test on nodes with children', (done) => {
+        const content = 'metadata:\n  name: hello';
+        const validator = parseSetup(content);
+        validator
+          .then(function (result) {
+            assert.equal(result.length, 0);
+          })
+          .then(done, done);
+      });
 
-		function parseSetup(content: string){
-			let testTextDocument = setup(content);
-			let yDoc = parseYAML(testTextDocument.getText());
-			for(let jsonDoc in yDoc.documents){
-				yDoc.documents[jsonDoc].configureSettings({
-					isKubernetes: true
-				});
-			}
-			return languageService.doValidation(testTextDocument, yDoc);
-		}
+      it('Advanced test on nodes with children', (done) => {
+        const content = 'apiVersion: v1\nmetadata:\n  name: test1';
+        const validator = parseSetup(content);
+        validator
+          .then(function (result) {
+            assert.equal(result.length, 0);
+          })
+          .then(done, done);
+      });
 
-		//Validating basic nodes
-		describe('Test that validation does not throw errors', function(){
+      it('Type string validates under children', (done) => {
+        const content = 'apiVersion: v1\nkind: Pod\nmetadata:\n  resourceVersion: test';
+        const validator = parseSetup(content);
+        validator
+          .then(function (result) {
+            assert.equal(result.length, 0);
+          })
+          .then(done, done);
+      });
 
-			it('Basic test', (done) => {
-				let content = `apiVersion: v1`;
-				let validator = parseSetup(content);
-				validator.then(function(result){
-					assert.equal(result.length, 0);
-				}).then(done, done);
-			});
+      describe('Type tests', function () {
+        it('Type String does not error on valid node', (done) => {
+          const content = 'apiVersion: v1';
+          const validator = parseSetup(content);
+          validator
+            .then(function (result) {
+              assert.equal(result.length, 0);
+            })
+            .then(done, done);
+        });
 
-			it('Basic test on nodes with children', (done) => {
-				let content = `metadata:\n  name: hello`;
-				let validator = parseSetup(content);
-				validator.then(function(result){
-					assert.equal(result.length, 0);
-				}).then(done, done);
-			});
+        it('Type Boolean does not error on valid node', (done) => {
+          const content = 'readOnlyRootFilesystem: false';
+          const validator = parseSetup(content);
+          validator
+            .then(function (result) {
+              assert.equal(result.length, 0);
+            })
+            .then(done, done);
+        });
 
-			it('Advanced test on nodes with children', (done) => {
-				let content = `apiVersion: v1\nmetadata:\n  name: test1`;
-				let validator = parseSetup(content);
-				validator.then(function(result){
-					assert.equal(result.length, 0);
-				}).then(done, done);
-			});
+        it('Type Number does not error on valid node', (done) => {
+          const content = 'generation: 5';
+          const validator = parseSetup(content);
+          validator
+            .then(function (result) {
+              assert.equal(result.length, 0);
+            })
+            .then(done, done);
+        });
 
-			it('Type string validates under children', (done) => {
-				let content = `apiVersion: v1\nkind: Pod\nmetadata:\n  resourceVersion: test`;
-				let validator = parseSetup(content);
-				validator.then(function(result){
-					assert.equal(result.length, 0);
-				}).then(done, done);
-			});
+        it('Type Object does not error on valid node', (done) => {
+          const content = 'metadata:\n  clusterName: tes';
+          const validator = parseSetup(content);
+          validator
+            .then(function (result) {
+              assert.equal(result.length, 0);
+            })
+            .then(done, done);
+        });
 
-			describe('Type tests', function(){
+        it('Type Array does not error on valid node', (done) => {
+          const content = 'items:\n  - apiVersion: v1';
+          const validator = parseSetup(content);
+          validator
+            .then(function (result) {
+              assert.equal(result.length, 0);
+            })
+            .then(done, done);
+        });
+      });
+    });
 
-				it('Type String does not error on valid node', (done) => {
-					let content = `apiVersion: v1`;
-					let validator = parseSetup(content);
-					validator.then(function(result){
-						assert.equal(result.length, 0);
-					}).then(done, done);
-				});
+    /**
+     * Removed these tests because the schema pulled in from
+     * https://github.com/redhat-developer/yaml-language-server/pull/108
+     * No longer has those types of validation
+     */
+    // describe('Test that validation DOES throw errors', function () {
+    //     it('Error when theres no value for a node', done => {
+    //         const content = 'apiVersion:';
+    //         const validator = parseSetup(content);
+    //         validator.then(function (result){
+    //             assert.notEqual(result.length, 0);
+    //         }).then(done, done);
+    //     });
 
-				it('Type Boolean does not error on valid node', (done) => {
-					let content = `readOnlyRootFilesystem: false`;
-					let validator = parseSetup(content);
-					validator.then(function(result){
-						assert.equal(result.length, 0);
-					}).then(done, done);
-				});
+    //     it('Error on incorrect value type (number)', done => {
+    //         const content = 'apiVersion: 1000';
+    //         const validator = parseSetup(content);
+    //         validator.then(function (result){
+    //             assert.notEqual(result.length, 0);
+    //         }).then(done, done);
+    //     });
 
-				it('Type Number does not error on valid node', (done) => {
-					let content = `generation: 5`;
-					let validator = parseSetup(content);
-					validator.then(function(result){
-						assert.equal(result.length, 0);
-					}).then(done, done);
-				});
+    //     it('Error on incorrect value type (boolean)', done => {
+    //         const content = 'apiVersion: False';
+    //         const validator = parseSetup(content);
+    //         validator.then(function (result){
+    //             assert.notEqual(result.length, 0);
+    //         }).then(done, done);
+    //     });
 
-				it('Type Object does not error on valid node', (done) => {
-					let content = `metadata:\n  clusterName: tes`;
-					let validator = parseSetup(content);
-					validator.then(function(result){
-						assert.equal(result.length, 0);
-					}).then(done, done);
-				});
+    //     it('Error on incorrect value type (string)', done => {
+    //         const content = 'isNonResourceURL: hello_world';
+    //         const validator = parseSetup(content);
+    //         validator.then(function (result){
+    //             assert.notEqual(result.length, 0);
+    //         }).then(done, done);
+    //     });
 
-				it('Type Array does not error on valid node', (done) => {
-					let content = `items:\n  - apiVersion: v1`;
-					let validator = parseSetup(content);
-					validator.then(function(result){
-						assert.equal(result.length, 0);
-					}).then(done, done);
-				});
+    //     it('Error on incorrect value type (object)', done => {
+    //         const content = 'apiVersion: v1\nkind: Pod\nmetadata:\n  name: False';
+    //         const validator = parseSetup(content);
+    //         validator.then(function (result){
+    //             assert.notEqual(result.length, 0);
+    //         }).then(done, done);
+    //     });
 
-			});
+    //     it('Error on incorrect value type in multiple yaml documents', done => {
+    //         const content = '---\napiVersion: v1\n...\n---\napiVersion: False\n...';
+    //         const validator = parseSetup(content);
+    //         validator.then(function (result){
+    //             assert.notEqual(result.length, 0);
+    //         }).then(done, done);
+    //     });
 
-		});
+    //     it('Property error message should be \"Property unknown_node is not allowed.\" when property is not allowed ', done => {
+    //         const content = 'unknown_node: test';
+    //         const validator = parseSetup(content);
+    //         validator.then(function (result){
+    //             assert.equal(result.length, 1);
+    //             assert.equal(result[0].message, 'Property unknown_node is not allowed.');
+    //         }).then(done, done);
+    //     });
 
-		describe('Test that validation DOES throw errors', function(){
-			it('Error when theres no value for a node', (done) => {
-				let content = `isNonResourceURL:`;
-				let validator = parseSetup(content);
-				validator.then(function(result){
-					assert.notEqual(result.length, 0);
-				}).then(done, done);
-			});
+    // });
+  });
 
-			it('Error on incorrect value type (string)', (done) => {
-				let content = `isNonResourceURL: hello_world`;
-				let validator = parseSetup(content);
-				validator.then(function(result){
-					assert.notEqual(result.length, 0);
-				}).then(done, done);
-			});
+  describe('yamlCompletion with kubernetes', function () {
+    describe('doComplete', function () {
+      function parseSetup(content: string, position: number): Promise<CompletionList> {
+        const testTextDocument = setupTextDocument(content);
+        yamlSettings.documents = new TextDocumentTestManager();
+        (yamlSettings.documents as TextDocumentTestManager).set(testTextDocument);
+        return languageHandler.completionHandler({
+          position: testTextDocument.positionAt(position),
+          textDocument: testTextDocument,
+        });
+      }
 
-			it('Error on incorrect value type (object)', (done) => {
-				let content = `apiVersion: v1\nkind: Pod\nmetadata:\n  fake_field: False`;
-				let validator = parseSetup(content);
-				validator.then(function(result){
-					assert.notEqual(result.length, 0);
-				}).then(done, done);
-			});
+      /**
+       * Known issue: https://github.com/redhat-developer/yaml-language-server/issues/51
+       */
+      // it('Autocomplete on root node without word', done => {
+      //     const content = '';
+      //     const completion = parseSetup(content, 0);
+      //     completion.then(function (result){
+      //         assert.notEqual(result.items.length, 0);
+      //     }).then(done, done);
+      // });
 
-			it('Property error message should be \"Unexpected property {$property_name}\" when property is not allowed ', (done) => {
-				let content = `unknown_node: test`;
-				let validator = parseSetup(content);
-				validator.then(function(result){
-					assert.equal(result.length, 1);
-					assert.equal(result[0].message, "Unexpected property unknown_node");
-				}).then(done, done);
-			});
-		});
-	});
+      // it('Autocomplete on root node with word', done => {
+      //     const content = 'api';
+      //     const completion = parseSetup(content, 6);
+      //     completion.then(function (result){
+      //         assert.notEqual(result.items.length, 0);
+      //     }).then(done, done);
+      // });
 
-	describe('yamlCompletion with kubernetes', function(){
+      /**
+       * Removed these tests because the schema pulled in from
+       * https://github.com/redhat-developer/yaml-language-server/pull/108
+       * No longer has those types of completion
+       */
+      // it('Autocomplete on default value (without value content)', done => {
+      //     const content = 'apiVersion: ';
+      //     const completion = parseSetup(content, 10);
+      //     completion.then(function (result){
+      //         assert.notEqual(result.items.length, 0);
+      //     }).then(done, done);
+      // });
 
-		describe('doComplete', function(){
+      it('Autocomplete on default value (with value content)', (done) => {
+        const content = 'apiVersion: v1\nkind: Depl';
+        const completion = parseSetup(content, 19);
+        completion
+          .then(function (result) {
+            assert.notEqual(result.items.length, 0);
+          })
+          .then(done, done);
+      });
 
-			function parseSetup(content: string, position){
-				let testTextDocument = TextDocument.create("file://~/Desktop/vscode-k8s/test.yaml", "yaml", 0, content);
-				let yDoc = parseYAML(testTextDocument.getText());
-				for(let jsonDoc in yDoc.documents){
-					yDoc.documents[jsonDoc].configureSettings({
-						isKubernetes: true
-					});
-				}
-				let completion = completionHelper(testTextDocument, testTextDocument.positionAt(position));
-				let jsonDocument = parseYAML(completion.newText);
-				return languageService.doComplete(testTextDocument, completion.newPosition, jsonDocument);
-			}
+      it('Autocomplete on boolean value (without value content)', (done) => {
+        const content = 'spec:\n  allowPrivilegeEscalation: ';
+        const completion = parseSetup(content, 38);
+        completion
+          .then(function (result) {
+            assert.equal(result.items.length, 2);
+          })
+          .then(done, done);
+      });
 
-			it('Autocomplete on root node without word', (done) => {
-				let content = "";
-				let completion = parseSetup(content, 0);
-				completion.then(function(result){
-                    assert.notEqual(result.items.length, 0);
-				}).then(done, done);
-			});
+      it('Autocomplete on boolean value (with value content)', (done) => {
+        const content = 'spec:\n  allowPrivilegeEscalation: fal';
+        const completion = parseSetup(content, 43);
+        completion
+          .then(function (result) {
+            assert.equal(result.items.length, 2);
+          })
+          .then(done, done);
+      });
 
-			it('Autocomplete on root node with word', (done) => {
-				let content = "api";
-				let completion = parseSetup(content, 6);
-				completion.then(function(result){
-					assert.notEqual(result.items.length, 0);
-				}).then(done, done);
-			});
+      it('Autocomplete key in middle of file', (done) => {
+        const content = 'metadata:\n  nam';
+        const completion = parseSetup(content, 14);
+        completion
+          .then(function (result) {
+            assert.notEqual(result.items.length, 0);
+          })
+          .then(done, done);
+      });
 
-			it('Autocomplete on default value (without value content)', (done) => {
-				let content = "apiVersion: ";
-				let completion = parseSetup(content, 10);
-				completion.then(function(result){
-					assert.notEqual(result.items.length, 0);
-				}).then(done, done);
-			});
+      it('Autocomplete key in middle of file 2', (done) => {
+        const content = 'metadata:\n  name: test\n  cluster';
+        const completion = parseSetup(content, 31);
+        completion
+          .then(function (result) {
+            assert.notEqual(result.items.length, 0);
+          })
+          .then(done, done);
+      });
+    });
+  });
 
-			it('Autocomplete on default value (with value content)', (done) => {
-				let content = "apiVersion: v1\nkind: Bin";
-				let completion = parseSetup(content, 19);
-				completion.then(function(result){
-					assert.notEqual(result.items.length, 0);
-				}).then(done, done);
-			});
+  describe('yamlHover with kubernetes', function () {
+    function parseSetup(content: string, offset: number): Promise<Hover> {
+      const testTextDocument = setupTextDocument(content);
+      yamlSettings.documents = new TextDocumentTestManager();
+      (yamlSettings.documents as TextDocumentTestManager).set(testTextDocument);
+      return languageHandler.hoverHandler({
+        position: testTextDocument.positionAt(offset),
+        textDocument: testTextDocument,
+      });
+    }
 
-			it('Autocomplete on boolean value (without value content)', (done) => {
-				let content = "isNonResourceURL: ";
-				let completion = parseSetup(content, 18);
-				completion.then(function(result){
-					assert.equal(result.items.length, 2);
-				}).then(done, done);
-			});
-
-			it('Autocomplete on boolean value (with value content)', (done) => {
-				let content = "isNonResourceURL: fal";
-				let completion = parseSetup(content, 21);
-				completion.then(function(result){
-					assert.equal(result.items.length, 2);
-				}).then(done, done);
-			});
-
-			it('Autocomplete key in middle of file', (done) => {
-				let content = "metadata:\n  nam";
-				let completion = parseSetup(content, 14);
-				completion.then(function(result){
-					assert.notEqual(result.items.length, 0);
-				}).then(done, done);
-			});
-
-			it('Autocomplete key in middle of file 2', (done) => {
-				let content = "metadata:\n  name: test\n  cluster";
-				let completion = parseSetup(content, 31);
-				completion.then(function(result){
-					assert.notEqual(result.items.length, 0);
-				}).then(done, done);
-			});
-		});
-	});
+    it('Hover on incomplete kubernetes document', async () => {
+      const content = 'apiVersion: v1\nmetadata:\n  name: test\nkind: Deployment\nspec:\n   ';
+      const hover = await parseSetup(content, 58);
+      assert.strictEqual(MarkupContent.is(hover?.contents), true);
+      assert.strictEqual((hover?.contents as MarkupContent).value, '');
+    });
+  });
 });

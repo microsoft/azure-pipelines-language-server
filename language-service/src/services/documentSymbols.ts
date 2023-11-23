@@ -3,69 +3,81 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
-'use strict';
 
-import * as Parser from "../parser/jsonParser";
-import { YAMLDocument } from "../parser/yamlParser";
-
-import { SymbolInformation, SymbolKind, TextDocument, Range, Location } from 'vscode-languageserver-types';
+import { SymbolInformation, DocumentSymbol } from 'vscode-languageserver-types';
+import { YAMLSchemaService } from './yamlSchemaService';
+import { JSONDocumentSymbols } from 'vscode-json-languageservice/lib/umd/services/jsonDocumentSymbols';
+import { DocumentSymbolsContext } from 'vscode-json-languageservice/lib/umd/jsonLanguageTypes';
+import { TextDocument } from 'vscode-languageserver-textdocument';
+import { yamlDocumentsCache } from '../parser/yaml-documents';
+import { Telemetry } from '../telemetry';
+import { isMap, isSeq, Node } from 'yaml';
+import { convertErrorToTelemetryMsg } from '../utils/objects';
 
 export class YAMLDocumentSymbols {
+  private jsonDocumentSymbols;
 
-    public findDocumentSymbols(document: TextDocument, doc: YAMLDocument): SymbolInformation[] {
+  constructor(schemaService: YAMLSchemaService, private readonly telemetry?: Telemetry) {
+    this.jsonDocumentSymbols = new JSONDocumentSymbols(schemaService);
 
-        if (!doc || !doc.documents || doc.documents.length === 0) {
-            return null;
+    // override 'getKeyLabel' to handle complex mapping
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    this.jsonDocumentSymbols.getKeyLabel = (property: any) => {
+      const keyNode: Node = property.keyNode.internalNode;
+      let name = '';
+      if (isMap(keyNode)) {
+        name = '{}';
+      } else if (isSeq(keyNode)) {
+        name = '[]';
+      } else {
+        name = keyNode.source;
+      }
+      return name;
+    };
+  }
+
+  public findDocumentSymbols(
+    document: TextDocument,
+    context: DocumentSymbolsContext = { resultLimit: Number.MAX_VALUE }
+  ): SymbolInformation[] {
+    let results = [];
+    try {
+      const doc = yamlDocumentsCache.getYamlDocument(document);
+      if (!doc || doc['documents'].length === 0) {
+        return null;
+      }
+
+      for (const yamlDoc of doc['documents']) {
+        if (yamlDoc.root) {
+          results = results.concat(this.jsonDocumentSymbols.findDocumentSymbols(document, yamlDoc, context));
         }
-    
-        const collectOutlineEntries = (result: SymbolInformation[], node: Parser.ASTNode, containerName: string): SymbolInformation[] => {
-            if (node.type === 'array') {
-                (<Parser.ArrayASTNode>node).items.forEach((node: Parser.ASTNode) => {
-                    collectOutlineEntries(result, node, containerName);
-                });
-            } else if (node.type === 'object') {
-                const objectNode = <Parser.ObjectASTNode>node;
-    
-                objectNode.properties.forEach((property: Parser.PropertyASTNode) => {
-                    const location = Location.create(document.uri, Range.create(document.positionAt(property.start), document.positionAt(property.end)));
-                    const valueNode = property.value;
-                    if (valueNode) {
-                        const childContainerName = containerName ? containerName + '.' + property.key.value : property.key.value;
-                        result.push({ name: property.key.getValue(), kind: this.getSymbolKind(valueNode.type), location: location, containerName: containerName });
-                        collectOutlineEntries(result, valueNode, childContainerName);
-                    }
-                });
-            }
-            return result;
-        };
+      }
+    } catch (err) {
+      this.telemetry?.sendError('yaml.documentSymbols.error', { error: convertErrorToTelemetryMsg(err) });
+    }
+    return results;
+  }
 
-        const results: SymbolInformation[] = [];
+  public findHierarchicalDocumentSymbols(
+    document: TextDocument,
+    context: DocumentSymbolsContext = { resultLimit: Number.MAX_VALUE }
+  ): DocumentSymbol[] {
+    let results = [];
+    try {
+      const doc = yamlDocumentsCache.getYamlDocument(document);
+      if (!doc || doc['documents'].length === 0) {
+        return null;
+      }
 
-        doc.documents.forEach((yamlDocument: Parser.JSONDocument) => {
-            if (yamlDocument.root) {
-                const result = collectOutlineEntries([], yamlDocument.root, void 0);
-                results.push(...result);
-            }
-        });
-        
-        return results;
+      for (const yamlDoc of doc['documents']) {
+        if (yamlDoc.root) {
+          results = results.concat(this.jsonDocumentSymbols.findDocumentSymbols2(document, yamlDoc, context));
+        }
+      }
+    } catch (err) {
+      this.telemetry?.sendError('yaml.hierarchicalDocumentSymbols.error', { error: convertErrorToTelemetryMsg(err) });
     }
 
-    private getSymbolKind(nodeType: string): SymbolKind {
-        switch (nodeType) {
-            case 'object':
-                return SymbolKind.Module;
-            case 'string':
-                return SymbolKind.String;
-            case 'number':
-                return SymbolKind.Number;
-            case 'array':
-                return SymbolKind.Array;
-            case 'boolean':
-                return SymbolKind.Boolean;
-            default: // 'null'
-                return SymbolKind.Variable;
-        }
-    }
-
+    return results;
+  }
 }
