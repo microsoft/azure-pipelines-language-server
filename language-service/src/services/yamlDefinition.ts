@@ -38,7 +38,7 @@ export class YAMLDefinition {
 
         const [value, repo] = node
             .getValue()
-            .split('@')[0] // strip off the @ suffix if any
+            .split('@');
 
         // cannot jump to external resources
         if (repo && repo != 'self') {
@@ -50,9 +50,6 @@ export class YAMLDefinition {
         if (value.startsWith('/')) {
             const rootDir: string = workspaceRoot.path.toString();
             pathToDefinition = join(rootDir, value);
-
-            const foo = rootDir + '';
-            console.log(foo);
         }
         else {
             const documentPath: string = new URL(document.uri).pathname;
