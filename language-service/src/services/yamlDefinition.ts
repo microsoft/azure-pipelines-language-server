@@ -6,22 +6,16 @@
 'use strict';
 
 import { resolve, dirname, join } from "path";
-import { JSONWorkerContribution } from "../jsonContributions";
 import { YAMLDocument } from "../parser/yamlParser";
-import * as SchemaService from "./jsonSchemaService";
 import { PromiseConstructor, Thenable } from "vscode-json-languageservice";
 import { TextDocument, Position, Definition, Location } from "vscode-languageserver-types";
 import { URI } from "vscode-uri";
 
 export class YAMLDefinition {
 
-    private schemaService: SchemaService.IJSONSchemaService;
-    private contributions: JSONWorkerContribution[];
     private promise: PromiseConstructor;
 
-    constructor(schemaService: SchemaService.IJSONSchemaService, contributions: JSONWorkerContribution[] = [], promiseConstructor: PromiseConstructor) {
-        this.schemaService = schemaService;
-        this.contributions = contributions;
+    constructor(promiseConstructor: PromiseConstructor) {
         this.promise = promiseConstructor || Promise;
     }
 
@@ -38,14 +32,18 @@ export class YAMLDefinition {
         }
         
         // can only jump to definition for template declaration
-        // TODO use schema service to do this better
         if (node.location !== 'template') {
             return this.promise.resolve(void 0);
         }
 
-        const value = node
+        const [value, repo] = node
             .getValue()
             .split('@')[0] // strip off the @ suffix if any
+
+        // cannot jump to external resources
+        if (repo && repo != 'self') {
+            return this.promise.resolve(void 0);
+        }
 
         // determine if abs path (from root) or relative path
         let pathToDefinition = '';
@@ -68,15 +66,5 @@ export class YAMLDefinition {
 
         return this.promise.resolve(definition);
     }
-
-    // dummy methods to make code compile
-    public getSchemaService() {
-        return this.schemaService;
-    }
-
-    public getContributions() {
-        return this.contributions;
-    }
-
 }
 
