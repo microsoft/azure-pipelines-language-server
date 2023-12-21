@@ -5,12 +5,14 @@
  *--------------------------------------------------------------------------------------------*/
 import { JSONSchemaService, CustomSchemaProvider } from './services/jsonSchemaService'
 import { TextDocument, Position, CompletionList, FormattingOptions, Diagnostic,
-  CompletionItem, TextEdit, Hover, SymbolInformation
+  CompletionItem, TextEdit, Hover, SymbolInformation, Definition
 } from 'vscode-languageserver-types';
+import { URI } from "vscode-uri";
 import { JSONSchema } from './jsonSchema';
 import { YAMLDocumentSymbols } from './services/documentSymbols';
 import { YAMLCompletion } from "./services/yamlCompletion";
 import { YAMLHover } from "./services/yamlHover";
+import { YAMLDefinition } from "./services/yamlDefinition";
 import { YAMLValidation } from "./services/yamlValidation";
 import { format } from './services/yamlFormatter';
 import { JSONWorkerContribution } from './jsonContributions';
@@ -99,6 +101,7 @@ export interface LanguageService {
 	doComplete(document: TextDocument, position: Position, yamlDocument: YAMLDocument): Thenable<CompletionList>;
   doValidation(document: TextDocument, yamlDocument: YAMLDocument): Thenable<Diagnostic[]>;
   doHover(document: TextDocument, position: Position, doc: YAMLDocument): Thenable<Hover>;
+  doDefinition(document: TextDocument, position: Position, doc: YAMLDocument, workspaceRoot: URI): Thenable<Definition>;
   findDocumentSymbols(document: TextDocument, doc: YAMLDocument): SymbolInformation[];
   doResolve(completionItem: CompletionItem): Thenable<CompletionItem>;
   resetSchema(uri: string): boolean;
@@ -120,6 +123,7 @@ export function getLanguageService(
 
   let completer = new YAMLCompletion(schemaService, contributions, promise);
   let hover = new YAMLHover(schemaService, contributions, promise);
+  let definition = new YAMLDefinition(schemaService, contributions, promise);
   let yamlDocumentSymbols = new YAMLDocumentSymbols();
   let yamlValidation = new YAMLValidation(schemaService, promise);
   let yamlTraversal = new YAMLTraversal(promise);
@@ -140,6 +144,7 @@ export function getLanguageService(
       doResolve: completer.doResolve.bind(completer),
       doValidation: yamlValidation.doValidation.bind(yamlValidation),
       doHover: hover.doHover.bind(hover),
+      doDefinition: definition.doDefinition.bind(definition),
       findDocumentSymbols: yamlDocumentSymbols.findDocumentSymbols.bind(yamlDocumentSymbols),
       resetSchema: (uri: string) => schemaService.onResourceChange(uri),
       doFormat: format,

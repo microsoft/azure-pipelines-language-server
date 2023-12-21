@@ -9,7 +9,7 @@
 import {
 	createConnection, Connection,
 	TextDocuments, InitializeParams, InitializeResult, NotificationType, RequestType,
-	DocumentFormattingRequest, Disposable, ProposedFeatures, CompletionList, TextDocumentSyncKind, ClientCapabilities
+	DocumentFormattingRequest, Disposable, ProposedFeatures, CompletionList, TextDocumentSyncKind, ClientCapabilities, DefinitionParams,
 } from "vscode-languageserver/node";
 import { TextDocument } from 'vscode-languageserver-textdocument';
 
@@ -104,6 +104,7 @@ connection.onInitialize((params: InitializeParams): InitializeResult => {
 			textDocumentSync: TextDocumentSyncKind.Full,
 			completionProvider: { resolveProvider: true },
 			hoverProvider: true,
+			definitionProvider: true,
 			documentSymbolProvider: true,
 			documentFormattingProvider: false
 		}
@@ -494,5 +495,16 @@ connection.onDocumentFormatting(formatParams => {
 
 	return customLanguageService.doFormat(document, formatParams.options, customTags);
 });
+
+connection.onDefinition((definitionParams: DefinitionParams) => {
+	let document = documents.get(definitionParams.textDocument.uri);
+
+	if(!document){
+		return;
+	}
+
+	let jsonDocument = parseYAML(document.getText());
+	return customLanguageService.doDefinition(document, definitionParams.position, jsonDocument, workspaceRoot);
+})
 
 connection.listen();
