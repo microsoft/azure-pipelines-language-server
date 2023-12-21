@@ -123,7 +123,7 @@ export function getLanguageService(
 
   let completer = new YAMLCompletion(schemaService, contributions, promise);
   let hover = new YAMLHover(schemaService, contributions, promise);
-  let definition = new YAMLDefinition(schemaService, contributions, promise);
+  let definition = new YAMLDefinition(promise);
   let yamlDocumentSymbols = new YAMLDocumentSymbols();
   let yamlValidation = new YAMLValidation(schemaService, promise);
   let yamlTraversal = new YAMLTraversal(promise);
