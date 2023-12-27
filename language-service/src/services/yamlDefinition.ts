@@ -5,11 +5,10 @@
  *--------------------------------------------------------------------------------------------*/
 'use strict';
 
-import { resolve, dirname, join } from "path";
 import { YAMLDocument } from "../parser/yamlParser";
 import { PromiseConstructor, Thenable } from "vscode-json-languageservice";
 import { TextDocument, Position, Definition, Location } from "vscode-languageserver-types";
-import { URI } from "vscode-uri";
+import { URI, Utils } from "vscode-uri";
 
 export class YAMLDefinition {
 
@@ -36,24 +35,25 @@ export class YAMLDefinition {
             return this.promise.resolve(void 0);
         }
 
-        const [value, repo] = node
+        const [location, resource] = node
             .getValue()
             .split('@');
 
         // cannot jump to external resources
-        if (repo && repo != 'self') {
+        if (resource && resource != 'self') {
             return this.promise.resolve(void 0);
         }
 
         // determine if abs path (from root) or relative path
         let pathToDefinition = '';
-        if (value.startsWith('/')) {
-            const rootDir: string = workspaceRoot.path.toString();
-            pathToDefinition = join(rootDir, value);
+        if (location.startsWith('/')) {
+            pathToDefinition = Utils.joinPath(workspaceRoot, location).path;
         }
         else {
-            const documentPath: string = new URL(document.uri).pathname;
-            pathToDefinition = resolve(dirname(documentPath), value);
+            pathToDefinition = Utils.resolvePath(
+                Utils.dirname(URI.parse(document.uri)),
+                location
+            ).path;
         }
         
         const definition = Location.create(pathToDefinition, {
