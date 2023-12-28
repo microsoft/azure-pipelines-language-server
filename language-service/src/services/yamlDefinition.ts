@@ -47,13 +47,13 @@ export class YAMLDefinition {
         // determine if abs path (from root) or relative path
         let pathToDefinition = '';
         if (location.startsWith('/')) {
-            pathToDefinition = Utils.joinPath(workspaceRoot, location).path;
+            pathToDefinition = Utils.joinPath(workspaceRoot, location).fsPath;
         }
         else {
             pathToDefinition = Utils.resolvePath(
                 Utils.dirname(URI.parse(document.uri)),
                 location
-            ).path;
+            ).fsPath;
         }
         
         const definition = Location.create(pathToDefinition, {
