@@ -47,7 +47,7 @@ export class YAMLDefinition {
             .split('@');
 
         // cannot jump to external resources
-        if (resource && resource != 'self') {
+        if (resource && resource !== 'self') {
             return this.promise.resolve(void 0);
         }
 
