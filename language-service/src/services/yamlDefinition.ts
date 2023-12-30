@@ -7,7 +7,7 @@
 
 import { YAMLDocument } from "../parser/yamlParser";
 import { PromiseConstructor, Thenable } from "vscode-json-languageservice";
-import { TextDocument, Position, Definition, Location } from "vscode-languageserver-types";
+import { TextDocument, Position, Definition, Location, Range } from "vscode-languageserver-types";
 import { URI, Utils } from "vscode-uri";
 
 export class YAMLDefinition {
@@ -45,21 +45,20 @@ export class YAMLDefinition {
         }
 
         // determine if abs path (from root) or relative path
-        let pathToDefinition = '';
+        // NOTE: Location.create takes in a string, even though the parameter is called 'uri'.
+        // So create an actual URI, then .toString() it and skip the unnecessary encoding.
+        let definitionUri = '';
         if (location.startsWith('/')) {
-            pathToDefinition = Utils.joinPath(workspaceRoot, location).fsPath;
+            definitionUri = Utils.joinPath(workspaceRoot, location).toString(true);
         }
         else {
-            pathToDefinition = Utils.resolvePath(
-                Utils.dirname(URI.parse(document.uri)),
+            definitionUri = Utils.resolvePath(
+                Utils.dirname(URI.parse(document.uri, true)),
                 location
-            ).fsPath;
+            ).toString(true);
         }
-        
-        const definition = Location.create(pathToDefinition, {
-            start: { line: 0, character: 0 },
-            end: { line: 0, character: 0 }
-          });
+
+        const definition = Location.create(definitionUri, Range.create(0, 0, 0, 0));
 
         return this.promise.resolve(definition);
     }
