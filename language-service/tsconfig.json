@@ -6,7 +6,10 @@
 		"moduleResolution": "node",
 		"sourceMap": true,
 		"declaration": true,
-		"lib" : [ "es2015", "dom" ],
+		"lib": [
+			"es2021",
+			"dom"
+		],
 		"outDir": "./lib",
 		"noUnusedLocals": true
 	},

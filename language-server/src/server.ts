@@ -87,7 +87,7 @@ let workspaceRoot: URI;
 connection.onInitialize((params: InitializeParams): InitializeResult => {
 	capabilities = params.capabilities;
 	workspaceFolders = params["workspaceFolders"];
-	workspaceRoot = URI.parse(params.rootPath);
+	workspaceRoot = URI.parse(params.rootUri, true);
 
 	function hasClientCapability(...keys: string[]) {
 		let c = params.capabilities;

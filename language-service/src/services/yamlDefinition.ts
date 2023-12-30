@@ -5,6 +5,7 @@
  *--------------------------------------------------------------------------------------------*/
 'use strict';
 
+import * as path from "path";
 import { PromiseConstructor, Thenable } from "vscode-json-languageservice";
 import { TextDocument, Position, Definition, Location, Range } from "vscode-languageserver-types";
 import { URI, Utils } from "vscode-uri";
@@ -42,7 +43,7 @@ export class YAMLDefinition {
             return this.promise.resolve(void 0);
         }
 
-        const [location, resource] = node
+        let [location, resource] = node
             .value
             .split('@');
 
@@ -51,12 +52,21 @@ export class YAMLDefinition {
             return this.promise.resolve(void 0);
         }
 
+        // Azure Pipelines accepts both forward and back slashes as path separators,
+        // even when running on non-Windows.
+        // To make things easier, normalize all path separators into this platform's path separator.
+        // That way, vscode-uri will operate on the separators as expected.
+        location = location
+            .replaceAll(path.posix.sep, path.sep)
+            .replaceAll(path.win32.sep, path.sep);
+
         // determine if abs path (from root) or relative path
         // NOTE: Location.create takes in a string, even though the parameter is called 'uri'.
         // So create an actual URI, then .toString() it and skip the unnecessary encoding.
         let definitionUri = '';
-        if (location.startsWith('/')) {
-            definitionUri = Utils.joinPath(workspaceRoot, location).toString(true);
+        if (location.startsWith(path.sep)) {
+            // Substring to strip the leading separator.
+            definitionUri = Utils.joinPath(workspaceRoot, location.substring(1)).toString(true);
         }
         else {
             definitionUri = Utils.resolvePath(
