@@ -5,10 +5,12 @@
  *--------------------------------------------------------------------------------------------*/
 'use strict';
 
-import { YAMLDocument } from "../parser/yamlParser";
 import { PromiseConstructor, Thenable } from "vscode-json-languageservice";
 import { TextDocument, Position, Definition, Location, Range } from "vscode-languageserver-types";
 import { URI, Utils } from "vscode-uri";
+
+import { StringASTNode } from "../parser/jsonParser";
+import { YAMLDocument } from "../parser/yamlParser";
 
 export class YAMLDefinition {
 
@@ -25,18 +27,23 @@ export class YAMLDefinition {
         if(jsonDocument === null){
             return this.promise.resolve(void 0);
         }
-        let node = jsonDocument.getNodeFromOffset(offset);
-        if (!node || (node.type === 'object' || node.type === 'array') && offset > node.start + 1 && offset < node.end - 1) {
-            return this.promise.resolve(void 0);
-        }
-        
-        // can only jump to definition for template declaration
-        if (node.location !== 'template') {
+
+        const node = jsonDocument.getNodeFromOffset(offset);
+
+        // can only jump to definition for template declaration, which means:
+        // * we must be on a string node (key: value)
+        // * the key (location) must be "template"
+        // * we must be on the _value_ of the node
+        //
+        // In other words...
+        // - template: my_cool_template.yml
+        //             ^^^^^^^^^^^^^^^^^^^^ this part
+        if (!(node instanceof StringASTNode) || node.location !== 'template' || node.isKey) {
             return this.promise.resolve(void 0);
         }
 
         const [location, resource] = node
-            .getValue()
+            .value
             .split('@');
 
         // cannot jump to external resources
@@ -63,4 +70,3 @@ export class YAMLDefinition {
         return this.promise.resolve(definition);
     }
 }
-
