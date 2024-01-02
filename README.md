@@ -21,6 +21,8 @@
     * Hovering over a node shows description *if available*
 5. Document outlining:
     * Shows a complete document outline of all nodes in the document
+6. Go to definition for Templates
+    * Referenced templates can be resolved to a local file (if it exists)
 
 ## Developer Support
 
