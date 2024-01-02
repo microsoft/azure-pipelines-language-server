@@ -32,9 +32,8 @@ export class YAMLDefinition {
         const node = jsonDocument.getNodeFromOffset(offset);
 
         // can only jump to definition for template declaration, which means:
-        // * we must be on a string node (key: value)
+        // * we must be on a string node that is acting as a value (vs a key)
         // * the key (location) must be "template"
-        // * we must be on the _value_ of the node
         //
         // In other words...
         // - template: my_cool_template.yml
