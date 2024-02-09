@@ -1,14 +1,38 @@
+# This Yaml Document has been converted by ESAI Yaml Pipeline Conversion Tool.
+# Please make sure to check all the converted content, it is your team's responsibility to make sure that the pipeline is still valid and functions as expected.
+# This pipeline will be extended to the OneESPT template
+# If you are not using the E+D shared hosted pool with windows-2022, replace the pool section with your hosted pool, os, and image name. If you are using a Linux image, you must specify an additional windows image for SDL: https://eng.ms/docs/cloud-ai-platform/devdiv/one-engineering-system-1es/1es-docs/1es-pipeline-templates/features/sdlanalysis/overview#how-to-specify-a-windows-pool-for-the-sdl-source-analysis-stage
 # Release build script for language-service
-
 # Only trigger manually
 trigger: none
 pr: none
-
-jobs:
-- template: build-package.yml
+resources:
+  repositories:
+  - repository: 1ESPipelineTemplates
+    type: git
+    name: 1ESPipelineTemplates/1ESPipelineTemplates
+    ref: refs/tags/release
+extends:
+  template: v1/1ES.Official.PipelineTemplate.yml@1ESPipelineTemplates
   parameters:
-    name: 'build_language_service'
-    root: 'language-service'
-    packagename: 'azure-pipelines-language-service'
-    tarballPath: 'language-service'
-    configuration: 'release'
+    sdl:
+      sourceAnalysisPool:
+        name: Azure-Pipelines-1ESPT-ExDShared
+        image: windows-2022
+        os: windows
+    pool:
+      name: Azure-Pipelines-1ESPT-ExDShared
+      image: ubuntu-latest
+      os: linux
+    customBuildTags:
+    - ES365AIMigrationTooling
+    stages:
+    - stage: stage
+      jobs:
+      - template: /.pipelines/build-package.yml@self
+        parameters:
+          name: 'build_language_service'
+          root: 'language-service'
+          packagename: 'azure-pipelines-language-service'
+          tarballPath: 'language-service'
+          configuration: 'release'
