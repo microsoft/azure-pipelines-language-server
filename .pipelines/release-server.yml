@@ -35,4 +35,4 @@ extends:
           root: 'language-server'
           packagename: 'azure-pipelines-language-server'
           tarballPath: 'language-server'
-          configuration: 'release'
+          configuration: 'ci'
