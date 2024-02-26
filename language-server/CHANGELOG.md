@@ -1,3 +1,8 @@
+#### 0.8.0
+- Added "go to definition" support for templates [#PR-157](https://github.com/microsoft/azure-pipelines-language-server/pull/157) - thanks @Stuart-Wilcox!
+- Added a standalone `azure-pipelines-language-server` executable [#PR-147](https://github.com/microsoft/azure-pipelines-language-server/pull/147) - thanks @williamboman!
+- Updated dependencies
+
 #### 0.7.0
 - Added support for using expressions as values [#PR-138](https://github.com/microsoft/azure-pipelines-language-server/pull/138)
 - Fixed badly-indented files crashing the language server [#PR-141](https://github.com/microsoft/azure-pipelines-language-server/pull/141)
