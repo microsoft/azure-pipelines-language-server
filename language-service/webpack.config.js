@@ -24,6 +24,7 @@ module.exports = {
       buffer: require.resolve('buffer/'),
       fs: false,
       os: require.resolve('os-browserify/browser'),
+      path: require.resolve('path-browserify'),
     }
   },
   mode: 'production',

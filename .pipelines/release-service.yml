@@ -1,14 +1,37 @@
-# Release build script for language-service
+# This Yaml Document has been converted by ESAI Yaml Pipeline Conversion Tool.
+# This pipeline will be extended to the OneESPT template
 
+# Release build script for language-service
 # Only trigger manually
 trigger: none
 pr: none
-
-jobs:
-- template: build-package.yml
+resources:
+  repositories:
+  - repository: 1ESPipelineTemplates
+    type: git
+    name: 1ESPipelineTemplates/1ESPipelineTemplates
+    ref: refs/tags/release
+extends:
+  template: v1/1ES.Official.PipelineTemplate.yml@1ESPipelineTemplates
   parameters:
-    name: 'build_language_service'
-    root: 'language-service'
-    packagename: 'azure-pipelines-language-service'
-    tarballPath: 'language-service'
-    configuration: 'release'
+    sdl:
+      sourceAnalysisPool:
+        name: Azure-Pipelines-1ESPT-ExDShared
+        image: windows-2022
+        os: windows
+    pool:
+      name: Azure-Pipelines-1ESPT-ExDShared
+      image: ubuntu-latest
+      os: linux
+    customBuildTags:
+    - ES365AIMigrationTooling
+    stages:
+    - stage: stage
+      jobs:
+      - template: /.pipelines/build-package.yml@self
+        parameters:
+          name: 'build_language_service'
+          root: 'language-service'
+          packagename: 'azure-pipelines-language-service'
+          tarballPath: 'language-service'
+          configuration: 'ci'

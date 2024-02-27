@@ -1,122 +1,91 @@
-# CI and PR build script
-#
-# There should be no deep magic here. The developer experience and CI experience
-# must remain as close to one another as possible.
-#
-# Developer experience:
-#   npm install
-#   (make changes)
-#   npm run compile
-#   npm run test
-
+# This Yaml Document has been converted by ESAI Yaml Pipeline Conversion Tool.
+# Please make sure to check all the converted content, it is your team's responsibility to make sure that the pipeline is still valid and functions as expected.
+# The Task 'PublishBuildArtifacts@1' has been converted to an output named 'Save the npm module' in the templateContext section.
 parameters:
-  name: ''            # job name
-  root: ''            # root folder of the package
-  packagename: ''     # name of the package
-  tarballPath: ''     # path to the tarball folder
-  configuration: ''   # 'ci' or 'release'
-
+  name: ''
+  root: ''
+  packagename: ''
+  tarballPath: ''
+  configuration: ''
 jobs:
 - job: ${{ parameters.name }}
-  pool:
-    vmImage: 'ubuntu-20.04'
+  templateContext:
+    outputs:
+    - output: pipelineArtifact
+      displayName: 'Save the npm module'
+      targetPath: ${{ format('$(Build.ArtifactStagingDirectory)/{0}', parameters.packageName) }}
+      artifactName: ${{ parameters.packagename }}
   steps:
+  - bash: |
+      PACKAGE_VERSION=$(node -p "require('./package.json').version")
+      echo "$PACKAGE_VERSION" > version.txt
+    workingDirectory: ${{ parameters.root }}
+    displayName: Extract the version number from the package
+  - template: /.pipelines/${{ format('version-{0}.yml', parameters.configuration) }}@self
+    parameters:
+      root: ${{ parameters.root }}
+  - task: NodeTool@0
+    displayName: Install Node 16 LTS or greater
+    inputs:
+      versionSpec: ">=16.13.0"
+  - script: npm ci
+    displayName: npm ci
+    workingDirectory: ${{ parameters.root }}
+  - script: npm run build
+    displayName: Build and generate a package
+    workingDirectory: ${{ parameters.root }}
+  - script: npx mocha --require ts-node/register --ui bdd ./test/**/*.test.ts --reporter mocha-junit-reporter
+    displayName: Run tests
+    workingDirectory: ${{ parameters.root }}
+  - task: PublishTestResults@2
+    displayName: Publish test results
+    condition: always()
+    inputs:
+      testRunner: JUnit
+      testResultsFiles: ${{ format('./{0}/test-results.xml', parameters.root) }}
+  - task: CopyFiles@2
+    displayName: Stage the npm module
+    inputs:
+      sourceFolder: ${{ parameters.tarballPath }}
+      contents: '*.tgz'
+      targetFolder: ${{ format('$(Build.ArtifactStagingDirectory)/{0}', parameters.packageName) }}
+  - ${{ if eq( parameters.configuration, 'release') }}:
     - bash: |
-        PACKAGE_VERSION=$(node -p "require('./package.json').version")
-        echo "$PACKAGE_VERSION" > version.txt
+        echo $(Build.SourceBranch) | sed "s|refs/[^/]*/||" > branch.txt
+        PACKAGE_VERSION=$(cat version.txt)
+        VERSION_REGEX="#### $(echo $PACKAGE_VERSION | sed 's/\./\\./g')"
+        sed -n "/$VERSION_REGEX/,/#### [0-9]\+\..*/p" CHANGELOG.md | head -n -2 > minichangelog.txt
+        LINE_COUNT=$(cat minichangelog.txt | wc -l)
+        if [ "$LINE_COUNT" -lt 2 ]; then
+          echo Mini changelog is too short. Did you use the wrong version number in CHANGELOG.txt?
+          exit 1
+        fi
       workingDirectory: ${{ parameters.root }}
-      displayName: Extract the version number from the package
-
-    # Set version number for PR/CI or release
-    - template: ${{ format('version-{0}.yml', parameters.configuration) }}
-      parameters:
-        root: ${{ parameters.root }}
-
-    # Ensure npm 7+
-    - task: NodeTool@0
-      displayName: Install Node 16 LTS or greater
-      inputs:
-        versionSpec: ">=16.13.0"
-
-    # Install dependencies
-    - script: npm ci
-      displayName: npm ci
-      workingDirectory: ${{ parameters.root }}
-
-    # Build
-    - script: npm run build
-      displayName: Build and generate a package
-      workingDirectory: ${{ parameters.root }}
-
-    # Run tests and generate ./test-results.xml in JUnit format
-    - script: npx mocha --require ts-node/register --ui bdd ./test/**/*.test.ts --reporter mocha-junit-reporter
-      displayName: Run tests
-      workingDirectory: ${{ parameters.root }}
-
-    # Publish test results
-    - task: PublishTestResults@2
-      displayName: Publish test results
-      condition: always()
-      inputs:
-        testRunner: JUnit
-        testResultsFiles: ${{ format('./{0}/test-results.xml', parameters.root) }}
-
-    # Copy package tarball into ArtifactStagingDirectory
+      displayName: Get branch and mini-changelog
+  - ${{ if eq( parameters.configuration, 'release') }}:
     - task: CopyFiles@2
-      displayName: Stage the npm module
+      displayName: Stage release meta-data files
       inputs:
-        sourceFolder: ${{ parameters.tarballPath }}
-        contents: '*.tgz'
+        SourceFolder: ${{ parameters.root }}
+        contents: |-
+          version.txt
+          branch.txt
+          minichangelog.txt
         targetFolder: ${{ format('$(Build.ArtifactStagingDirectory)/{0}', parameters.packageName) }}
-
-    - ${{ if eq( parameters.configuration, 'release') }}:
-      - bash: |
-          echo $(Build.SourceBranch) | sed "s|refs/[^/]*/||" > branch.txt
-          PACKAGE_VERSION=$(cat version.txt)
-          VERSION_REGEX="#### $(echo $PACKAGE_VERSION | sed 's/\./\\./g')"
-          sed -n "/$VERSION_REGEX/,/#### [0-9]\+\..*/p" CHANGELOG.md | head -n -2 > minichangelog.txt
-          LINE_COUNT=$(cat minichangelog.txt | wc -l)
-          if [ "$LINE_COUNT" -lt 2 ]; then
-            echo Mini changelog is too short. Did you use the wrong version number in CHANGELOG.txt?
-            exit 1
-          fi
-        workingDirectory: ${{ parameters.root }}
-        displayName: Get branch and mini-changelog
-
-    - ${{ if eq( parameters.configuration, 'release') }}:
-      - task: CopyFiles@2
-        displayName: Stage release meta-data files
-        inputs:
-          SourceFolder: ${{ parameters.root }}
-          contents: |-
-            version.txt
-            branch.txt
-            minichangelog.txt
-          targetFolder: ${{ format('$(Build.ArtifactStagingDirectory)/{0}', parameters.packageName) }}
-
-    # Publish artifacts
-    - task: PublishBuildArtifacts@1
-      displayName: Save the npm module
-      inputs:
-        pathToPublish: ${{ format('$(Build.ArtifactStagingDirectory)/{0}', parameters.packageName) }}
-        artifactName: ${{ parameters.packagename }}
-
-# create a GitHub Release
-    - ${{ if eq( parameters.configuration, 'release') }}:
-      - bash: npm install
-        displayName: Prepare to create GitHub Release
-        workingDirectory: '$(Build.SourcesDirectory)/.pipelines/github-release'
-
-    - ${{ if eq( parameters.configuration, 'release') }}:
-      - bash: |
-          SCRIPT=.pipelines/github-release/github-release.js
-          PACKAGE_VERSION=$(cat $STAGE_DIR/version.txt)
-          CONTENT=$STAGE_DIR/$PACKAGE_NAME-$PACKAGE_VERSION.tgz
-          CHANGELOG=$STAGE_DIR/minichangelog.txt
-          VERSION_TAG=$PACKAGE_NAME/v$PACKAGE_VERSION
-          node $SCRIPT $CONTENT $CHANGELOG $VERSION_TAG $GITHUB_TOKEN
-        displayName: Create GitHub Release
-        env:
-          GITHUB_TOKEN: $(GitHubSecret)
-          STAGE_DIR: ${{ format('$(Build.ArtifactStagingDirectory)/{0}', parameters.packageName) }}
-          PACKAGE_NAME: ${{ parameters.packageName }}
+  - ${{ if eq( parameters.configuration, 'release') }}:
+    - bash: npm install
+      displayName: Prepare to create GitHub Release
+      workingDirectory: '$(Build.SourcesDirectory)/.pipelines/github-release'
+  - ${{ if eq( parameters.configuration, 'release') }}:
+    - bash: |
+        SCRIPT=.pipelines/github-release/github-release.js
+        PACKAGE_VERSION=$(cat $STAGE_DIR/version.txt)
+        CONTENT=$STAGE_DIR/$PACKAGE_NAME-$PACKAGE_VERSION.tgz
+        CHANGELOG=$STAGE_DIR/minichangelog.txt
+        VERSION_TAG=$PACKAGE_NAME/v$PACKAGE_VERSION
+        node $SCRIPT $CONTENT $CHANGELOG $VERSION_TAG $GITHUB_TOKEN
+      displayName: Create GitHub Release
+      env:
+        GITHUB_TOKEN: $(GitHubSecret)
+        STAGE_DIR: ${{ format('$(Build.ArtifactStagingDirectory)/{0}', parameters.packageName) }}
+        PACKAGE_NAME: ${{ parameters.packageName }}
