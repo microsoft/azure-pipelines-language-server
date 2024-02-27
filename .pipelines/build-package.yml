@@ -11,10 +11,10 @@ jobs:
 - job: ${{ parameters.name }}
   templateContext:
     outputs:
-    - output: pipelineArtifact
+    - output: buildArtifacts
       displayName: 'Save the npm module'
-      targetPath: ${{ format('$(Build.ArtifactStagingDirectory)/{0}', parameters.packageName) }}
-      artifactName: ${{ parameters.packagename }}
+      PathtoPublish: ${{ format('$(Build.ArtifactStagingDirectory)/{0}', parameters.packageName) }}
+      ArtifactName: ${{ parameters.packagename }}
   steps:
   - bash: |
       PACKAGE_VERSION=$(node -p "require('./package.json').version")
