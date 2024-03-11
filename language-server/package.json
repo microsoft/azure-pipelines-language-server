@@ -1,7 +1,7 @@
 {
   "name": "azure-pipelines-language-server",
   "description": "Azure Pipelines language server",
-  "version": "0.7.0",
+  "version": "0.8.0",
   "author": "Microsoft",
   "license": "MIT",
   "contributors": [
@@ -37,7 +37,7 @@
     "url": "https://github.com/microsoft/azure-pipelines-language-server.git"
   },
   "dependencies": {
-    "azure-pipelines-language-service": "0.7.0",
+    "azure-pipelines-language-service": "0.8.0",
     "request-light": "^0.4.0",
     "vscode-languageserver": "^7.0.0",
     "vscode-languageserver-textdocument": "^1.0.1",
