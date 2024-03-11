@@ -4,7 +4,6 @@
 # Release build script for language-service
 # Only trigger manually
 trigger: none
-pr: none
 resources:
   repositories:
   - repository: 1ESPipelineTemplates
