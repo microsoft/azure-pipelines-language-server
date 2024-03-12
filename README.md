@@ -1,6 +1,6 @@
 ## Build status
 
-[![Build status](https://dev.azure.com/ms/azure-pipelines-vscode/_apis/build/status/Langserv%20CI?branchName=main)](https://dev.azure.com/ms/azure-pipelines-vscode/_build/latest?definitionId=24?branchName=main)
+[![Build Status](https://dev.azure.com/mseng/PipelineTools/_apis/build/status%2Fazure-pipelines-language-server%2FLangserv%20CI?repoName=microsoft%2Fazure-pipelines-language-server&branchName=main)](https://dev.azure.com/mseng/PipelineTools/_build/latest?definitionId=17102&repoName=microsoft%2Fazure-pipelines-language-server&branchName=main)
 
 ## Features
 

@@ -1,8 +1,6 @@
 # This Yaml Document has been converted by ESAI Yaml Pipeline Conversion Tool.
 # This pipeline will be extended to the OneESPT template
 
-trigger:
-- main
 resources:
   repositories:
   - repository: 1ESPipelineTemplates
@@ -14,12 +12,12 @@ extends:
   parameters:
     sdl:
       sourceAnalysisPool:
-        name: Azure-Pipelines-1ESPT-ExDShared
-        image: windows-2022
+        name: 1ES-ABTT-Shared-Pool
+        image: abtt-windows-2022
         os: windows
     pool:
-      name: Azure-Pipelines-1ESPT-ExDShared
-      image: ubuntu-latest
+      name: 1ES-ABTT-Shared-Pool
+      image: abtt-ubuntu-2204
       os: linux
     customBuildTags:
     - ES365AIMigrationTooling

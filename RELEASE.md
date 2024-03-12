@@ -21,5 +21,5 @@
     6. Publish this to npm. `npm publish azure-pipelines-language-server-0.1.2.tgz`
 6. Create a PR from your ship branch to `main`. Merge it. :tada: you're done!
 
-[release-service]: https://dev.azure.com/ms/azure-pipelines-vscode/_build?definitionId=33 "Language service release pipeline"
-[release-server]: https://dev.azure.com/ms/azure-pipelines-vscode/_build?definitionId=34 "Language server release pipeline"
+[release-service]: https://dev.azure.com/mseng/PipelineTools/_build?definitionId=17100 "Language service release pipeline"
+[release-server]: https://dev.azure.com/mseng/PipelineTools/_build?definitionId=17139 "Language server release pipeline"
