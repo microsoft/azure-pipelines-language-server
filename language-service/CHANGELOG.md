@@ -1,3 +1,7 @@
+#### 0.8.1
+- Added 1ES templates
+- Migrated to aother organization
+
 #### 0.8.0
 - Added "go to definition" support for templates [#PR-157](https://github.com/microsoft/azure-pipelines-language-server/pull/157) - thanks @Stuart-Wilcox!
 - Added a standalone `azure-pipelines-language-server` executable [#PR-147](https://github.com/microsoft/azure-pipelines-language-server/pull/147) - thanks @williamboman!
