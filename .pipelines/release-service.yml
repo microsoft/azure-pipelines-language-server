@@ -3,17 +3,8 @@
 
 # Release build script for language-service
 # Only trigger manually
-trigger: 
-  - main
-pr:
-  autoCancel: true # Whether to cancel running PR builds when a new commit lands in the branch. Default: true.
-  branches: # Branch names to include or exclude for triggering a run.
-    include: [ string ] # List of items to include.
-    exclude: [ string ] # List of items to exclude.
-  paths: # File paths to include or exclude for triggering a run.
-    include: [ string ] # List of items to include.
-    exclude: [ string ] # List of items to exclude.
-  drafts: boolean
+trigger: none
+pr: none
 resources:
   repositories:
   - repository: 1ESPipelineTemplates

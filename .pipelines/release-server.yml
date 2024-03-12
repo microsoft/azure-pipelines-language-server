@@ -3,6 +3,8 @@
 
 # Release build script for language-server
 # Only trigger manually
+trigger: none
+pr: none
 resources:
   repositories:
   - repository: 1ESPipelineTemplates
