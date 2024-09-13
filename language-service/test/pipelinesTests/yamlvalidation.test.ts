@@ -108,23 +108,34 @@ steps:
         assert.equal(diagnostics.length, 0);
     });
 
-    it('validates pipelines that has an object with a dynamic key and scalar value as the first property', async function () {
-      // Note: the real purpose of this test is to ensure we don't throw,
-      // but I can't figure out how to assert that yet.
-      // diagnostics.length can be whatever, as long as we get to that point :).
-      const diagnostics = await runValidationTest(`
+    it('validates pipelines that have an object with a dynamic key and scalar value as the first property', async function () {
+        // Note: the real purpose of this test is to ensure we don't throw,
+        // but I can't figure out how to assert that yet.
+        // diagnostics.length can be whatever, as long as we get to that point :).
+        const diagnostics = await runValidationTest(`
 steps:
 - \${{ each shorthand in parameters.taskShorthands }}:
   - \${{ shorthand }}: echo 'Hi'
 `);
-      assert.equal(diagnostics.length, 2);
+        assert.equal(diagnostics.length, 2);
+    });
+
+    it('validates pipelines that are using flow-style mappings in an array', async function () {
+        // Note: the real purpose of this test is to ensure we don't throw,
+        // but I can't figure out how to assert that yet.
+        // diagnostics.length can be whatever, as long as we get to that point :).
+        const diagnostics = await runValidationTest(`
+variables:
+- { }
+`);
+        assert.equal(diagnostics.length, 1);
     });
 
     it('validates incorrectly-indented pipelines that look like they have an array property', async function () {
-      // Note: the real purpose of this test is to ensure we don't throw,
-      // but I can't figure out how to assert that yet.
-      // diagnostics.length can be whatever, as long as we get to that point :).
-      const diagnostics = await runValidationTest(`
+        // Note: the real purpose of this test is to ensure we don't throw,
+        // but I can't figure out how to assert that yet.
+        // diagnostics.length can be whatever, as long as we get to that point :).
+        const diagnostics = await runValidationTest(`
 steps:
 - task: PowerShellOnTargetMachines@3
   inputs:
@@ -133,7 +144,7 @@ steps:
     [System.Reflection.Assembly]::LoadWithPartialName("System.IO.Compression.FileSystem") | Out-Null
     CommunicationProtocol: Http);
 `);
-      assert.equal(diagnostics.length, 4);
+        assert.equal(diagnostics.length, 4);
     });
 });
 
