@@ -1,0 +1,233 @@
+{
+  "type": "object",
+  "properties": {
+    "object": {
+      "type": "object",
+      "defaultSnippets": [
+        {
+          "label": "Object item",
+          "description": "Binds a key to a command for a given state",
+          "body": { "key1": "$1", "key2": "$2" }
+        }
+      ],
+      "properties": {
+        "key": {
+          "$ref": "#/properties/object"
+        }
+      }
+    },
+    "array": {
+      "type": "array",
+      "defaultSnippets": [
+        {
+          "label": "My array item",
+          "body": { "item1": "$1", "item2": "$2" }
+        }
+      ],
+      "items": {
+        "item1": {
+          "type": "string"
+        },
+        "item2": {
+          "type": "string"
+        }
+      }
+    },
+    "string": {
+      "type": "string",
+      "defaultSnippets": [
+        {
+          "label": "My string item",
+          "bodyText": "test $1"
+        }
+      ]
+    },
+    "boolean": {
+      "type": "boolean",
+      "defaultSnippets": [
+        {
+          "label": "My boolean item",
+          "bodyText": "false"
+        }
+      ]
+    },
+    "longSnippet": {
+      "type": "object",
+      "defaultSnippets": [
+        {
+          "label": "apply-manifests",
+          "description": "Task",
+          "body": {
+            "name": "$1",
+            "taskRef": {
+              "name": "apply-manifests"
+            },
+            "resources": {
+              "inputs": [
+                {
+                  "name": "source",
+                  "resource": "$3"
+                }
+              ]
+            },
+            "params": [
+              {
+                "name": "manifest_dir",
+                "value": "$2"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "arrayArraySnippet": {
+      "type": "object",
+      "defaultSnippets": [
+        {
+          "label": "Array Array Snippet",
+          "description": "Task",
+          "body": {
+            "apple": [
+              [
+                {
+                  "name": "source",
+                  "resource": "$3"
+                }
+              ]
+            ]
+          }
+        }
+      ]
+    },
+    "arrayStringSnippet": {
+      "type": "object",
+      "defaultSnippets": [
+        {
+          "label": "Array",
+          "body": {
+            "fruits": ["banana", "orange"]
+          }
+        }
+      ]
+    },
+    "arrayObjectSnippet": {
+      "type": "object",
+      "defaultSnippets": [
+        {
+          "label": "Array",
+          "body": {
+            "apple": [
+              {
+                "name": "source"
+              },
+              {
+                "name": "source2"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "arrayNestedObjectSnippet": {
+      "type": "object",
+      "defaultSnippets": [
+        {
+          "label": "Array Object Snippet",
+          "description": "Task",
+          "sortText": "custom",
+          "body": {
+            "apple": [
+              {
+                "name": "source",
+                "resource": {
+                  "prop1": "value1",
+                  "prop2": "value2"
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "simpleBooleanString": {
+      "type": "object",
+      "defaultSnippets": [
+        {
+          "label": "Simple boolean string",
+          "description": "Simple boolean string insert",
+          "body": {
+            "test": "true"
+          }
+        }
+      ]
+    },
+    "simpleBoolean": {
+      "type": "object",
+      "defaultSnippets": [
+        {
+          "label": "Simple string",
+          "description": "Simple string insert",
+          "body": {
+            "test": true
+          }
+        }
+      ]
+    },
+    "name": {
+      "type": "string",
+      "defaultSnippets": [
+        {
+          "label": "some",
+          "body": "some"
+        }
+      ]
+    },
+    "object_any": {
+      "type": "object",
+      "defaultSnippets": [
+        {
+          "label": "Object empty",
+          "description": "Binds a root",
+          "body": {
+            "root": {}
+          }
+        }
+      ]
+    },
+    "anyOf_arrayObj": {
+      "anyOf": [
+        {
+          "type": "array",
+          "items": {
+            "type": "object"
+          }
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "defaultSnippets": [
+        {
+          "label": "- (array item)",
+          "type": "array",
+          "body": {
+            "key": ""
+          },
+          "suggestionKind": 9
+        }
+      ]
+    },
+    "arrayWithSnippet": {
+      "type": "array",
+      "items": {
+        "defaultSnippets": [
+          {
+            "label": "My array item",
+            "body": { "item1": "$1", "item2": "$2" }
+          }
+        ],
+        "type": "string"
+      }
+    }
+  }
+}

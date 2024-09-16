@@ -1,8 +1,0 @@
-.gitignore
-*.tgz
-**/test
-**/unittests
-/src
-node_modules
-tsconfig.json
-webpack.config.js

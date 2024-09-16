@@ -1,21 +1,28 @@
 {
-	"version": "2.0.0",
-	"command": "npm",
-	"args": ["run", "watch"],
-	"isBackground": true,
-	"problemMatcher": "$tsc-watch",
-	"tasks": [
-		{
-			"label": "npm",
-			"type": "shell",
-			"command": "npm",
-			"args": [
-				"run",
-				"watch"
-			],
-			"isBackground": true,
-			"problemMatcher": "$tsc-watch",
-			"group": "build"
-		}
-	]
+  // See https://go.microsoft.com/fwlink/?LinkId=733558
+  // for the documentation about the tasks.json format
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "watch typescript",
+      "type": "shell",
+      "command": "yarn run watch",
+      "presentation": {
+        "reveal": "never"
+      },
+      "isBackground": true,
+      "problemMatcher": "$tsc-watch",
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      }
+    },
+    {
+      "type": "npm",
+      "script": "lint",
+      "problemMatcher": ["$eslint-stylish"],
+      "label": "npm: lint",
+      "detail": "eslint -c .eslintrc.js --ext .ts src"
+    }
+  ]
 }
