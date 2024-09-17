@@ -67,7 +67,7 @@ export interface JSONSchema {
 
   // VSCode extensions
 
-  firstProperty?: string; // VSCode extension
+  firstProperty?: string[]; // VSCode extension
 
   defaultSnippets?: {
     label?: string;
@@ -88,6 +88,7 @@ export interface JSONSchema {
   markdownEnumDescriptions?: string[]; // VSCode extension
   markdownDescription?: string; // VSCode extension
   doNotSuggest?: boolean; // VSCode extension
+  ignoreCase?: string; // VSCode extension
   allowComments?: boolean; // VSCode extension
 
   schemaSequence?: JSONSchema[]; // extension for multiple schemas related to multiple documents in single yaml file

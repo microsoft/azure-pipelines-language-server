@@ -863,7 +863,10 @@ function validate(
       const val = getNodeValue(node);
       let enumValueMatch = false;
       for (const e of schema.enum) {
-        if (equals(val, e) || (callFromAutoComplete && isString(val) && isString(e) && val && e.startsWith(val))) {
+        const shouldIgnoreCase = ["value", "all"].includes(schema.ignoreCase);
+        if (equals(val, e)
+          || (callFromAutoComplete && isString(val) && isString(e) && val && (shouldIgnoreCase ? e.toUpperCase().startsWith(val.toUpperCase()) : e.startsWith(val)))
+          || (shouldIgnoreCase && isString(val) && isString(e) && e.toUpperCase() === val.toUpperCase())) {
           enumValueMatch = true;
           break;
         }
@@ -1019,7 +1022,8 @@ function validate(
     }
 
     if (isString(schema.pattern)) {
-      const regex = safeCreateUnicodeRegExp(schema.pattern);
+      const flags = ["key", "all"].includes(schema.ignoreCase) ? 'i' : '';
+      const regex = safeCreateUnicodeRegExp(schema.pattern, flags);
       if (!regex.test(node.value)) {
         validationResult.problems.push({
           location: { offset: node.offset, length: node.length },
@@ -1253,7 +1257,9 @@ function validate(
 
     if (Array.isArray(schema.required)) {
       for (const propertyName of schema.required) {
-        if (seenKeys[propertyName] === undefined) {
+        if (seenKeys[propertyName] === undefined
+          || (["key", "all"].includes(schema.ignoreCase) && Object.keys(seenKeys).find(key => key.toUpperCase() === propertyName.toUpperCase()) === undefined)
+        ) {
           const keyNode = node.parent && node.parent.type === 'property' && node.parent.keyNode;
           const location = keyNode ? { offset: keyNode.offset, length: keyNode.length } : { offset: node.offset, length: 1 };
           validationResult.problems.push({
@@ -1279,33 +1285,48 @@ function validate(
 
     if (schema.properties) {
       for (const propertyName of Object.keys(schema.properties)) {
-        propertyProcessed(propertyName);
-        const propertySchema = schema.properties[propertyName];
-        const child = seenKeys[propertyName];
-        if (child) {
-          if (isBoolean(propertySchema)) {
-            if (!propertySchema) {
-              const propertyNode = <PropertyASTNode>child.parent;
-              validationResult.problems.push({
-                location: {
-                  offset: propertyNode.keyNode.offset,
-                  length: propertyNode.keyNode.length,
-                },
-                severity: DiagnosticSeverity.Warning,
-                message: schema.errorMessage || localize('DisallowedExtraPropWarning', MSG_PROPERTY_NOT_ALLOWED, propertyName),
-                source: getSchemaSource(schema, originalSchema),
-                schemaUri: getSchemaUri(schema, originalSchema),
-              });
+        const prop = schema.properties[propertyName];
+        const childrenPropertyNames = typeof prop === 'object' && ["key", "all"].includes(prop.ignoreCase) ?
+          Object.keys(seenKeys).filter(key => key.toUpperCase() === propertyName.toUpperCase()) :
+          [propertyName];
+        for (const propertyName of childrenPropertyNames) {
+          propertyProcessed(propertyName);
+
+          if (childrenPropertyNames.length > 1) {
+            validationResult.problems.push({
+              location: { offset: seenKeys[propertyName].offset, length: seenKeys[propertyName].length },
+              severity: DiagnosticSeverity.Error,
+              message: localize('DuplicatePropError', 'Multiple properties found matching {0}', propertyName),
+            });
+          }
+
+          const propertySchema = schema.properties[propertyName];
+          const child = seenKeys[propertyName];
+          if (child) {
+            if (isBoolean(propertySchema)) {
+              if (!propertySchema) {
+                const propertyNode = <PropertyASTNode>child.parent;
+                validationResult.problems.push({
+                  location: {
+                    offset: propertyNode.keyNode.offset,
+                    length: propertyNode.keyNode.length,
+                  },
+                  severity: DiagnosticSeverity.Warning,
+                  message: schema.errorMessage || localize('DisallowedExtraPropWarning', MSG_PROPERTY_NOT_ALLOWED, propertyName),
+                  source: getSchemaSource(schema, originalSchema),
+                  schemaUri: getSchemaUri(schema, originalSchema),
+                });
+              } else {
+                validationResult.propertiesMatches++;
+                validationResult.propertiesValueMatches++;
+              }
             } else {
-              validationResult.propertiesMatches++;
-              validationResult.propertiesValueMatches++;
+              propertySchema.url = schema.url ?? originalSchema.url;
+              const propertyValidationResult = new ValidationResult(isKubernetes);
+              validate(child, propertySchema, schema, propertyValidationResult, matchingSchemas, options);
+              validationResult.mergePropertyMatch(propertyValidationResult);
+              validationResult.mergeEnumValues(propertyValidationResult);
             }
-          } else {
-            propertySchema.url = schema.url ?? originalSchema.url;
-            const propertyValidationResult = new ValidationResult(isKubernetes);
-            validate(child, propertySchema, schema, propertyValidationResult, matchingSchemas, options);
-            validationResult.mergePropertyMatch(propertyValidationResult);
-            validationResult.mergeEnumValues(propertyValidationResult);
           }
         }
       }
@@ -1313,7 +1334,9 @@ function validate(
 
     if (schema.patternProperties) {
       for (const propertyPattern of Object.keys(schema.patternProperties)) {
-        const regex = safeCreateUnicodeRegExp(propertyPattern);
+        const prop = schema.patternProperties[propertyPattern];
+        const flags = typeof prop === 'object' && ["key", "all"].includes(prop.ignoreCase) ? 'i' : '';
+        const regex = safeCreateUnicodeRegExp(propertyPattern, flags);
         for (const propertyName of unprocessedProperties.slice(0)) {
           if (regex.test(propertyName)) {
             propertyProcessed(propertyName);
@@ -1428,8 +1451,9 @@ function validate(
 
     if (schema.dependencies) {
       for (const key of Object.keys(schema.dependencies)) {
-        const prop = seenKeys[key];
-        if (prop) {
+        const prop = schema.properties?.[key];
+        const propExists = typeof prop === 'object' && ["key", "all"].includes(prop.ignoreCase) ? Object.keys(seenKeys).some(k => k.toUpperCase() === key) : seenKeys[key] !== undefined;
+        if (propExists) {
           const propertyDep = schema.dependencies[key];
           if (Array.isArray(propertyDep)) {
             for (const requiredProp of propertyDep) {
@@ -1469,6 +1493,40 @@ function validate(
         const key = f.keyNode;
         if (key) {
           validate(key, propertyNames, schema, validationResult, NoOpSchemaCollector.instance, options);
+        }
+      }
+    }
+
+    if (schema.firstProperty && schema.firstProperty.length > 0 && node.properties.length > 0) {
+      const firstProperty = node.properties[0];
+      if (!schema.firstProperty.some(prop => {
+        const propertySchema = schema.properties?.[prop];
+        if (typeof propertySchema === 'object' && ["key", "all"].includes(propertySchema.ignoreCase)) {
+          return prop.toUpperCase() === firstProperty.keyNode.value.toUpperCase();
+        } else {
+          return prop === firstProperty.keyNode.value;
+        }
+      })) {
+        if (schema.firstProperty.length === 1) {
+          validationResult.problems.push({
+            location: { offset: firstProperty.offset, length: firstProperty.length },
+            severity: DiagnosticSeverity.Error,
+            message: localize(
+              'firstPropertyError',
+              'The first property must be {0}',
+              schema.firstProperty[0],
+            ),
+          });
+        } else {
+          validationResult.problems.push({
+            location: { offset: firstProperty.offset, length: firstProperty.length },
+            severity: DiagnosticSeverity.Error,
+            message: localize(
+              'firstPropertyError',
+              'The first property must be one of: {0}',
+              schema.firstProperty.join(localize('listSeparator', ', ')),
+            ),
+          });
         }
       }
     }

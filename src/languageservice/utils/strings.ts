@@ -66,12 +66,12 @@ export function getIndentation(lineContent: string, position: number): number {
   return position;
 }
 
-export function safeCreateUnicodeRegExp(pattern: string): RegExp {
+export function safeCreateUnicodeRegExp(pattern: string, flags: string = ''): RegExp {
   // fall back to regular regexp if we cannot create Unicode one
   try {
-    return new RegExp(pattern, 'u');
+    return new RegExp(pattern, `u${flags}`);
   } catch (ignore) {
-    return new RegExp(pattern);
+    return new RegExp(pattern, flags);
   }
 }
 

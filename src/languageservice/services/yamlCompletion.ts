@@ -716,7 +716,9 @@ export class YamlCompletion {
               if (Object.prototype.hasOwnProperty.call(schemaProperties, key)) {
                 const propertySchema = schemaProperties[key];
 
-                if (typeof propertySchema === 'object' && !propertySchema.deprecationMessage && !propertySchema['doNotSuggest']) {
+                if (typeof propertySchema === 'object' &&
+                  ((node.items.length <= 1 && schema.schema.firstProperty?.length > 0 && schema.schema.firstProperty.includes(key))
+                    || (!propertySchema.deprecationMessage && !propertySchema['doNotSuggest']))) {
                   let identCompensation = '';
                   if (nodeParent && isSeq(nodeParent) && node.items.length <= 1 && !hasOnlyWhitespace) {
                     // because there is a slash '-' to prevent the properties generated to have the correct
