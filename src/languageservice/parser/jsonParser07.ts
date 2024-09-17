@@ -863,10 +863,10 @@ function validate(
       const val = getNodeValue(node);
       let enumValueMatch = false;
       for (const e of schema.enum) {
-        const shouldIgnoreCase = ["value", "all"].includes(schema.ignoreCase);
+        const ignoreCase = shouldIgnoreCase(schema, 'value');
         if (equals(val, e)
-          || (callFromAutoComplete && isString(val) && isString(e) && val && (shouldIgnoreCase ? e.toUpperCase().startsWith(val.toUpperCase()) : e.startsWith(val)))
-          || (shouldIgnoreCase && isString(val) && isString(e) && e.toUpperCase() === val.toUpperCase())) {
+          || (callFromAutoComplete && isString(val) && isString(e) && val && (ignoreCase ? e.toUpperCase().startsWith(val.toUpperCase()) : e.startsWith(val)))
+          || (ignoreCase && isString(val) && isString(e) && e.toUpperCase() === val.toUpperCase())) {
           enumValueMatch = true;
           break;
         }
@@ -1022,7 +1022,7 @@ function validate(
     }
 
     if (isString(schema.pattern)) {
-      const flags = ["key", "all"].includes(schema.ignoreCase) ? 'i' : '';
+      const flags = shouldIgnoreCase(schema, 'value') ? 'i' : '';
       const regex = safeCreateUnicodeRegExp(schema.pattern, flags);
       if (!regex.test(node.value)) {
         validationResult.problems.push({
@@ -1258,7 +1258,7 @@ function validate(
     if (Array.isArray(schema.required)) {
       for (const propertyName of schema.required) {
         if (seenKeys[propertyName] === undefined
-          || (["key", "all"].includes(schema.ignoreCase) && Object.keys(seenKeys).find(key => key.toUpperCase() === propertyName.toUpperCase()) === undefined)
+          || (shouldIgnoreCase(schema.properties?.[propertyName], 'key') && Object.keys(seenKeys).find(key => key.toUpperCase() === propertyName.toUpperCase()) === undefined)
         ) {
           const keyNode = node.parent && node.parent.type === 'property' && node.parent.keyNode;
           const location = keyNode ? { offset: keyNode.offset, length: keyNode.length } : { offset: node.offset, length: 1 };
@@ -1285,8 +1285,7 @@ function validate(
 
     if (schema.properties) {
       for (const propertyName of Object.keys(schema.properties)) {
-        const prop = schema.properties[propertyName];
-        const childrenPropertyNames = typeof prop === 'object' && ["key", "all"].includes(prop.ignoreCase) ?
+        const childrenPropertyNames = shouldIgnoreCase(schema.properties[propertyName], 'key') ?
           Object.keys(seenKeys).filter(key => key.toUpperCase() === propertyName.toUpperCase()) :
           [propertyName];
         for (const propertyName of childrenPropertyNames) {
@@ -1334,8 +1333,7 @@ function validate(
 
     if (schema.patternProperties) {
       for (const propertyPattern of Object.keys(schema.patternProperties)) {
-        const prop = schema.patternProperties[propertyPattern];
-        const flags = typeof prop === 'object' && ["key", "all"].includes(prop.ignoreCase) ? 'i' : '';
+        const flags = shouldIgnoreCase(schema.patternProperties[propertyPattern], 'key') ? 'i' : '';
         const regex = safeCreateUnicodeRegExp(propertyPattern, flags);
         for (const propertyName of unprocessedProperties.slice(0)) {
           if (regex.test(propertyName)) {
@@ -1451,9 +1449,8 @@ function validate(
 
     if (schema.dependencies) {
       for (const key of Object.keys(schema.dependencies)) {
-        const prop = schema.properties?.[key];
-        const propExists = typeof prop === 'object' && ["key", "all"].includes(prop.ignoreCase) ? Object.keys(seenKeys).some(k => k.toUpperCase() === key) : seenKeys[key] !== undefined;
-        if (propExists) {
+        const prop = shouldIgnoreCase(schema.properties?.[key], 'key') ? Object.keys(seenKeys).find(k => k.toUpperCase() === key) : seenKeys[key];
+        if (prop) {
           const propertyDep = schema.dependencies[key];
           if (Array.isArray(propertyDep)) {
             for (const requiredProp of propertyDep) {
@@ -1500,8 +1497,7 @@ function validate(
     if (schema.firstProperty && schema.firstProperty.length > 0 && node.properties.length > 0) {
       const firstProperty = node.properties[0];
       if (!schema.firstProperty.some(prop => {
-        const propertySchema = schema.properties?.[prop];
-        if (typeof propertySchema === 'object' && ["key", "all"].includes(propertySchema.ignoreCase)) {
+        if (shouldIgnoreCase(schema.properties?.[prop], 'key')) {
           return prop.toUpperCase() === firstProperty.keyNode.value.toUpperCase();
         } else {
           return prop === firstProperty.keyNode.value;
@@ -1642,4 +1638,12 @@ function getSchemaUri(schema: JSONSchema, originalSchema: JSONSchema): string[] 
 
 function getWarningMessage(problemType: ProblemType, args: string[]): string {
   return localize(problemType, ProblemTypeMessages[problemType], args.join(' | '));
+}
+
+function shouldIgnoreCase(schema: JSONSchemaRef | undefined, type: "key" | "value"): boolean {
+  if (typeof schema !== 'object') {
+    return false;
+  }
+
+  return schema.ignoreCase === type || schema.ignoreCase === 'all';
 }
