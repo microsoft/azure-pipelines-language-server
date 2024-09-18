@@ -1640,7 +1640,7 @@ function getWarningMessage(problemType: ProblemType, args: string[]): string {
   return localize(problemType, ProblemTypeMessages[problemType], args.join(' | '));
 }
 
-function shouldIgnoreCase(schema: JSONSchemaRef | undefined, type: "key" | "value"): boolean {
+export function shouldIgnoreCase(schema: JSONSchemaRef | undefined, type: "key" | "value"): boolean {
   if (typeof schema !== 'object') {
     return false;
   }

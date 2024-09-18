@@ -32,7 +32,7 @@ import { stringifyObject, StringifySettings } from '../utils/json';
 import { convertErrorToTelemetryMsg, isDefined, isString } from '../utils/objects';
 import * as nls from 'vscode-nls';
 import { setKubernetesParserOption } from '../parser/isKubernetes';
-import { asSchema } from '../parser/jsonParser07';
+import { asSchema, shouldIgnoreCase } from '../parser/jsonParser07';
 import { indexOf, isInComment, isMapContainsEmptyPair } from '../utils/astUtils';
 import { isModeline } from './modelineUtil';
 import { getSchemaTypeName, isAnyOfAllOfOneOfType, isPrimitiveType } from '../utils/schemaUtils';
@@ -56,7 +56,7 @@ interface CompletionItem extends CompletionItemBase {
   parent?: ParentCompletionItemOptions;
 }
 interface CompletionsCollector {
-  add(suggestion: CompletionItem, oneOfSchema?: boolean): void;
+  add(suggestion: CompletionItem, oneOfSchema?: boolean, ignoreCase?: boolean): void;
   error(message: string): void;
   log(message: string): void;
   getNumberOfProposals(): number;
@@ -185,7 +185,7 @@ export class YamlCompletion {
 
     const proposed: { [key: string]: CompletionItem } = {};
     const collector: CompletionsCollector = {
-      add: (completionItem: CompletionItem, oneOfSchema: boolean) => {
+      add: (completionItem: CompletionItem, oneOfSchema: boolean, ignoreCase: boolean) => {
         const addSuggestionForParent = function (completionItem: CompletionItem): void {
           const existsInYaml = proposed[completionItem.label]?.label === existingProposeItem;
           //don't put to parent suggestion if already in yaml
@@ -257,6 +257,10 @@ export class YamlCompletion {
 
         if (this.arrayPrefixIndentation) {
           this.updateCompletionText(completionItem, this.arrayPrefixIndentation + completionItem.insertText);
+        }
+
+        if (ignoreCase) {
+          label = Object.keys(proposed).find((existingLabel) => existingLabel.toUpperCase() === label.toUpperCase()) ?? label;
         }
 
         const existing = proposed[label];
@@ -778,7 +782,8 @@ export class YamlCompletion {
                         insertTextFormat: InsertTextFormat.Snippet,
                         documentation: this.fromMarkup(propertySchema.markdownDescription) || propertySchema.description || '',
                       },
-                      didOneOfSchemaMatches
+                      didOneOfSchemaMatches,
+                      shouldIgnoreCase(propertySchema, 'key'),
                     );
                   }
                   // if the prop is required add it also to parent suggestion
@@ -797,7 +802,10 @@ export class YamlCompletion {
                         schema: schema.schema,
                         indent: identCompensation,
                       },
-                    });
+                    },
+                      undefined,
+                      shouldIgnoreCase(propertySchema, 'key'),
+                    );
                   }
                 }
               }
