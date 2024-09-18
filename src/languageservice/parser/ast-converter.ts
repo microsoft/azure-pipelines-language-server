@@ -77,7 +77,11 @@ function convertMap(node: YAMLMap<unknown, unknown>, parent: ASTNode, doc: Docum
   const result = new ObjectASTNodeImpl(parent, node, ...toFixedOffsetLength(range, lineCounter));
   for (const it of node.items) {
     if (isPair(it)) {
-      result.properties.push(<PropertyASTNodeImpl>convertAST(result, it, doc, lineCounter));
+      if (isCompileTimeExpression(it.key) && isMap(it.value)) {
+        result.properties.push(<PropertyASTNodeImpl>convertAST(result, it.value, doc, lineCounter));
+      } else {
+        result.properties.push(<PropertyASTNodeImpl>convertAST(result, it, doc, lineCounter));
+      }
     }
   }
   return result;
@@ -115,7 +119,16 @@ function convertSeq(node: YAMLSeq, parent: ASTNode, doc: Document, lineCounter: 
   const result = new ArrayASTNodeImpl(parent, node, ...toOffsetLength(node.range));
   for (const it of node.items) {
     if (isNode(it)) {
-      const convertedNode = convertAST(result, it, doc, lineCounter);
+      let convertedNode: ASTNode | undefined;
+      if (isMap(it) && isCompileTimeExpression(it.items[0])) {
+        const value = it.items[0].value;
+        if (isNode(value)) {
+          convertedNode = convertAST(result, value, doc, lineCounter);
+        }
+      } else {
+        convertedNode = convertAST(result, it, doc, lineCounter);
+      }
+
       // due to recursion protection, convertAST may return undefined
       if (convertedNode) {
         result.children.push(convertedNode);
@@ -208,4 +221,8 @@ function collectFlowMapRange(node: YAMLMap): NodeRange {
   }
 
   return [start, end, end];
+}
+
+function isCompileTimeExpression(node: unknown): boolean {
+  return isScalar<string>(node) && node.value.startsWith('${{') && node.value.endsWith('}}');
 }
