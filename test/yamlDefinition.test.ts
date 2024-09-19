@@ -3,16 +3,24 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { setupTextDocument, TEST_URI } from './utils/testHelper';
+import { setupLanguageService, setupTextDocument, TEST_URI } from './utils/testHelper';
 import { expect } from 'chai';
 import { YamlDefinition } from '../src/languageservice/services/yamlDefinition';
 import { LocationLink, Position, Range } from 'vscode-languageserver-types';
 import { Telemetry } from '../src/languageservice/telemetry';
+import { URI } from 'vscode-uri';
 
 describe('YAML Definition', () => {
+  let workspaceRoot: URI;
+
+  before(() => {
+    const { yamlSettings } = setupLanguageService({});
+    workspaceRoot = URI.parse(yamlSettings.workspaceFolders[0].uri, true);
+  });
+
   it('should not provide definition for non anchor node', () => {
     const doc = setupTextDocument('foo: &bar some\naaa: *bar');
-    const result = new YamlDefinition({} as Telemetry).getDefinition(doc, {
+    const result = new YamlDefinition({} as Telemetry).getDefinition(doc, workspaceRoot, {
       position: Position.create(1, 2),
       textDocument: { uri: TEST_URI },
     });
@@ -21,7 +29,7 @@ describe('YAML Definition', () => {
 
   it('should provide definition for anchor', () => {
     const doc = setupTextDocument('foo: &bar some\naaa: *bar');
-    const result = new YamlDefinition({} as Telemetry).getDefinition(doc, {
+    const result = new YamlDefinition({} as Telemetry).getDefinition(doc, workspaceRoot, {
       position: Position.create(1, 7),
       textDocument: { uri: TEST_URI },
     });

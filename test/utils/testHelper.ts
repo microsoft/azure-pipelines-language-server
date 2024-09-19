@@ -37,15 +37,15 @@ export const SCHEMA_ID = 'default_schema_id.yaml';
 
 export function setupTextDocument(content: string): TextDocument {
   yamlDocumentsCache.clear(); // clear cache
-  return TextDocument.create(TEST_URI, 'yaml', 0, content);
+  return TextDocument.create(TEST_URI, 'azure-pipelines', 0, content);
 }
 
 export function setupSchemaIDTextDocument(content: string, customSchemaID?: string): TextDocument {
   yamlDocumentsCache.clear(); // clear cache
   if (customSchemaID) {
-    return TextDocument.create(customSchemaID, 'yaml', 0, content);
+    return TextDocument.create(customSchemaID, 'azure-pipelines', 0, content);
   } else {
-    return TextDocument.create(SCHEMA_ID, 'yaml', 0, content);
+    return TextDocument.create(SCHEMA_ID, 'azure-pipelines', 0, content);
   }
 }
 
