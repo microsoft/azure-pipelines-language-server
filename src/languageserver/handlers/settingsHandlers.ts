@@ -87,7 +87,7 @@ export class SettingsHandler {
       }
       if (settings.files?.associations) {
         for (const [ext, languageId] of Object.entries(settings.files.associations)) {
-          if (languageId === 'yaml') {
+          if (languageId === 'azure-pipelines') {
             this.yamlSettings.fileExtensions.push(ext);
           }
         }
@@ -160,7 +160,7 @@ export class SettingsHandler {
       if (enableFormatter) {
         if (!this.yamlSettings.formatterRegistration) {
           this.yamlSettings.formatterRegistration = this.connection.client.register(DocumentFormattingRequest.type, {
-            documentSelector: [{ language: 'yaml' }],
+            documentSelector: [{ language: 'azure-pipelines' }],
           });
         }
       } else if (this.yamlSettings.formatterRegistration) {

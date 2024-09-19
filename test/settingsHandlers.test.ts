@@ -150,7 +150,7 @@ describe('Settings Handlers Tests', () => {
         validationHandler as unknown as ValidationHandler,
         {} as Telemetry
       );
-      workspaceStub.getConfiguration.resolves([{}, {}, {}, {}, { associations: { '*.bu': 'yaml' } }]);
+      workspaceStub.getConfiguration.resolves([{}, {}, {}, {}, { associations: { '*.bu': 'azure-pipelines' } }]);
 
       await settingsHandler.pullConfiguration();
       expect(settingsState.fileExtensions).to.include('*.bu');
