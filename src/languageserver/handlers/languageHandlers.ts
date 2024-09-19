@@ -36,6 +36,7 @@ import { SettingsState } from '../../yamlSettings';
 import { ValidationHandler } from './validationHandlers';
 import { ResultLimitReachedNotification } from '../../requestTypes';
 import * as path from 'path';
+import { URI } from 'vscode-uri';
 
 export class LanguageHandlers {
   private languageService: LanguageService;
@@ -247,7 +248,7 @@ export class LanguageHandlers {
       return;
     }
 
-    return this.languageService.doDefinition(textDocument, params);
+    return this.languageService.doDefinition(textDocument, URI.parse(this.yamlSettings.workspaceFolders[0].uri), params);
   }
 
   // Adapted from:
