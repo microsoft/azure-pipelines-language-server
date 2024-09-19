@@ -718,94 +718,95 @@ export class YamlCompletion {
           ) {
             for (const key in schemaProperties) {
               if (Object.prototype.hasOwnProperty.call(schemaProperties, key)) {
-                const propertySchema = schemaProperties[key];
+                // Check for more than one property because the placeholder will always be in the list
+                if (node.items.length > 1 || (schema.schema.firstProperty?.length > 0 && schema.schema.firstProperty.includes(key))) {
+                  const propertySchema = schemaProperties[key];
 
-                if (typeof propertySchema === 'object' &&
-                  ((node.items.length <= 1 && schema.schema.firstProperty?.length > 0 && schema.schema.firstProperty.includes(key))
-                    || (!propertySchema.deprecationMessage && !propertySchema['doNotSuggest']))) {
-                  let identCompensation = '';
-                  if (nodeParent && isSeq(nodeParent) && node.items.length <= 1 && !hasOnlyWhitespace) {
-                    // because there is a slash '-' to prevent the properties generated to have the correct
-                    // indent
-                    const sourceText = textBuffer.getText();
-                    const indexOfSlash = sourceText.lastIndexOf('-', node.range[0] - 1);
-                    if (indexOfSlash >= 0) {
-                      // add one space to compensate the '-'
-                      const overwriteChars = overwriteRange.end.character - overwriteRange.start.character;
-                      identCompensation = ' ' + sourceText.slice(indexOfSlash + 1, node.range[1] - overwriteChars);
+                  if (typeof propertySchema === 'object' && !propertySchema.deprecationMessage && !propertySchema['doNotSuggest']) {
+                    let identCompensation = '';
+                    if (nodeParent && isSeq(nodeParent) && node.items.length <= 1 && !hasOnlyWhitespace) {
+                      // because there is a slash '-' to prevent the properties generated to have the correct
+                      // indent
+                      const sourceText = textBuffer.getText();
+                      const indexOfSlash = sourceText.lastIndexOf('-', node.range[0] - 1);
+                      if (indexOfSlash >= 0) {
+                        // add one space to compensate the '-'
+                        const overwriteChars = overwriteRange.end.character - overwriteRange.start.character;
+                        identCompensation = ' ' + sourceText.slice(indexOfSlash + 1, node.range[1] - overwriteChars);
+                      }
                     }
-                  }
-                  identCompensation += this.arrayPrefixIndentation;
+                    identCompensation += this.arrayPrefixIndentation;
 
-                  // if check that current node has last pair with "null" value and key witch match key from schema,
-                  // and if schema has array definition it add completion item for array item creation
-                  let pair: Pair;
-                  if (
-                    propertySchema.type === 'array' &&
-                    (pair = node.items.find(
-                      (it) =>
-                        isScalar(it.key) &&
-                        it.key.range &&
-                        it.key.value === key &&
-                        isScalar(it.value) &&
-                        !it.value.value &&
-                        textBuffer.getPosition(it.key.range[2]).line === overwriteRange.end.line - 1
-                    )) &&
-                    pair
-                  ) {
-                    if (Array.isArray(propertySchema.items)) {
-                      this.addSchemaValueCompletions(propertySchema.items[0], separatorAfter, collector, {}, 'property');
-                    } else if (typeof propertySchema.items === 'object' && propertySchema.items.type === 'object') {
-                      this.addArrayItemValueCompletion(propertySchema.items, separatorAfter, collector);
+                    // if check that current node has last pair with "null" value and key witch match key from schema,
+                    // and if schema has array definition it add completion item for array item creation
+                    let pair: Pair;
+                    if (
+                      propertySchema.type === 'array' &&
+                      (pair = node.items.find(
+                        (it) =>
+                          isScalar(it.key) &&
+                          it.key.range &&
+                          it.key.value === key &&
+                          isScalar(it.value) &&
+                          !it.value.value &&
+                          textBuffer.getPosition(it.key.range[2]).line === overwriteRange.end.line - 1
+                      )) &&
+                      pair
+                    ) {
+                      if (Array.isArray(propertySchema.items)) {
+                        this.addSchemaValueCompletions(propertySchema.items[0], separatorAfter, collector, {}, 'property');
+                      } else if (typeof propertySchema.items === 'object' && propertySchema.items.type === 'object') {
+                        this.addArrayItemValueCompletion(propertySchema.items, separatorAfter, collector);
+                      }
                     }
-                  }
 
-                  let insertText = key;
-                  if (!key.startsWith(existingKey) || !hasColon) {
-                    insertText = this.getInsertTextForProperty(
-                      key,
-                      propertySchema,
-                      separatorAfter,
-                      identCompensation + this.indentation
-                    );
-                  }
-                  const isNodeNull =
-                    (isScalar(originalNode) && originalNode.value === null) ||
-                    (isMap(originalNode) && originalNode.items.length === 0);
-                  const existsParentCompletion = schema.schema.required?.length > 0;
-                  if (!this.parentSkeletonSelectedFirst || !isNodeNull || !existsParentCompletion) {
-                    collector.add(
-                      {
-                        kind: CompletionItemKind.Property,
-                        label: key,
-                        insertText,
-                        insertTextFormat: InsertTextFormat.Snippet,
-                        documentation: this.fromMarkup(propertySchema.markdownDescription) || propertySchema.description || '',
-                      },
-                      didOneOfSchemaMatches,
-                      shouldIgnoreCase(propertySchema, 'key'),
-                    );
-                  }
-                  // if the prop is required add it also to parent suggestion
-                  if (schema.schema.required?.includes(key)) {
-                    collector.add({
-                      label: key,
-                      insertText: this.getInsertTextForProperty(
+                    let insertText = key;
+                    if (!key.startsWith(existingKey) || !hasColon) {
+                      insertText = this.getInsertTextForProperty(
                         key,
                         propertySchema,
                         separatorAfter,
                         identCompensation + this.indentation
-                      ),
-                      insertTextFormat: InsertTextFormat.Snippet,
-                      documentation: this.fromMarkup(propertySchema.markdownDescription) || propertySchema.description || '',
-                      parent: {
-                        schema: schema.schema,
-                        indent: identCompensation,
+                      );
+                    }
+                    const isNodeNull =
+                      (isScalar(originalNode) && originalNode.value === null) ||
+                      (isMap(originalNode) && originalNode.items.length === 0);
+                    const existsParentCompletion = schema.schema.required?.length > 0;
+                    if (!this.parentSkeletonSelectedFirst || !isNodeNull || !existsParentCompletion) {
+                      collector.add(
+                        {
+                          kind: CompletionItemKind.Property,
+                          label: key,
+                          insertText,
+                          insertTextFormat: InsertTextFormat.Snippet,
+                          documentation: this.fromMarkup(propertySchema.markdownDescription) || propertySchema.description || '',
+                        },
+                        didOneOfSchemaMatches,
+                        shouldIgnoreCase(propertySchema, 'key'),
+                      );
+                    }
+                    // if the prop is required add it also to parent suggestion
+                    if (schema.schema.required?.includes(key)) {
+                      collector.add({
+                        label: key,
+                        insertText: this.getInsertTextForProperty(
+                          key,
+                          propertySchema,
+                          separatorAfter,
+                          identCompensation + this.indentation
+                        ),
+                        insertTextFormat: InsertTextFormat.Snippet,
+                        documentation: this.fromMarkup(propertySchema.markdownDescription) || propertySchema.description || '',
+                        parent: {
+                          schema: schema.schema,
+                          indent: identCompensation,
+                        },
                       },
-                    },
-                      undefined,
-                      shouldIgnoreCase(propertySchema, 'key'),
-                    );
+                        undefined,
+                        shouldIgnoreCase(propertySchema, 'key'),
+                      );
+                    }
                   }
                 }
               }

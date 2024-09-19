@@ -745,7 +745,10 @@ function validate(
         validationResult: ValidationResult;
         matchingSchemas: ISchemaCollector;
       } = null;
-      for (const subSchemaRef of alternatives) {
+
+      const firstPropMatches = getFirstPropertyMatches(alternatives);
+      const possibleMatches = firstPropMatches.length > 0 ? firstPropMatches : alternatives;
+      for (const subSchemaRef of possibleMatches) {
         const subSchema = { ...asSchema(subSchemaRef) };
         const subValidationResult = new ValidationResult(isKubernetes);
         const subMatchingSchemas = matchingSchemas.newSub();
@@ -1601,6 +1604,41 @@ function validate(
       }
     }
     return bestMatch;
+  }
+
+  function getFirstPropertyMatches(subSchemaRefs: JSONSchemaRef[]): JSONSchemaRef[] {
+    if (node.type === 'object' && node.properties.length > 0) {
+      const firstProperty = node.properties[0];
+      const firstKey = firstProperty.keyNode.value;
+      return subSchemaRefs.filter((schemaRef) => {
+        const schema = asSchema(schemaRef);
+        if (schema?.firstProperty !== undefined && schema.firstProperty.length > 0) {
+          const firstPropSchemaName = schema.firstProperty.find((prop) => {
+            return shouldIgnoreCase(schema.properties?.[prop], 'key') ? prop.toUpperCase() === firstKey.toUpperCase() : prop === firstKey;
+          });
+
+          if (firstPropSchemaName !== undefined) {
+            if (schema.properties === undefined) {
+              return true;
+            }
+
+            const propertySchema = asSchema(schema.properties[firstPropSchemaName]);
+            if (propertySchema === undefined) {
+              return true;
+            }
+
+            const propertyValidationResult = new ValidationResult(false);
+            validate(firstProperty, propertySchema, schema, propertyValidationResult, new SchemaCollector(-1), options);
+            if (!propertyValidationResult.hasProblems()) {
+              return true;
+            }
+          }
+        }
+        return false;
+      });
+    }
+
+    return [];
   }
 }
 

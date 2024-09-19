@@ -1,6 +1,8 @@
 import { CompletionList, Range } from 'vscode-languageserver-types';
 import * as assert from 'assert';
-import { caretPosition, setupLanguageService, setupSchemaIDTextDocument, TestCustomSchemaProvider } from '../utils/testHelper';
+import * as fs from 'fs/promises';
+import * as path from 'path';
+import { caretPosition, SCHEMA_ID, setupLanguageService, setupSchemaIDTextDocument, TestCustomSchemaProvider } from '../utils/testHelper';
 import { ServiceSetup } from '../utils/serviceSetup';
 import { SettingsState, TextDocumentTestManager } from '../../src/yamlSettings';
 import { LanguageService } from '../../src';
@@ -8,8 +10,6 @@ import { LanguageHandlers } from '../../src/languageserver/handlers/languageHand
 
 describe("Yaml Completion Service Tests", function () {
   this.timeout(20000);
-
-  const SCHEMA_URI = 'test/pipelinesTests/schema.json';
 
   let languageSettingsSetup: ServiceSetup;
   let languageService: LanguageService;
@@ -19,7 +19,7 @@ describe("Yaml Completion Service Tests", function () {
 
   before(() => {
     languageSettingsSetup = new ServiceSetup().withCompletion().withSchemaFileMatch({
-      uri: SCHEMA_URI,
+      uri: SCHEMA_ID,
       fileMatch: ['azure-pipelines.yaml'],
     });
     const {
@@ -42,12 +42,14 @@ describe("Yaml Completion Service Tests", function () {
    * For example, `content = 'ab|c|d'` places the caret over the `'c'`, at `position = 2`
    * @returns A list of valid completions.
    */
-  function parseSetup(content: string, position: number): Promise<CompletionList> {
+  async function parseSetup(content: string, position: number): Promise<CompletionList> {
     if (typeof position === 'undefined') {
       ({ content, position } = caretPosition(content));
     }
 
-    const testTextDocument = setupSchemaIDTextDocument(content, SCHEMA_URI);
+    schemaProvider.addSchema(SCHEMA_ID, JSON.parse(await fs.readFile(path.join(__dirname, 'schema.json'), 'utf8')));
+
+    const testTextDocument = setupSchemaIDTextDocument(content, SCHEMA_ID);
     yamlSettings.documents = new TextDocumentTestManager();
     (yamlSettings.documents as TextDocumentTestManager).set(testTextDocument);
     return languageHandler.completionHandler({
@@ -57,7 +59,7 @@ describe("Yaml Completion Service Tests", function () {
   }
 
   afterEach(() => {
-    schemaProvider.deleteSchema(SCHEMA_URI);
+    schemaProvider.deleteSchema(SCHEMA_ID);
     languageService.configure(languageSettingsSetup.languageSettings);
   });
 
@@ -85,7 +87,7 @@ describe("Yaml Completion Service Tests", function () {
 
   it('Given a new file with steps and task, autocomplete should give suggestions', async function () {
     const content = 'steps:\n  - task: ';
-    const result = await parseSetup(content, 15);
+    const result = await parseSetup(content, 17);
     assert.ok(result.items.length >= 100);
     });
 
@@ -97,14 +99,15 @@ describe("Yaml Completion Service Tests", function () {
     }
     });
 
-  it('String properties replacement range should include colon', async function () {
+  it('String properties with a colon should replace up to the colon', async function () {
     const content = 'steps:\n- scrip: ';
     const result = await parseSetup(content, 12);
-    const expectedReplacementLength = "scrip:".length;
+    const expectedReplacementLength = "scrip".length;
     for (const item of result.items) {
       let actualRange: Range = item.textEdit['range'];
       let actualLength = actualRange.end.character - actualRange.start.character;
       assert.equal(actualLength, expectedReplacementLength);
+      assert.ok(!item.insertText.includes(':'));
     }
     });
 
