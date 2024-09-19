@@ -15,7 +15,7 @@ describe('YAML Definition', () => {
 
   before(() => {
     const { yamlSettings } = setupLanguageService({});
-    workspaceRoot = URI.parse(yamlSettings.workspaceFolders[0].uri, true);
+    workspaceRoot = URI.parse(__dirname, true);
   });
 
   it('should not provide definition for non anchor node', () => {

@@ -137,7 +137,7 @@ key:
     `;
     const positions: Position[] = [
       {
-        line: 2,
+        line: 3,
         character: 9,
       },
     ];
