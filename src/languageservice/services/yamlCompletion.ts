@@ -718,8 +718,13 @@ export class YamlCompletion {
           ) {
             for (const key in schemaProperties) {
               if (Object.prototype.hasOwnProperty.call(schemaProperties, key)) {
-                // If there are no (actual) nodes yet, only show results that keys that are allowed to be the first property.
-                if ((node.items.length > 0 && !isNode(node.items[0].value)) || schema.schema.firstProperty === undefined || schema.schema.firstProperty.length === 0 || schema.schema.firstProperty.includes(key)) {
+                // If there are no (actual) nodes yet, only show keys that are allowed to be the first property.
+                if (
+                  !isMapContainsEmptyPair(node) ||
+                  schema.schema.firstProperty === undefined ||
+                  schema.schema.firstProperty.length === 0 ||
+                  schema.schema.firstProperty.includes(key)
+                ) {
                   const propertySchema = schemaProperties[key];
 
                   if (typeof propertySchema === 'object' && !propertySchema.deprecationMessage && !propertySchema['doNotSuggest']) {
