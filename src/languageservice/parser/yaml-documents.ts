@@ -174,9 +174,9 @@ export class SingleYAMLDocument extends JSONDocument {
       return closestNode;
     }
 
-    if (indentation === position.character) {
-      closestNode = this.getProperParentByIndentation(indentation, closestNode, textBuffer, '', configuredIndentation);
-    }
+    // if (indentation === position.character) {
+    //   closestNode = this.getProperParentByIndentation(indentation, closestNode, textBuffer, '', configuredIndentation);
+    // }
 
     return closestNode;
   }
