@@ -718,8 +718,8 @@ export class YamlCompletion {
           ) {
             for (const key in schemaProperties) {
               if (Object.prototype.hasOwnProperty.call(schemaProperties, key)) {
-                // Check for more than one property because the placeholder will always be in the list
-                if (node.items.length > 1 || (schema.schema.firstProperty?.length > 0 && schema.schema.firstProperty.includes(key))) {
+                // If there are no (actual) nodes yet, only show results that keys that are allowed to be the first property.
+                if ((node.items.length > 0 && !isNode(node.items[0].value)) || schema.schema.firstProperty === undefined || schema.schema.firstProperty.length === 0 || schema.schema.firstProperty.includes(key)) {
                   const propertySchema = schemaProperties[key];
 
                   if (typeof propertySchema === 'object' && !propertySchema.deprecationMessage && !propertySchema['doNotSuggest']) {
