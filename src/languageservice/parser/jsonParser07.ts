@@ -1288,6 +1288,7 @@ function validate(
 
     if (schema.properties) {
       for (const propertyName of Object.keys(schema.properties)) {
+        const propertySchema = schema.properties[propertyName];
         const childrenPropertyNames = shouldIgnoreCase(schema.properties[propertyName], 'key') ?
           Object.keys(seenKeys).filter(key => key.toUpperCase() === propertyName.toUpperCase()) :
           [propertyName];
@@ -1302,7 +1303,6 @@ function validate(
             });
           }
 
-          const propertySchema = schema.properties[propertyName];
           const child = seenKeys[propertyName];
           if (child) {
             if (isBoolean(propertySchema)) {
