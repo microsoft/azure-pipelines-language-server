@@ -5,7 +5,7 @@ import { ValidationHandler } from '../../src/languageserver/handlers/validationH
 import { SettingsState, TextDocumentTestManager } from '../../src/yamlSettings';
 import { setupLanguageService, setupSchemaIDTextDocument } from '../utils/testHelper';
 
-describe("Yaml Validation Service Tests", function () {
+describe('Yaml Validation Service Tests', function () {
   this.timeout(20000);
 
   const SCHEMA_URI = 'test/pipelinesTests/schema.json';
@@ -63,7 +63,7 @@ jobs:
 `;
     const result = await parseSetup(content);
     assert.equal(result.length, 1);
-    assert.ok(result[0].message.indexOf("single-document") >= 0);
+    assert.ok(result[0].message.indexOf('single-document') >= 0);
   });
 
   // In truth, these tests should probably all be rewritten to test parser/yamlParser,
@@ -93,8 +93,8 @@ variables:
   });
 
   it('validates pipelines with unfinished conditional variable checks', async function () {
-  // Note: the real purpose of this test is to ensure we don't throw,
-  // but I can't figure out how to assert that yet.
+    // Note: the real purpose of this test is to ensure we don't throw,
+    // but I can't figure out how to assert that yet.
     // result.length can be whatever, as long as we get to that point :).
     const content = `
 variables:
@@ -105,8 +105,8 @@ variables:
   });
 
   it('validates pipelines with unfinished conditionally-inserted variables', async function () {
-  // Note: the real purpose of this test is to ensure we don't throw,
-  // but I can't figure out how to assert that yet.
+    // Note: the real purpose of this test is to ensure we don't throw,
+    // but I can't figure out how to assert that yet.
     // result.length can be whatever, as long as we get to that point :).
     const content = `
 variables:
@@ -118,8 +118,8 @@ variables:
   });
 
   it('validates pipelines with multiple levels of expression nesting', async function () {
-  // Note: the real purpose of this test is to ensure we don't throw,
-  // but I can't figure out how to assert that yet.
+    // Note: the real purpose of this test is to ensure we don't throw,
+    // but I can't figure out how to assert that yet.
     // result.length can be whatever, as long as we get to that point :).
     const content = `
 steps:
@@ -135,8 +135,8 @@ steps:
   });
 
   it('validates pipelines that has an object with a dynamic key and scalar value as the first property', async function () {
-  // Note: the real purpose of this test is to ensure we don't throw,
-  // but I can't figure out how to assert that yet.
+    // Note: the real purpose of this test is to ensure we don't throw,
+    // but I can't figure out how to assert that yet.
     // result.length can be whatever, as long as we get to that point :).
     const content = `
 steps:
@@ -148,8 +148,8 @@ steps:
   });
 
   it('validates incorrectly-indented pipelines that look like they have an array property', async function () {
-  // Note: the real purpose of this test is to ensure we don't throw,
-  // but I can't figure out how to assert that yet.
+    // Note: the real purpose of this test is to ensure we don't throw,
+    // but I can't figure out how to assert that yet.
     // result.length can be whatever, as long as we get to that point :).
     const content = `
 steps:

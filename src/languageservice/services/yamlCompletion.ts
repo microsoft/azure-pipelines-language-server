@@ -727,7 +727,11 @@ export class YamlCompletion {
                 ) {
                   const propertySchema = schemaProperties[key];
 
-                  if (typeof propertySchema === 'object' && !propertySchema.deprecationMessage && !propertySchema['doNotSuggest']) {
+                  if (
+                    typeof propertySchema === 'object' &&
+                    !propertySchema.deprecationMessage &&
+                    !propertySchema['doNotSuggest']
+                  ) {
                     let identCompensation = '';
                     if (nodeParent && isSeq(nodeParent) && node.items.length <= 1 && !hasOnlyWhitespace) {
                       // because there is a slash '-' to prevent the properties generated to have the correct
@@ -788,28 +792,29 @@ export class YamlCompletion {
                           documentation: this.fromMarkup(propertySchema.markdownDescription) || propertySchema.description || '',
                         },
                         didOneOfSchemaMatches,
-                        shouldIgnoreCase(propertySchema, 'key'),
+                        shouldIgnoreCase(propertySchema, 'key')
                       );
                     }
                     // if the prop is required add it also to parent suggestion
                     if (schema.schema.required?.includes(key)) {
-                      collector.add({
-                        label: key,
-                        insertText: this.getInsertTextForProperty(
-                          key,
-                          propertySchema,
-                          separatorAfter,
-                          identCompensation + this.indentation
-                        ),
-                        insertTextFormat: InsertTextFormat.Snippet,
-                        documentation: this.fromMarkup(propertySchema.markdownDescription) || propertySchema.description || '',
-                        parent: {
-                          schema: schema.schema,
-                          indent: identCompensation,
+                      collector.add(
+                        {
+                          label: key,
+                          insertText: this.getInsertTextForProperty(
+                            key,
+                            propertySchema,
+                            separatorAfter,
+                            identCompensation + this.indentation
+                          ),
+                          insertTextFormat: InsertTextFormat.Snippet,
+                          documentation: this.fromMarkup(propertySchema.markdownDescription) || propertySchema.description || '',
+                          parent: {
+                            schema: schema.schema,
+                            indent: identCompensation,
+                          },
                         },
-                      },
                         undefined,
-                        shouldIgnoreCase(propertySchema, 'key'),
+                        shouldIgnoreCase(propertySchema, 'key')
                       );
                     }
                   }
