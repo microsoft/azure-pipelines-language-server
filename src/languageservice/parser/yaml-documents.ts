@@ -174,9 +174,9 @@ export class SingleYAMLDocument extends JSONDocument {
       return closestNode;
     }
 
-    // if (indentation === position.character) {
-    //   closestNode = this.getProperParentByIndentation(indentation, closestNode, textBuffer, '', configuredIndentation);
-    // }
+    if (indentation === position.character) {
+      closestNode = this.getProperParentByIndentation(indentation, closestNode, textBuffer, '', configuredIndentation);
+    }
 
     return closestNode;
   }
@@ -197,7 +197,12 @@ export class SingleYAMLDocument extends JSONDocument {
       const position = textBuffer.getPosition(node.range[0]);
       const lineContent = textBuffer.getLineContent(position.line);
       currentLine = currentLine === '' ? lineContent.trim() : currentLine;
-      if (currentLine.startsWith('-') && indentation === configuredIndentation && currentLine === lineContent.trim()) {
+      if (
+        currentLine.startsWith('-') &&
+        indentation === configuredIndentation &&
+        indentation === getIndentation(lineContent, position.character) &&
+        currentLine === lineContent.trim()
+      ) {
         position.character += indentation;
       }
       if (position.character > indentation && position.character > 0) {
