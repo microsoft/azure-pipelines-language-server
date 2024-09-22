@@ -720,7 +720,8 @@ export class YamlCompletion {
               if (Object.prototype.hasOwnProperty.call(schemaProperties, key)) {
                 // If there are no (actual) nodes yet, only show keys that are allowed to be the first property.
                 if (
-                  !isMapContainsEmptyPair(node) ||
+                  node.items.length > 1 ||
+                  (node.items.length === 1 && !isMapContainsEmptyPair(node)) ||
                   schema.schema.firstProperty === undefined ||
                   schema.schema.firstProperty.length === 0 ||
                   schema.schema.firstProperty.includes(key)
