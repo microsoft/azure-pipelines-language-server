@@ -69,8 +69,8 @@ export const formats = {
   },
 };
 
-export const YAML_SOURCE = 'YAML';
-const YAML_SCHEMA_PREFIX = 'yaml-schema: ';
+export const YAML_SOURCE = 'Azure Pipelines';
+const YAML_SCHEMA_PREFIX = 'azure-pipelines-schema: ';
 
 export enum ProblemType {
   missingRequiredPropWarning = 'missingRequiredPropWarning',
