@@ -224,8 +224,5 @@ function collectFlowMapRange(node: YAMLMap): NodeRange {
 }
 
 function isCompileTimeExpression(node: unknown): boolean {
-  return isScalar(node)
-    && typeof node.value === 'string'
-    && node.value.startsWith('${{')
-    && node.value.endsWith('}}');
+  return isScalar(node) && typeof node.value === 'string' && node.value.startsWith('${{') && node.value.endsWith('}}');
 }

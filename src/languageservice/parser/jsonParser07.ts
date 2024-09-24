@@ -867,9 +867,15 @@ function validate(
       let enumValueMatch = false;
       for (const e of schema.enum) {
         const ignoreCase = shouldIgnoreCase(schema, 'value');
-        if (equals(val, e)
-          || (callFromAutoComplete && isString(val) && isString(e) && val && (ignoreCase ? e.toUpperCase().startsWith(val.toUpperCase()) : e.startsWith(val)))
-          || (ignoreCase && isString(val) && isString(e) && e.toUpperCase() === val.toUpperCase())) {
+        if (
+          equals(val, e) ||
+          (callFromAutoComplete &&
+            isString(val) &&
+            isString(e) &&
+            val &&
+            (ignoreCase ? e.toUpperCase().startsWith(val.toUpperCase()) : e.startsWith(val))) ||
+          (ignoreCase && isString(val) && isString(e) && e.toUpperCase() === val.toUpperCase())
+        ) {
           enumValueMatch = true;
           break;
         }
@@ -1258,11 +1264,49 @@ function validate(
       }
     }
 
+    const propertyProcessed = (prop: string): void => {
+      let index = unprocessedProperties.indexOf(prop);
+      while (index >= 0) {
+        unprocessedProperties.splice(index, 1);
+        index = unprocessedProperties.indexOf(prop);
+      }
+    };
+
+    const findMatchingProperties = (propertyName: string): string[] => {
+      const matches: string[] = [];
+
+      const propertySchema = schema.properties?.[propertyName];
+      if (typeof propertySchema !== 'object') {
+        return [];
+      }
+
+      const ignoreCase = shouldIgnoreCase(propertySchema, 'key');
+      if (ignoreCase) {
+        matches.concat(Object.keys(seenKeys).filter((key) => key.toUpperCase() === propertyName.toUpperCase()));
+      } else if (seenKeys[propertyName]) {
+        matches.push(propertyName);
+      }
+
+      if (Array.isArray(propertySchema.aliases)) {
+        matches.concat(
+          propertySchema.aliases.flatMap((alias) => {
+            if (ignoreCase) {
+              return Object.keys(seenKeys).filter((key) => key.toUpperCase() === alias.toUpperCase());
+            } else if (seenKeys[alias]) {
+              return [alias];
+            }
+
+            return [];
+          })
+        );
+      }
+
+      return matches;
+    };
+
     if (Array.isArray(schema.required)) {
       for (const propertyName of schema.required) {
-        if (seenKeys[propertyName] === undefined
-          || (shouldIgnoreCase(schema.properties?.[propertyName], 'key') && Object.keys(seenKeys).find(key => key.toUpperCase() === propertyName.toUpperCase()) === undefined)
-        ) {
+        if (findMatchingProperties(propertyName).length === 0) {
           const keyNode = node.parent && node.parent.type === 'property' && node.parent.keyNode;
           const location = keyNode ? { offset: keyNode.offset, length: keyNode.length } : { offset: node.offset, length: 1 };
           validationResult.problems.push({
@@ -1278,20 +1322,10 @@ function validate(
       }
     }
 
-    const propertyProcessed = (prop: string): void => {
-      let index = unprocessedProperties.indexOf(prop);
-      while (index >= 0) {
-        unprocessedProperties.splice(index, 1);
-        index = unprocessedProperties.indexOf(prop);
-      }
-    };
-
     if (schema.properties) {
       for (const propertyName of Object.keys(schema.properties)) {
         const propertySchema = schema.properties[propertyName];
-        const childrenPropertyNames = shouldIgnoreCase(schema.properties[propertyName], 'key') ?
-          Object.keys(seenKeys).filter(key => key.toUpperCase() === propertyName.toUpperCase()) :
-          [propertyName];
+        const childrenPropertyNames = findMatchingProperties(propertyName);
         for (const propertyName of childrenPropertyNames) {
           propertyProcessed(propertyName);
 
@@ -1452,12 +1486,11 @@ function validate(
 
     if (schema.dependencies) {
       for (const key of Object.keys(schema.dependencies)) {
-        const prop = shouldIgnoreCase(schema.properties?.[key], 'key') ? Object.keys(seenKeys).find(k => k.toUpperCase() === key) : seenKeys[key];
-        if (prop) {
+        if (findMatchingProperties(key).length > 0) {
           const propertyDep = schema.dependencies[key];
           if (Array.isArray(propertyDep)) {
             for (const requiredProp of propertyDep) {
-              if (!seenKeys[requiredProp]) {
+              if (findMatchingProperties(requiredProp).length === 0) {
                 validationResult.problems.push({
                   location: { offset: node.offset, length: node.length },
                   severity: DiagnosticSeverity.Warning,
@@ -1499,22 +1532,38 @@ function validate(
 
     if (schema.firstProperty && schema.firstProperty.length > 0 && node.properties.length > 0) {
       const firstProperty = node.properties[0];
-      if (!schema.firstProperty.some(prop => {
-        if (shouldIgnoreCase(schema.properties?.[prop], 'key')) {
-          return prop.toUpperCase() === firstProperty.keyNode.value.toUpperCase();
-        } else {
-          return prop === firstProperty.keyNode.value;
+      if (!schema.firstProperty.some((prop) => {
+        const propertySchema = schema.properties?.[prop];
+        if (typeof propertySchema !== 'object') {
+          return false;
         }
+
+        const ignoreCase = shouldIgnoreCase(propertySchema, 'key');
+        if (ignoreCase && prop.toUpperCase() === firstProperty.keyNode.value.toUpperCase()) {
+          return true;
+        } else if (prop === firstProperty.keyNode.value) {
+          return true;
+        }
+
+        if (Array.isArray(propertySchema.aliases)) {
+          return propertySchema.aliases.some((alias) => {
+            if (ignoreCase && alias.toUpperCase() === firstProperty.keyNode.value.toUpperCase()) {
+              return true;
+            } else if (alias === firstProperty.keyNode.value) {
+              return true;
+            }
+
+            return false;
+          });
+        }
+
+        return false;
       })) {
         if (schema.firstProperty.length === 1) {
           validationResult.problems.push({
             location: { offset: firstProperty.offset, length: firstProperty.length },
             severity: DiagnosticSeverity.Error,
-            message: localize(
-              'firstPropertyError',
-              'The first property must be {0}',
-              schema.firstProperty[0],
-            ),
+            message: localize('firstPropertyError', 'The first property must be {0}', schema.firstProperty[0]),
           });
         } else {
           validationResult.problems.push({
@@ -1523,7 +1572,7 @@ function validate(
             message: localize(
               'firstPropertyError',
               'The first property must be one of: {0}',
-              schema.firstProperty.join(localize('listSeparator', ', ')),
+              schema.firstProperty.join(localize('listSeparator', ', '))
             ),
           });
         }
@@ -1614,7 +1663,9 @@ function validate(
         const schema = asSchema(schemaRef);
         if (schema?.firstProperty !== undefined && schema.firstProperty.length > 0) {
           const firstPropSchemaName = schema.firstProperty.find((prop) => {
-            return shouldIgnoreCase(schema.properties?.[prop], 'key') ? prop.toUpperCase() === firstKey.toUpperCase() : prop === firstKey;
+            return shouldIgnoreCase(schema.properties?.[prop], 'key')
+              ? prop.toUpperCase() === firstKey.toUpperCase()
+              : prop === firstKey;
           });
 
           if (firstPropSchemaName !== undefined) {
@@ -1678,7 +1729,7 @@ function getWarningMessage(problemType: ProblemType, args: string[]): string {
   return localize(problemType, ProblemTypeMessages[problemType], args.join(' | '));
 }
 
-export function shouldIgnoreCase(schema: JSONSchemaRef | undefined, type: "key" | "value"): boolean {
+export function shouldIgnoreCase(schema: JSONSchemaRef | undefined, type: 'key' | 'value'): boolean {
   if (typeof schema !== 'object') {
     return false;
   }

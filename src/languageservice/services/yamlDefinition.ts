@@ -47,13 +47,11 @@ export class YamlDefinition {
             // even when running on non-Windows.
             // To make things easier, normalize all path separators into this platform's path separator.
             // That way, vscode-uri will operate on the separators as expected.
-            location = location
-              .replaceAll(path.posix.sep, path.sep)
-              .replaceAll(path.win32.sep, path.sep);
+            location = location.replaceAll(path.posix.sep, path.sep).replaceAll(path.win32.sep, path.sep);
 
-            const definitionUri = location.startsWith(path.sep) ?
-              Utils.joinPath(workspaceRoot, location.substring(1)) :
-              Utils.resolvePath(Utils.dirname(URI.parse(document.uri, true)), location);
+            const definitionUri = location.startsWith(path.sep)
+              ? Utils.joinPath(workspaceRoot, location.substring(1))
+              : Utils.resolvePath(Utils.dirname(URI.parse(document.uri, true)), location);
 
             return [LocationLink.create(definitionUri.toString(true), Range.create(0, 0, 0, 0), Range.create(0, 0, 0, 0))];
           }

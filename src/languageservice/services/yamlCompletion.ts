@@ -56,7 +56,7 @@ interface CompletionItem extends CompletionItemBase {
   parent?: ParentCompletionItemOptions;
 }
 interface CompletionsCollector {
-  add(suggestion: CompletionItem, oneOfSchema?: boolean, ignoreCase?: boolean): void;
+  add(suggestion: CompletionItem, oneOfSchema?: boolean): void;
   error(message: string): void;
   log(message: string): void;
   getNumberOfProposals(): number;
@@ -185,7 +185,7 @@ export class YamlCompletion {
 
     const proposed: { [key: string]: CompletionItem } = {};
     const collector: CompletionsCollector = {
-      add: (completionItem: CompletionItem, oneOfSchema: boolean, ignoreCase: boolean) => {
+      add: (completionItem: CompletionItem, oneOfSchema: boolean) => {
         const addSuggestionForParent = function (completionItem: CompletionItem): void {
           const existsInYaml = proposed[completionItem.label]?.label === existingProposeItem;
           //don't put to parent suggestion if already in yaml
@@ -257,10 +257,6 @@ export class YamlCompletion {
 
         if (this.arrayPrefixIndentation) {
           this.updateCompletionText(completionItem, this.arrayPrefixIndentation + completionItem.insertText);
-        }
-
-        if (ignoreCase) {
-          label = Object.keys(proposed).find((existingLabel) => existingLabel.toUpperCase() === label.toUpperCase()) ?? label;
         }
 
         const existing = proposed[label];
@@ -694,6 +690,38 @@ export class YamlCompletion {
         }
       });
     }
+
+    const hasMatchingProperty = (key: string, propSchema: JSONSchema): boolean => {
+      return node.items.some((pair) => {
+        if (!isScalar(pair.key) || typeof pair.key.value !== 'string') {
+          return false;
+        }
+
+        const ignoreCase = shouldIgnoreCase(propSchema, 'key');
+        if (ignoreCase && pair.key.value.toUpperCase() === key.toUpperCase()) {
+          return true;
+        } else if (pair.key.value === key) {
+          return true;
+        }
+
+        if (Array.isArray(propSchema.aliases)) {
+          return propSchema.aliases.some((alias) => {
+            if (!isScalar(pair.key) || typeof pair.key.value !== 'string') {
+              return false;
+            }
+
+            if (ignoreCase) {
+              return alias.toUpperCase() === pair.key.value.toUpperCase();
+            } else {
+              return alias === pair.key.value;
+            }
+          });
+        }
+
+        return false;
+      });
+    };
+
     for (const schema of matchingSchemas) {
       if (
         ((schema.node.internalNode === node && !matchOriginal) ||
@@ -731,7 +759,8 @@ export class YamlCompletion {
                   if (
                     typeof propertySchema === 'object' &&
                     !propertySchema.deprecationMessage &&
-                    !propertySchema['doNotSuggest']
+                    !propertySchema['doNotSuggest'] &&
+                    !hasMatchingProperty(key, propertySchema)
                   ) {
                     let identCompensation = '';
                     if (nodeParent && isSeq(nodeParent) && node.items.length <= 1 && !hasOnlyWhitespace) {
@@ -792,31 +821,26 @@ export class YamlCompletion {
                           insertTextFormat: InsertTextFormat.Snippet,
                           documentation: this.fromMarkup(propertySchema.markdownDescription) || propertySchema.description || '',
                         },
-                        didOneOfSchemaMatches,
-                        shouldIgnoreCase(propertySchema, 'key')
+                        didOneOfSchemaMatches
                       );
                     }
                     // if the prop is required add it also to parent suggestion
                     if (schema.schema.required?.includes(key)) {
-                      collector.add(
-                        {
-                          label: key,
-                          insertText: this.getInsertTextForProperty(
-                            key,
-                            propertySchema,
-                            separatorAfter,
-                            identCompensation + this.indentation
-                          ),
-                          insertTextFormat: InsertTextFormat.Snippet,
-                          documentation: this.fromMarkup(propertySchema.markdownDescription) || propertySchema.description || '',
-                          parent: {
-                            schema: schema.schema,
-                            indent: identCompensation,
-                          },
+                      collector.add({
+                        label: key,
+                        insertText: this.getInsertTextForProperty(
+                          key,
+                          propertySchema,
+                          separatorAfter,
+                          identCompensation + this.indentation
+                        ),
+                        insertTextFormat: InsertTextFormat.Snippet,
+                        documentation: this.fromMarkup(propertySchema.markdownDescription) || propertySchema.description || '',
+                        parent: {
+                          schema: schema.schema,
+                          indent: identCompensation,
                         },
-                        undefined,
-                        shouldIgnoreCase(propertySchema, 'key')
-                      );
+                      });
                     }
                   }
                 }
