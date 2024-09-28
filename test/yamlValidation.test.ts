@@ -74,9 +74,9 @@ describe('YAML Validation Tests', () => {
       const yaml = `foo: &bar   doe
 aaa: some
 dd: *ba
-some: 
+some:
   &a ss: ss
-&aa ff: 
+&aa ff:
   - s
   - &g o
   - &e m
@@ -96,20 +96,20 @@ ee: *g`;
 
   describe(`YAML styles test`, () => {
     it('should not report flow style', async () => {
-      const yaml = `host: phl-42  
-datacenter:   
-  location: canada  
-  cab: 15  
-animals:  
-  - dog  
-  - cat  
+      const yaml = `host: phl-42
+datacenter:
+  location: canada
+  cab: 15
+animals:
+  - dog
+  - cat
   - mouse`;
       const result = await parseSetup(yaml);
       expect(result).to.be.empty;
     });
     it('should report flow style', async () => {
-      const yaml = `host: phl-42  
-datacenter: {location: canada , cab: 15}  
+      const yaml = `host: phl-42
+datacenter: {location: canada , cab: 15}
 animals: [dog , cat , mouse]  `;
 
       yamlSettings.style = {
@@ -126,14 +126,32 @@ animals: [dog , cat , mouse]  `;
       expect(result).not.to.be.empty;
       expect(result.length).to.be.equal(2);
       expect(result).to.include.deep.members([
-        createExpectedError('Flow style mapping is forbidden', 1, 12, 1, 42, DiagnosticSeverity.Error, 'YAML', 'flowMap'),
-        createExpectedError('Flow style sequence is forbidden', 2, 9, 2, 28, DiagnosticSeverity.Error, 'YAML', 'flowSeq'),
+        createExpectedError(
+          'Flow style mapping is forbidden',
+          1,
+          12,
+          1,
+          42,
+          DiagnosticSeverity.Error,
+          'Azure Pipelines',
+          'flowMap'
+        ),
+        createExpectedError(
+          'Flow style sequence is forbidden',
+          2,
+          9,
+          2,
+          28,
+          DiagnosticSeverity.Error,
+          'Azure Pipelines',
+          'flowSeq'
+        ),
       ]);
     });
 
     it('should report only sequence when flow mapping is allow', async () => {
-      const yaml = `host: phl-42  
-datacenter: {location: canada , cab: 15}  
+      const yaml = `host: phl-42
+datacenter: {location: canada , cab: 15}
 animals: [dog , cat , mouse]  `;
 
       yamlSettings.style = {
@@ -150,7 +168,16 @@ animals: [dog , cat , mouse]  `;
       expect(result).not.to.be.empty;
       expect(result.length).to.be.equal(1);
       expect(result).to.include.deep.members([
-        createExpectedError('Flow style sequence is forbidden', 2, 9, 2, 28, DiagnosticSeverity.Error, 'YAML', 'flowSeq'),
+        createExpectedError(
+          'Flow style sequence is forbidden',
+          2,
+          9,
+          2,
+          28,
+          DiagnosticSeverity.Error,
+          'Azure Pipelines',
+          'flowSeq'
+        ),
       ]);
     });
     it('should report flow error for empty map & sequence', async () => {
@@ -169,8 +196,26 @@ animals: [dog , cat , mouse]  `;
       expect(result).not.to.be.empty;
       expect(result.length).to.be.equal(2);
       expect(result).to.include.deep.members([
-        createExpectedError('Flow style mapping is forbidden', 0, 8, 0, 11, DiagnosticSeverity.Error, 'YAML', 'flowMap'),
-        createExpectedError('Flow style sequence is forbidden', 1, 9, 1, 10, DiagnosticSeverity.Error, 'YAML', 'flowSeq'),
+        createExpectedError(
+          'Flow style mapping is forbidden',
+          0,
+          8,
+          0,
+          11,
+          DiagnosticSeverity.Error,
+          'Azure Pipelines',
+          'flowMap'
+        ),
+        createExpectedError(
+          'Flow style sequence is forbidden',
+          1,
+          9,
+          1,
+          10,
+          DiagnosticSeverity.Error,
+          'Azure Pipelines',
+          'flowSeq'
+        ),
       ]);
     });
   });
@@ -195,7 +240,7 @@ animals: [dog , cat , mouse]  `;
           0,
           9,
           DiagnosticSeverity.Error,
-          'YAML',
+          'Azure Pipelines',
           'mapKeyOrder'
         ),
         createExpectedError(
@@ -205,7 +250,7 @@ animals: [dog , cat , mouse]  `;
           2,
           9,
           DiagnosticSeverity.Error,
-          'YAML',
+          'Azure Pipelines',
           'mapKeyOrder'
         ),
       ]);
@@ -223,7 +268,16 @@ animals: [dog , cat , mouse]  `;
       expect(result).not.to.be.empty;
       expect(result.length).to.be.equal(1);
       expect(result).to.include.deep.members([
-        createExpectedError('Wrong ordering of key "b" in mapping', 0, 3, 0, 6, DiagnosticSeverity.Error, 'YAML', 'mapKeyOrder'),
+        createExpectedError(
+          'Wrong ordering of key "b" in mapping',
+          0,
+          3,
+          0,
+          6,
+          DiagnosticSeverity.Error,
+          'Azure Pipelines',
+          'mapKeyOrder'
+        ),
       ]);
     });
 

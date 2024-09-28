@@ -150,7 +150,7 @@ describe('Validation Tests', () => {
               0,
               15,
               DiagnosticSeverity.Error,
-              `yaml-schema: file:///${SCHEMA_ID}`,
+              `azure-pipelines-schema: file:///${SCHEMA_ID}`,
               `file:///${SCHEMA_ID}`
             )
           );
@@ -181,7 +181,7 @@ describe('Validation Tests', () => {
               0,
               10,
               DiagnosticSeverity.Error,
-              `yaml-schema: file:///${SCHEMA_ID}`,
+              `azure-pipelines-schema: file:///${SCHEMA_ID}`,
               `file:///${SCHEMA_ID}`
             )
           );
@@ -273,7 +273,7 @@ describe('Validation Tests', () => {
               0,
               16,
               DiagnosticSeverity.Error,
-              `yaml-schema: file:///${SCHEMA_ID}`,
+              `azure-pipelines-schema: file:///${SCHEMA_ID}`,
               `file:///${SCHEMA_ID}`
             )
           );
@@ -304,7 +304,7 @@ describe('Validation Tests', () => {
               2,
               7,
               DiagnosticSeverity.Error,
-              `yaml-schema: file:///${SCHEMA_ID}`,
+              `azure-pipelines-schema: file:///${SCHEMA_ID}`,
               `file:///${SCHEMA_ID}`
             )
           );
@@ -353,7 +353,7 @@ describe('Validation Tests', () => {
               0,
               12,
               DiagnosticSeverity.Error,
-              `yaml-schema: file:///${SCHEMA_ID}`,
+              `azure-pipelines-schema: file:///${SCHEMA_ID}`,
               `file:///${SCHEMA_ID}`
             )
           );
@@ -395,7 +395,7 @@ describe('Validation Tests', () => {
               0,
               4,
               DiagnosticSeverity.Error,
-              `yaml-schema: file:///${SCHEMA_ID}`,
+              `azure-pipelines-schema: file:///${SCHEMA_ID}`,
               `file:///${SCHEMA_ID}`
             )
           );
@@ -446,7 +446,7 @@ describe('Validation Tests', () => {
               0,
               11,
               DiagnosticSeverity.Error,
-              `yaml-schema: file:///${SCHEMA_ID}`,
+              `azure-pipelines-schema: file:///${SCHEMA_ID}`,
               `file:///${SCHEMA_ID}`
             )
           );
@@ -614,7 +614,7 @@ describe('Validation Tests', () => {
               0,
               13,
               DiagnosticSeverity.Error,
-              `yaml-schema: Object`,
+              `azure-pipelines-schema: Object`,
               `file:///${SCHEMA_ID}`
             )
           );
@@ -668,7 +668,7 @@ describe('Validation Tests', () => {
               0,
               15,
               DiagnosticSeverity.Error,
-              `yaml-schema: file:///${SCHEMA_ID}`,
+              `azure-pipelines-schema: file:///${SCHEMA_ID}`,
               `file:///${SCHEMA_ID}`
             )
           );
@@ -865,7 +865,7 @@ describe('Validation Tests', () => {
               2,
               15,
               DiagnosticSeverity.Error,
-              `yaml-schema: file:///${SCHEMA_ID}`,
+              `azure-pipelines-schema: file:///${SCHEMA_ID}`,
               `file:///${SCHEMA_ID}`
             )
           );
@@ -931,7 +931,7 @@ obj:
           0,
           22,
           DiagnosticSeverity.Error,
-          `yaml-schema: file:///${SCHEMA_ID}`,
+          `azure-pipelines-schema: file:///${SCHEMA_ID}`,
           `file:///${SCHEMA_ID}`
         )
       );
@@ -1054,7 +1054,7 @@ obj:
               0,
               4,
               DiagnosticSeverity.Error,
-              `yaml-schema: file:///${SCHEMA_ID}`,
+              `azure-pipelines-schema: file:///${SCHEMA_ID}`,
               `file:///${SCHEMA_ID}`
             )
           );
@@ -1259,7 +1259,7 @@ obj:
           0,
           12,
           DiagnosticSeverity.Error,
-          'yaml-schema: Schema Super title',
+          'azure-pipelines-schema: Schema Super title',
           'file:///default_schema_id.yaml'
         )
       );
@@ -1289,7 +1289,7 @@ obj:
           4,
           18,
           DiagnosticSeverity.Error,
-          'yaml-schema: Package',
+          'azure-pipelines-schema: Package',
           'https://raw.githubusercontent.com/composer/composer/master/res/composer-schema.json'
         )
       );
@@ -1310,7 +1310,7 @@ obj:
           1,
           16,
           DiagnosticSeverity.Error,
-          'yaml-schema: Drone CI configuration file',
+          'azure-pipelines-schema: Drone CI configuration file',
           'https://json.schemastore.org/drone',
           {
             properties: [
@@ -1494,7 +1494,7 @@ obj:
 
       assert.strictEqual(result.length, 1);
       assert.strictEqual(result[0].message, 'Incorrect type. Expected "type1 | type2 | type3".');
-      assert.strictEqual(result[0].source, 'yaml-schema: file:///sharedSchema.json | file:///default_schema_id.yaml');
+      assert.strictEqual(result[0].source, 'azure-pipelines-schema: file:///sharedSchema.json | file:///default_schema_id.yaml');
       assert.deepStrictEqual((result[0].data as IProblem).schemaUri, [
         'file:///sharedSchema.json',
         'file:///default_schema_id.yaml',
@@ -1511,7 +1511,7 @@ obj:
 
       assert.strictEqual(result.length, 3);
       assert.strictEqual(result[2].message, 'Incorrect type. Expected "string".');
-      assert.strictEqual(result[2].source, 'yaml-schema: file:///sharedSchema.json | file:///default_schema_id.yaml');
+      assert.strictEqual(result[2].source, 'azure-pipelines-schema: file:///sharedSchema.json | file:///default_schema_id.yaml');
     });
     it('should combine const value', async () => {
       // eslint-disable-next-line @typescript-eslint/no-var-requires
@@ -1524,7 +1524,7 @@ obj:
 
       assert.strictEqual(result.length, 4);
       assert.strictEqual(result[3].message, 'Value must be "constForType1" | "constForType3".');
-      assert.strictEqual(result[3].source, 'yaml-schema: file:///sharedSchema.json | file:///default_schema_id.yaml');
+      assert.strictEqual(result[3].source, 'azure-pipelines-schema: file:///sharedSchema.json | file:///default_schema_id.yaml');
     });
     it('should distinguish types in error: "Missing property from multiple schemas"', async () => {
       // eslint-disable-next-line @typescript-eslint/no-var-requires
@@ -1537,19 +1537,19 @@ obj:
 
       assert.strictEqual(result.length, 3);
       assert.strictEqual(result[0].message, 'Missing property "objA".');
-      assert.strictEqual(result[0].source, 'yaml-schema: file:///sharedSchema.json | file:///default_schema_id.yaml');
+      assert.strictEqual(result[0].source, 'azure-pipelines-schema: file:///sharedSchema.json | file:///default_schema_id.yaml');
       assert.deepStrictEqual((result[0].data as IProblem).schemaUri, [
         'file:///sharedSchema.json',
         'file:///default_schema_id.yaml',
       ]);
       assert.strictEqual(result[1].message, 'Missing property "propA".');
-      assert.strictEqual(result[1].source, 'yaml-schema: file:///sharedSchema.json | file:///default_schema_id.yaml');
+      assert.strictEqual(result[1].source, 'azure-pipelines-schema: file:///sharedSchema.json | file:///default_schema_id.yaml');
       assert.deepStrictEqual((result[1].data as IProblem).schemaUri, [
         'file:///sharedSchema.json',
         'file:///default_schema_id.yaml',
       ]);
       assert.strictEqual(result[2].message, 'Missing property "constA".');
-      assert.strictEqual(result[2].source, 'yaml-schema: file:///sharedSchema.json | file:///default_schema_id.yaml');
+      assert.strictEqual(result[2].source, 'azure-pipelines-schema: file:///sharedSchema.json | file:///default_schema_id.yaml');
       assert.deepStrictEqual((result[2].data as IProblem).schemaUri, [
         'file:///sharedSchema.json',
         'file:///default_schema_id.yaml',
@@ -1580,7 +1580,7 @@ obj:
           0,
           0,
           DiagnosticSeverity.Error,
-          `yaml-schema: file:///${SCHEMA_ID}`,
+          `azure-pipelines-schema: file:///${SCHEMA_ID}`,
           `file:///${SCHEMA_ID}`
         )
       );
@@ -1607,7 +1607,7 @@ obj:
           0,
           1,
           DiagnosticSeverity.Error,
-          `yaml-schema: file:///${SCHEMA_ID}`,
+          `azure-pipelines-schema: file:///${SCHEMA_ID}`,
           `file:///${SCHEMA_ID}`
         )
       );

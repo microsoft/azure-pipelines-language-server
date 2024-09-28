@@ -24,7 +24,7 @@ export function createExpectedError(
   endLine: number,
   endCharacter: number,
   severity: DiagnosticSeverity = 1,
-  source = 'YAML',
+  source = 'Azure Pipelines',
   code: string | number = ErrorCode.Undefined
 ): Diagnostic {
   return Diagnostic.create(Range.create(startLine, startCharacter, endLine, endCharacter), message, severity, code, source);
@@ -37,7 +37,7 @@ export function createDiagnosticWithData(
   endLine: number,
   endCharacter: number,
   severity: DiagnosticSeverity = 1,
-  source = 'YAML',
+  source = 'Azure Pipelines',
   schemaUri: string | string[],
   data: Record<string, unknown> = {}
 ): Diagnostic {
@@ -60,7 +60,7 @@ export function createUnusedAnchorDiagnostic(
     endLine,
     endCharacter,
     DiagnosticSeverity.Hint,
-    'YAML'
+    'Azure Pipelines'
   );
   diagnostic.tags = [DiagnosticTag.Unnecessary];
   return diagnostic;
