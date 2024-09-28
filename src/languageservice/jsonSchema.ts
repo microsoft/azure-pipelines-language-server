@@ -67,8 +67,6 @@ export interface JSONSchema {
 
   // VSCode extensions
 
-  firstProperty?: string[]; // VSCode extension
-
   defaultSnippets?: {
     label?: string;
     description?: string;
@@ -88,12 +86,17 @@ export interface JSONSchema {
   markdownEnumDescriptions?: string[]; // VSCode extension
   markdownDescription?: string; // VSCode extension
   doNotSuggest?: boolean; // VSCode extension
-  ignoreCase?: string; // VSCode extension
   allowComments?: boolean; // VSCode extension
 
   schemaSequence?: JSONSchema[]; // extension for multiple schemas related to multiple documents in single yaml file
 
   filePatternAssociation?: string; // extension for if condition to be able compare doc yaml uri with this file pattern association
+
+  // Azure Pipelines
+
+  firstProperty?: string[]; // Properties that must appear first in an object.
+  aliases?: string[]; // Other acceptable names for a property.
+  ignoreCase?: 'key' | 'value' | 'all'; // Whether to ignore case when comparing keys or values.
 }
 
 export interface JSONSchemaMap {
