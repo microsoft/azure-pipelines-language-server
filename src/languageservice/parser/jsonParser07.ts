@@ -1264,32 +1264,20 @@ function validate(
       }
     }
 
-    const propertyProcessed = (prop: string): void => {
-      let index = unprocessedProperties.indexOf(prop);
-      while (index >= 0) {
-        unprocessedProperties.splice(index, 1);
-        index = unprocessedProperties.indexOf(prop);
-      }
-    };
-
     const findMatchingProperties = (propertyName: string): string[] => {
       const matches: string[] = [];
 
       const propertySchema = schema.properties?.[propertyName];
-      if (typeof propertySchema !== 'object') {
-        return [];
-      }
-
       const ignoreCase = shouldIgnoreCase(propertySchema, 'key');
       if (ignoreCase) {
-        matches.concat(Object.keys(seenKeys).filter((key) => key.toUpperCase() === propertyName.toUpperCase()));
+        matches.push(...Object.keys(seenKeys).filter((key) => key.toUpperCase() === propertyName.toUpperCase()));
       } else if (seenKeys[propertyName]) {
         matches.push(propertyName);
       }
 
-      if (Array.isArray(propertySchema.aliases)) {
-        matches.concat(
-          propertySchema.aliases.flatMap((alias) => {
+      if (typeof propertySchema === 'object' && Array.isArray(propertySchema.aliases)) {
+        matches.push(
+          ...propertySchema.aliases.flatMap((alias) => {
             if (ignoreCase) {
               return Object.keys(seenKeys).filter((key) => key.toUpperCase() === alias.toUpperCase());
             } else if (seenKeys[alias]) {
@@ -1321,6 +1309,14 @@ function validate(
         }
       }
     }
+
+    const propertyProcessed = (prop: string): void => {
+      let index = unprocessedProperties.indexOf(prop);
+      while (index >= 0) {
+        unprocessedProperties.splice(index, 1);
+        index = unprocessedProperties.indexOf(prop);
+      }
+    };
 
     if (schema.properties) {
       for (const propertyName of Object.keys(schema.properties)) {
@@ -1535,10 +1531,6 @@ function validate(
       if (
         !schema.firstProperty.some((prop) => {
           const propertySchema = schema.properties?.[prop];
-          if (typeof propertySchema !== 'object') {
-            return false;
-          }
-
           const ignoreCase = shouldIgnoreCase(propertySchema, 'key');
           if (ignoreCase && prop.toUpperCase() === firstProperty.keyNode.value.toUpperCase()) {
             return true;
@@ -1546,7 +1538,7 @@ function validate(
             return true;
           }
 
-          if (Array.isArray(propertySchema.aliases)) {
+          if (typeof propertySchema === 'object' && Array.isArray(propertySchema.aliases)) {
             return propertySchema.aliases.some((alias) => {
               if (ignoreCase && alias.toUpperCase() === firstProperty.keyNode.value.toUpperCase()) {
                 return true;
