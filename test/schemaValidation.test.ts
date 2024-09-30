@@ -44,7 +44,7 @@ describe('Validation Tests', () => {
       .withSchemaFileMatch({ uri: 'https://json.schemastore.org/drone', fileMatch: ['.drone.yml'] })
       .withSchemaFileMatch({ uri: KUBERNETES_SCHEMA_URL, fileMatch: ['test.yml'] })
       .withSchemaFileMatch({
-        uri: 'https://raw.githubusercontent.com/composer/composer/master/res/composer-schema.json',
+        uri: 'https://raw.githubusercontent.com/composer/composer/main/res/composer-schema.json',
         fileMatch: ['test.yml'],
       });
     const {
@@ -1289,8 +1289,8 @@ obj:
           4,
           18,
           DiagnosticSeverity.Error,
-          'azure-pipelines-schema: Package',
-          'https://raw.githubusercontent.com/composer/composer/master/res/composer-schema.json'
+          'azure-pipelines-schema: Composer Package',
+          'https://raw.githubusercontent.com/composer/composer/main/res/composer-schema.json'
         )
       );
     });
