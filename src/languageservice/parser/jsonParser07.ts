@@ -1327,7 +1327,7 @@ function validate(
 
           if (childrenPropertyNames.length > 1) {
             validationResult.problems.push({
-              location: { offset: seenKeys[propertyName].offset, length: seenKeys[propertyName].length },
+              location: { offset: seenKeys[propertyName].parent.offset, length: seenKeys[propertyName].parent.length },
               severity: DiagnosticSeverity.Error,
               message: localize('DuplicatePropError', 'Multiple properties found matching {0}', propertyName),
             });
