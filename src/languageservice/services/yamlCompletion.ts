@@ -691,26 +691,15 @@ export class YamlCompletion {
       });
     }
 
-    const hasMatchingProperty = (key: string, propSchema: JSONSchema): boolean => {
+    const hasMatchingAlias = (propSchema: JSONSchema): boolean => {
       return node.items.some((pair) => {
-        if (!isScalar(pair.key) || typeof pair.key.value !== 'string') {
-          return false;
-        }
-
-        const ignoreCase = shouldIgnoreCase(propSchema, 'key');
-        if (ignoreCase && pair.key.value.toUpperCase() === key.toUpperCase()) {
-          return true;
-        } else if (pair.key.value === key) {
-          return true;
-        }
-
         if (Array.isArray(propSchema.aliases)) {
           return propSchema.aliases.some((alias) => {
             if (!isScalar(pair.key) || typeof pair.key.value !== 'string') {
               return false;
             }
 
-            if (ignoreCase) {
+            if (shouldIgnoreCase(propSchema, 'key')) {
               return alias.toUpperCase() === pair.key.value.toUpperCase();
             } else {
               return alias === pair.key.value;
@@ -760,7 +749,7 @@ export class YamlCompletion {
                     typeof propertySchema === 'object' &&
                     !propertySchema.deprecationMessage &&
                     !propertySchema['doNotSuggest'] &&
-                    !hasMatchingProperty(key, propertySchema)
+                    !hasMatchingAlias(propertySchema)
                   ) {
                     let identCompensation = '';
                     if (nodeParent && isSeq(nodeParent) && node.items.length <= 1 && !hasOnlyWhitespace) {
