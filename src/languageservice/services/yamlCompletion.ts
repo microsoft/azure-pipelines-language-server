@@ -691,8 +691,17 @@ export class YamlCompletion {
       });
     }
 
-    const hasMatchingAlias = (propSchema: JSONSchema): boolean => {
+    const hasMatchingProperty = (key: string, propSchema: JSONSchema): boolean => {
       return node.items.some((pair) => {
+        if (!isScalar(pair.key) || typeof pair.key.value !== 'string') {
+          return false;
+        }
+
+        const ignoreCase = shouldIgnoreCase(propSchema, 'key');
+        if (ignoreCase && pair.key.value.toUpperCase() === key.toUpperCase() && pair.key.value !== key) {
+          return true;
+        }
+
         if (Array.isArray(propSchema.aliases)) {
           return propSchema.aliases.some((alias) => {
             if (!isScalar(pair.key) || typeof pair.key.value !== 'string') {
@@ -749,7 +758,7 @@ export class YamlCompletion {
                     typeof propertySchema === 'object' &&
                     !propertySchema.deprecationMessage &&
                     !propertySchema['doNotSuggest'] &&
-                    !hasMatchingAlias(propertySchema)
+                    !hasMatchingProperty(key, propertySchema)
                   ) {
                     let identCompensation = '';
                     if (nodeParent && isSeq(nodeParent) && node.items.length <= 1 && !hasOnlyWhitespace) {
