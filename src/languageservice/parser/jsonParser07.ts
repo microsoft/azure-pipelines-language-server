@@ -1271,7 +1271,7 @@ function validate(
       const ignoreCase = shouldIgnoreCase(propertySchema, 'key');
       if (ignoreCase) {
         matches.push(...Object.keys(seenKeys).filter((key) => key.toUpperCase() === propertyName.toUpperCase()));
-      } else if (seenKeys[propertyName]) {
+      } else if (seenKeys[propertyName] !== undefined) {
         matches.push(propertyName);
       }
 
@@ -1280,7 +1280,7 @@ function validate(
           ...propertySchema.aliases.flatMap((alias) => {
             if (ignoreCase) {
               return Object.keys(seenKeys).filter((key) => key.toUpperCase() === alias.toUpperCase());
-            } else if (seenKeys[alias]) {
+            } else if (seenKeys[alias] !== undefined) {
               return [alias];
             }
 
