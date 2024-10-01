@@ -4,7 +4,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { Diagnostic, Position } from 'vscode-languageserver-types';
+import { Diagnostic, DiagnosticSeverity, Position } from 'vscode-languageserver-types';
 import { LanguageSettings } from '../yamlLanguageService';
 import { YAMLDocument, YamlVersion, SingleYAMLDocument } from '../parser/yamlParser07';
 import { YAMLSchemaService } from './yamlSchemaService';
@@ -76,13 +76,26 @@ export class YAMLValidation {
       return Promise.resolve([]);
     }
 
-    const validationResult = [];
+    const validationResult: Diagnostic[] = [];
     try {
       const yamlDocument: YAMLDocument = yamlDocumentsCache.getYamlDocument(
         textDocument,
         { customTags: this.customTags, yamlVersion: this.yamlVersion },
         true
       );
+
+      if (yamlDocument.documents.length > 1) {
+        return [
+          {
+            message: 'Only single-document files are supported.',
+            severity: DiagnosticSeverity.Error,
+            range: {
+              start: textDocument.positionAt(0),
+              end: textDocument.positionAt(textDocument.getText().length),
+            },
+          },
+        ];
+      }
 
       let index = 0;
       for (const currentYAMLDoc of yamlDocument.documents) {
@@ -95,11 +108,10 @@ export class YAMLValidation {
 
         const syd = currentYAMLDoc as unknown as SingleYAMLDocument;
         if (syd.errors.length > 0) {
-          // TODO: Get rid of these type assertions (shouldn't need them)
-          validationResult.push(...syd.errors);
+          validationResult.push(...syd.errors.map((error) => yamlDiagToLSDiag(error, textDocument)));
         }
         if (syd.warnings.length > 0) {
-          validationResult.push(...syd.warnings);
+          validationResult.push(...syd.warnings.map((warning) => yamlDiagToLSDiag(warning, textDocument)));
         }
 
         validationResult.push(...validation);
@@ -113,7 +125,7 @@ export class YAMLValidation {
     let previousErr: Diagnostic;
     const foundSignatures = new Set();
     const duplicateMessagesRemoved: Diagnostic[] = [];
-    for (let err of validationResult) {
+    for (const err of validationResult) {
       /**
        * A patch ontop of the validation that removes the
        * 'Matches many schemas' error for kubernetes
@@ -121,10 +133,6 @@ export class YAMLValidation {
        */
       if (isKubernetes && err.message === this.MATCHES_MULTIPLE) {
         continue;
-      }
-
-      if (Object.prototype.hasOwnProperty.call(err, 'location')) {
-        err = yamlDiagToLSDiag(err, textDocument);
       }
 
       if (!err.source) {

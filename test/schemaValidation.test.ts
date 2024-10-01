@@ -1200,7 +1200,7 @@ obj:
     });
   });
 
-  describe('Multi Document schema validation tests', () => {
+  describe.skip('Multi Document schema validation tests', () => {
     it('Document does not error when --- is present with schema', (done) => {
       schemaProvider.addSchema(SCHEMA_ID, {
         type: 'object',

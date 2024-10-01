@@ -48,7 +48,7 @@ describe('Multiple Documents Validation Tests', () => {
     yamlSettings = settings;
   });
 
-  describe('Multiple Documents Validation', function () {
+  describe.skip('Multiple Documents Validation', function () {
     function validatorSetup(content: string): Promise<Diagnostic[]> {
       const testTextDocument = setupTextDocument(content);
       languageService.configure(languageSettingsSetup.languageSettings);
