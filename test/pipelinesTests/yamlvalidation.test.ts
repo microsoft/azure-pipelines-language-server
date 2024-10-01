@@ -93,34 +93,23 @@ variables:
   });
 
   it('validates pipelines with unfinished conditional variable checks', async function () {
-    // Note: the real purpose of this test is to ensure we don't throw,
-    // but I can't figure out how to assert that yet.
-    // result.length can be whatever, as long as we get to that point :).
     const content = `
 variables:
   \${{ if eq(variables['Build.SourceBranch'], 'main') }}:
 `;
-    const result = await parseSetup(content);
-    assert.equal(result.length, 0);
+    await assert.doesNotReject(() => parseSetup(content));
   });
 
   it('validates pipelines with unfinished conditionally-inserted variables', async function () {
-    // Note: the real purpose of this test is to ensure we don't throw,
-    // but I can't figure out how to assert that yet.
-    // result.length can be whatever, as long as we get to that point :).
     const content = `
 variables:
   \${{ if eq(variables['Build.SourceBranch'], 'main') }}:
     j
 `;
-    const result = await parseSetup(content);
-    assert.equal(result.length, 0);
+    await assert.doesNotReject(() => parseSetup(content));
   });
 
   it('validates pipelines with multiple levels of expression nesting', async function () {
-    // Note: the real purpose of this test is to ensure we don't throw,
-    // but I can't figure out how to assert that yet.
-    // result.length can be whatever, as long as we get to that point :).
     const content = `
 steps:
 - \${{ each step in parameters.buildSteps }}:
@@ -130,27 +119,19 @@ steps:
     \${{ if eq(pair.value, 'CmdLine@2') }}:
       '\${{ pair.value }}': error
 `;
-    const result = await parseSetup(content);
-    assert.equal(result.length, 0);
+    await assert.doesNotReject(() => parseSetup(content));
   });
 
   it('validates pipelines that has an object with a dynamic key and scalar value as the first property', async function () {
-    // Note: the real purpose of this test is to ensure we don't throw,
-    // but I can't figure out how to assert that yet.
-    // result.length can be whatever, as long as we get to that point :).
     const content = `
 steps:
 - \${{ each shorthand in parameters.taskShorthands }}:
   - \${{ shorthand }}: echo 'Hi'
 `;
-    const result = await parseSetup(content);
-    assert.equal(result.length, 2);
+    await assert.doesNotReject(() => parseSetup(content));
   });
 
   it('validates incorrectly-indented pipelines that look like they have an array property', async function () {
-    // Note: the real purpose of this test is to ensure we don't throw,
-    // but I can't figure out how to assert that yet.
-    // result.length can be whatever, as long as we get to that point :).
     const content = `
 steps:
 - task: PowerShellOnTargetMachines@3
@@ -160,7 +141,6 @@ steps:
     [System.Reflection.Assembly]::LoadWithPartialName("System.IO.Compression.FileSystem") | Out-Null
     CommunicationProtocol: Http);
 `;
-    const result = await parseSetup(content);
-    assert.equal(result.length, 4);
+    await assert.doesNotReject(() => parseSetup(content));
   });
 });
