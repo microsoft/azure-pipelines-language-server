@@ -74,9 +74,9 @@ describe('YAML Validation Tests', () => {
       const yaml = `foo: &bar   doe
 aaa: some
 dd: *ba
-some:
+some: 
   &a ss: ss
-&aa ff:
+&aa ff: 
   - s
   - &g o
   - &e m
@@ -96,20 +96,20 @@ ee: *g`;
 
   describe(`YAML styles test`, () => {
     it('should not report flow style', async () => {
-      const yaml = `host: phl-42
-datacenter:
-  location: canada
-  cab: 15
-animals:
-  - dog
-  - cat
+      const yaml = `host: phl-42  
+datacenter:   
+  location: canada  
+  cab: 15  
+animals:  
+  - dog  
+  - cat  
   - mouse`;
       const result = await parseSetup(yaml);
       expect(result).to.be.empty;
     });
     it('should report flow style', async () => {
-      const yaml = `host: phl-42
-datacenter: {location: canada , cab: 15}
+      const yaml = `host: phl-42  
+datacenter: {location: canada , cab: 15}  
 animals: [dog , cat , mouse]  `;
 
       yamlSettings.style = {
@@ -150,8 +150,8 @@ animals: [dog , cat , mouse]  `;
     });
 
     it('should report only sequence when flow mapping is allow', async () => {
-      const yaml = `host: phl-42
-datacenter: {location: canada , cab: 15}
+      const yaml = `host: phl-42  
+datacenter: {location: canada , cab: 15}  
 animals: [dog , cat , mouse]  `;
 
       yamlSettings.style = {
