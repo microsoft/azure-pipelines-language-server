@@ -77,8 +77,10 @@ function convertMap(node: YAMLMap<unknown, unknown>, parent: ASTNode, doc: Docum
   const result = new ObjectASTNodeImpl(parent, node, ...toFixedOffsetLength(range, lineCounter));
   for (const it of node.items) {
     if (isPair(it)) {
-      if (isCompileTimeExpression(it.key) && isMap(it.value)) {
-        result.properties.push(<PropertyASTNodeImpl>convertAST(result, it.value, doc, lineCounter));
+      if (isCompileTimeExpression(it.key)) {
+        if (isMap(it.value)) {
+          result.properties.push(<PropertyASTNodeImpl>convertAST(result, it.value, doc, lineCounter));
+        }
       } else {
         result.properties.push(<PropertyASTNodeImpl>convertAST(result, it, doc, lineCounter));
       }
@@ -121,7 +123,7 @@ function convertSeq(node: YAMLSeq, parent: ASTNode, doc: Document, lineCounter: 
     if (isNode(it)) {
       let convertedNode: ASTNode | undefined;
       if (isMap(it) && isCompileTimeExpression(it.items[0])) {
-        const value = it.items[0].value;
+        const { value } = it.items[0];
         if (isNode(value)) {
           convertedNode = convertAST(result, value, doc, lineCounter);
         }
