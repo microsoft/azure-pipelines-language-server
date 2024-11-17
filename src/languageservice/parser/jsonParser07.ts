@@ -24,9 +24,10 @@ import { URI } from 'vscode-uri';
 import { Diagnostic, DiagnosticSeverity, Range } from 'vscode-languageserver-types';
 import { TextDocument } from 'vscode-languageserver-textdocument';
 import { isArrayEqual } from '../utils/arrUtils';
-import { Node, Pair } from 'yaml';
+import { isMap, isPair, Node, Pair, YAMLMap } from 'yaml';
 import { safeCreateUnicodeRegExp } from '../utils/strings';
 import { FilePatternAssociation } from '../services/yamlSchemaService';
+import { isCompileTimeExpression } from '../utils/astUtils';
 
 const localize = nls.loadMessageBundle();
 const MSG_PROPERTY_NOT_ALLOWED = 'Property {0} is not allowed.';
@@ -231,7 +232,28 @@ export class ObjectASTNodeImpl extends ASTNodeImpl implements ObjectASTNode {
   public type: 'object' = 'object' as const;
   public properties: PropertyASTNode[];
 
-  constructor(parent: ASTNode, internalNode: Node, offset: number, length?: number) {
+  constructor(parent: ASTNode, internalNode: YAMLMap<unknown, unknown>, offset: number, length?: number) {
+    // Delete CTEs from internal representations for completion comparison.
+    for (let it of internalNode.items) {
+      if (isCompileTimeExpression(it.key)) {
+        internalNode.delete(it.key);
+        if (isMap(it.value)) {
+          for (const pair of it.value.items) {
+            internalNode.add(pair, true);
+          }
+        } else {
+          // Incomplete pairs.
+          // If there's already items, add a new one to the map;
+          // otherwise, change the map to a scalar.
+          if (internalNode.items.length > 0) {
+            internalNode.add({ key: it.value, value: null }, true);
+          } else if (isPair(parent.internalNode)) {
+            parent.internalNode.value = it.value;
+          }
+        }
+      }
+    }
+
     super(parent, internalNode, offset, length);
 
     this.properties = [];

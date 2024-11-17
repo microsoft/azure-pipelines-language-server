@@ -3,7 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { Document, isDocument, isScalar, Node, visit, YAMLMap, YAMLSeq } from 'yaml';
+import { Document, isDocument, isPair, isScalar, Node, visit, YAMLMap, YAMLSeq } from 'yaml';
 import { CollectionItem, SourceToken, Token } from 'yaml/dist/parse/cst';
 import { VisitPath } from 'yaml/dist/parse/cst-visit';
 import { YamlNode } from '../jsonASTTypes';
@@ -13,8 +13,19 @@ type Visitor = (item: SourceToken, path: VisitPath) => number | symbol | Visitor
 export function getParent(doc: Document, nodeToFind: YamlNode): YamlNode | undefined {
   let parentNode: Node;
   visit(doc, (_, node: Node, path) => {
+    let found = false;
     if (node === nodeToFind) {
-      parentNode = path[path.length - 1] as Node;
+      let parentIndex = path.length - 1;
+      do {
+        parentNode = path[parentIndex] as Node;
+        parentIndex -= 2; // The parent will be a dummy map which we want to skip to get to the pair above it
+
+        if (isPair(parentNode) && isCompileTimeExpression(parentNode.key)) {
+          parentNode.value = nodeToFind;
+        } else {
+          found = true;
+        }
+      } while (!found);
       return visit.BREAK;
     }
   });
@@ -78,6 +89,10 @@ export function isInComment(tokens: Token[], offset: number): boolean {
 
 export function isCollectionItem(token: unknown): token is CollectionItem {
   return token['start'] !== undefined;
+}
+
+export function isCompileTimeExpression(node: unknown): boolean {
+  return isScalar(node) && typeof node.value === 'string' && node.value.startsWith('${{') && node.value.endsWith('}}');
 }
 
 function _visit(path: VisitPath, item: SourceToken, visitor: Visitor): number | symbol | Visitor | void {

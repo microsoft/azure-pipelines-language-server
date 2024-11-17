@@ -29,6 +29,7 @@ import {
   ArrayASTNodeImpl,
   BooleanASTNodeImpl,
 } from './jsonParser07';
+import { isCompileTimeExpression } from '../utils/astUtils';
 
 type NodeRange = [number, number, number];
 
@@ -77,16 +78,12 @@ function convertMap(node: YAMLMap<unknown, unknown>, parent: ASTNode, doc: Docum
   const result = new ObjectASTNodeImpl(parent, node, ...toFixedOffsetLength(range, lineCounter));
   for (const it of node.items) {
     if (isPair(it)) {
-      if (isCompileTimeExpression(it.key)) {
-        if (isMap(it.value)) {
-          result.properties.push(<PropertyASTNodeImpl>convertAST(result, it.value, doc, lineCounter));
-        }
-      } else {
-        result.properties.push(<PropertyASTNodeImpl>convertAST(result, it, doc, lineCounter));
-      }
+      result.properties.push(<PropertyASTNodeImpl>convertAST(result, it, doc, lineCounter));
     }
   }
-  return result;
+
+  // This is terrible but is a hack to get correct IntelliSense for incomplete pairs under a CTE.
+  return node.items.length === 0 && isPair(parent?.internalNode) && isScalar(parent.internalNode.value) ? convertScalar(parent.internalNode.value, parent) : result;
 }
 
 function convertPair(node: Pair, parent: ASTNode, doc: Document, lineCounter: LineCounter): ASTNode {
@@ -223,8 +220,4 @@ function collectFlowMapRange(node: YAMLMap): NodeRange {
   }
 
   return [start, end, end];
-}
-
-function isCompileTimeExpression(node: unknown): boolean {
-  return isScalar(node) && typeof node.value === 'string' && node.value.startsWith('${{') && node.value.endsWith('}}');
 }
