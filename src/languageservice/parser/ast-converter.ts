@@ -29,7 +29,6 @@ import {
   ArrayASTNodeImpl,
   BooleanASTNodeImpl,
 } from './jsonParser07';
-import { isCompileTimeExpression } from '../utils/astUtils';
 
 type NodeRange = [number, number, number];
 
@@ -118,16 +117,7 @@ function convertSeq(node: YAMLSeq, parent: ASTNode, doc: Document, lineCounter: 
   const result = new ArrayASTNodeImpl(parent, node, ...toOffsetLength(node.range));
   for (const it of node.items) {
     if (isNode(it)) {
-      let convertedNode: ASTNode | undefined;
-      if (isMap(it) && isCompileTimeExpression(it.items[0])) {
-        const { value } = it.items[0];
-        if (isNode(value)) {
-          convertedNode = convertAST(result, value, doc, lineCounter);
-        }
-      } else {
-        convertedNode = convertAST(result, it, doc, lineCounter);
-      }
-
+      const convertedNode = convertAST(result, it, doc, lineCounter);
       // due to recursion protection, convertAST may return undefined
       if (convertedNode) {
         result.children.push(convertedNode);

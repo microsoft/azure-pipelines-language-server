@@ -24,7 +24,7 @@ import { URI } from 'vscode-uri';
 import { Diagnostic, DiagnosticSeverity, Range } from 'vscode-languageserver-types';
 import { TextDocument } from 'vscode-languageserver-textdocument';
 import { isArrayEqual } from '../utils/arrUtils';
-import { isMap, isPair, Node, Pair, YAMLMap } from 'yaml';
+import { isMap, isPair, isSeq, Node, Pair, YAMLMap, YAMLSeq } from 'yaml';
 import { safeCreateUnicodeRegExp } from '../utils/strings';
 import { FilePatternAssociation } from '../services/yamlSchemaService';
 import { isCompileTimeExpression } from '../utils/astUtils';
@@ -180,7 +180,21 @@ export class ArrayASTNodeImpl extends ASTNodeImpl implements ArrayASTNode {
   public type: 'array' = 'array' as const;
   public items: ASTNode[];
 
-  constructor(parent: ASTNode, internalNode: Node, offset: number, length?: number) {
+  constructor(parent: ASTNode, internalNode: YAMLSeq<unknown>, offset: number, length?: number) {
+    // Delete expressions from internal representations for validation & completion comparison.
+    for (let i = 0; i < internalNode.items.length; i++) {
+      const it = internalNode.items[i];
+      if (isMap(it) && isCompileTimeExpression(it.items[0].key)) {
+        const { value } = it.items[0];
+        internalNode.delete(i);
+        if (isSeq(value)) {
+          for (const map of value.items) {
+            internalNode.add(map);
+          }
+        }
+      }
+    }
+
     super(parent, internalNode, offset, length);
     this.items = [];
   }
@@ -233,7 +247,7 @@ export class ObjectASTNodeImpl extends ASTNodeImpl implements ObjectASTNode {
   public properties: PropertyASTNode[];
 
   constructor(parent: ASTNode, internalNode: YAMLMap<unknown, unknown>, offset: number, length?: number) {
-    // Delete CTEs from internal representations for completion comparison.
+    // Delete expressions from internal representations for validation & completion comparison.
     for (let it of internalNode.items) {
       if (isCompileTimeExpression(it.key)) {
         internalNode.delete(it.key);

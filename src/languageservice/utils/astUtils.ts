@@ -18,9 +18,9 @@ export function getParent(doc: Document, nodeToFind: YamlNode): YamlNode | undef
       let parentIndex = path.length - 1;
       do {
         parentNode = path[parentIndex] as Node;
-        parentIndex -= 2; // The parent will be a dummy map which we want to skip to get to the pair above it
 
         if (isPair(parentNode) && isCompileTimeExpression(parentNode.key)) {
+          parentIndex -= 2; // The parent will be a dummy map which we want to skip to get to the pair above it
           parentNode.value = nodeToFind;
         } else {
           found = true;
