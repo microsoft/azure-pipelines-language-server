@@ -21,7 +21,7 @@ export class YAMLDefinition {
         this.promise = promiseConstructor || Promise;
     }
 
-    public doDefinition(document: TextDocument, position: Position, yamlDocument: YAMLDocument, workspaceRoot: URI): Thenable<Definition> {
+    public doDefinition(document: TextDocument, position: Position, yamlDocument: YAMLDocument, workspaceRoot: URI | undefined): Thenable<Definition> {
         const offset = document.offsetAt(position);
 
         const jsonDocument = yamlDocument.documents.length > 0 ? yamlDocument.documents[0] : null;
@@ -64,8 +64,13 @@ export class YAMLDefinition {
         // So create an actual URI, then .toString() it and skip the unnecessary encoding.
         let definitionUri = '';
         if (location.startsWith(path.sep)) {
-            // Substring to strip the leading separator.
-            definitionUri = Utils.joinPath(workspaceRoot, location.substring(1)).toString(true);
+            if (workspaceRoot !== undefined) {
+                // Substring to strip the leading separator.
+                definitionUri = Utils.joinPath(workspaceRoot, location.substring(1)).toString(true);
+            } else {
+                // Can't form an absolute path without a workspace root.
+                return this.promise.resolve(void 0);
+            }
         }
         else {
             definitionUri = Utils.resolvePath(
