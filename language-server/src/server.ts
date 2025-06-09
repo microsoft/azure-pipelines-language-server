@@ -83,11 +83,11 @@ let hasWorkspaceFolderCapability = false;
 // in the passed params the rootPath of the workspace plus the client capabilities.
 let capabilities: ClientCapabilities;
 let workspaceFolders = [];
-let workspaceRoot: URI;
+let workspaceRoot: URI | undefined;
 connection.onInitialize((params: InitializeParams): InitializeResult => {
 	capabilities = params.capabilities;
 	workspaceFolders = params["workspaceFolders"];
-	workspaceRoot = URI.parse(params.rootUri, true);
+	workspaceRoot = params.rootUri ? URI.parse(params.rootUri, true) : undefined;
 
 	function hasClientCapability(...keys: string[]) {
 		let c = params.capabilities;

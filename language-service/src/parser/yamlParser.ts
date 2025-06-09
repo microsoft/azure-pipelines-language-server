@@ -212,7 +212,7 @@ function addItemsToArrayNode(node: ArrayASTNode, items: Yaml.YAMLNode[]): void {
 			// Hoisted expressions must be the first (and only) property in an object,
 			// so we can safely check only the first key.
 			// TODO: Confirm the above statement.
-			if (item.kind === Yaml.Kind.MAP && isCompileTimeExpression(item.mappings[0])) {
+			if (item.kind === Yaml.Kind.MAP && item.mappings.length > 0 && isCompileTimeExpression(item.mappings[0])) {
 				const value = item.mappings[0].value;
 				if (value === null) {
 					// Incomplete object: they're still working on the value :).
@@ -247,8 +247,7 @@ function addItemsToArrayNode(node: ArrayASTNode, items: Yaml.YAMLNode[]): void {
 					itemNode = recursivelyBuildAst(node, value);
 				} else if (value.kind === Yaml.Kind.SCALAR) {
 					// False positive: no children. Add the item directly just like in the no-expression case.
-					// e.g. looping through an array parameter and using each one
-					// as a key or value.
+					// e.g. looping through an array parameter and using each one as a key or value.
 					// - ${{ each shorthand in parameters.taskShorthands }}:
 					//   - ${{ shorthand }}: echo 'Hi' <-- current item in the sequence
 					//                     ^ it's a map (object)
