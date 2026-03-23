@@ -11,7 +11,6 @@ import * as nls from 'vscode-nls';
 const localize = nls.loadMessageBundle();
 
 import * as Yaml from 'yaml-ast-parser'
-import { Schema, Type } from 'js-yaml';
 
 import { getLineStartPositions, getPosition, ILineColumn } from '../utils/documentPositionCalculator'
 
@@ -329,22 +328,7 @@ export function parse(text: string, customTags = []): YAMLDocument {
 	// typing only returns a YAMLDocument
 	const yamlDocs = []
 
-	let schemaWithAdditionalTags = Schema.create(customTags.map((tag) => {
-		const typeInfo = tag.split(' ');
-		return new Type(typeInfo[0], { kind: typeInfo[1] || 'scalar' });
-	}));
-
-	//We need compiledTypeMap to be available from schemaWithAdditionalTags before we add the new custom properties
-	customTags.map((tag) => {
-		const typeInfo = tag.split(' ');
-		schemaWithAdditionalTags.compiledTypeMap[typeInfo[0]] = new Type(typeInfo[0], { kind: typeInfo[1] || 'scalar' });
-	});
-
-	let additionalOptions: Yaml.LoadOptions = {
-		schema: schemaWithAdditionalTags
-	}
-
-	Yaml.loadAll(text, doc => yamlDocs.push(doc), additionalOptions);
+	Yaml.loadAll(text, doc => yamlDocs.push(doc), {});
 
 	return new YAMLDocument(yamlDocs.map(doc => createJSONDocument(doc, startPositions, text)));
 }
