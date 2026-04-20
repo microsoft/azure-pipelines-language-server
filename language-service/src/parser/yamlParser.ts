@@ -11,7 +11,7 @@ import * as nls from 'vscode-nls';
 const localize = nls.loadMessageBundle();
 
 import * as Yaml from 'yaml-ast-parser'
-import { Schema, Type } from 'js-yaml';
+import { DEFAULT_SCHEMA, Type } from 'js-yaml';
 
 import { getLineStartPositions, getPosition, ILineColumn } from '../utils/documentPositionCalculator'
 
@@ -329,7 +329,7 @@ export function parse(text: string, customTags = []): YAMLDocument {
 	// typing only returns a YAMLDocument
 	const yamlDocs = []
 
-	let schemaWithAdditionalTags = Schema.create(customTags.map((tag) => {
+	let schemaWithAdditionalTags = DEFAULT_SCHEMA.extend(customTags.map((tag) => {
 		const typeInfo = tag.split(' ');
 		return new Type(typeInfo[0], { kind: typeInfo[1] || 'scalar' });
 	}));
