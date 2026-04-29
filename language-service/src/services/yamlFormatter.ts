@@ -18,6 +18,12 @@ export function format(document: TextDocument, options: FormattingOptions, custo
 		return new jsyaml.Type(typeInfo[0], { kind: typeInfo[1] || 'scalar' });
 	}));
 
+	//We need compiledTypeMap to be available from schemaWithAdditionalTags before we add the new custom properties
+	customTags.map((tag) => {
+		const typeInfo = tag.split(' ');
+		schemaWithAdditionalTags.compiledTypeMap[typeInfo[0]] = new jsyaml.Type(typeInfo[0], { kind: typeInfo[1] || 'scalar' });
+	});
+
 	let additionalOptions: Yaml.LoadOptions = {
 		schema: schemaWithAdditionalTags
 	}
