@@ -33,7 +33,7 @@ export function assertHasContents(result: Hover): void {
 	}
 	else {
 		let hasAnyContent: boolean = false;
-		let contentArray: MarkedString[] = <MarkedString[]>(result.contents);
+		let contentArray: MarkedString[] = (result.contents) as MarkedString[];
 		for (let contentLine in contentArray) {
 			if (typeof(contentLine) == "string") {
 				hasAnyContent = contentLine.length > 0
