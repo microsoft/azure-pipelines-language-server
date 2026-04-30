@@ -13,7 +13,7 @@ import { TextDocument, Range, Position, FormattingOptions, TextEdit } from 'vsco
 export function format(document: TextDocument, options: FormattingOptions, customTags: Array<String>): TextEdit[] {
     const text = document.getText();
 
-    let schemaWithAdditionalTags = jsyaml.Schema.create(customTags.map((tag) => {
+    let schemaWithAdditionalTags = jsyaml.DEFAULT_SCHEMA.extend(customTags.map((tag) => {
 		const typeInfo = tag.split(' ');
 		return new jsyaml.Type(typeInfo[0], { kind: typeInfo[1] || 'scalar' });
 	}));
@@ -36,10 +36,10 @@ export function format(document: TextDocument, options: FormattingOptions, custo
     let newText;
     if (documents.length == 1) {
         const yaml = documents[0]
-        newText = jsyaml.safeDump(yaml, dumpOptions)
+        newText = jsyaml.dump(yaml, dumpOptions)
     }
     else {
-        const formatted = documents.map(d => jsyaml.safeDump(d, dumpOptions))
+        const formatted = documents.map(d => jsyaml.dump(d, dumpOptions))
         newText = '%YAML 1.2' + EOL + '---' + EOL + formatted.join('...' + EOL + '---' + EOL) + '...' + EOL
     }
 

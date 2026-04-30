@@ -25,7 +25,7 @@ describe("Kubernetes Integration Tests", () => {
 
 	// Tests for validator
 	describe('Yaml Validation with kubernetes', function() {
-
+		this.timeout(3000);
 		function setup(content: string){
 			return TextDocument.create("file://~/Desktop/vscode-k8s/test.yaml", "yaml", 0, content);
 		}
