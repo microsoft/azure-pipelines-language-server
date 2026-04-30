@@ -6,40 +6,33 @@
 'use strict';
 
 import * as jsyaml from 'js-yaml';
-import * as Yaml from 'yaml-ast-parser'
 import { EOL } from 'os';
 import { TextDocument, Range, Position, FormattingOptions, TextEdit } from 'vscode-languageserver-types';
 
 export function format(document: TextDocument, options: FormattingOptions, customTags: Array<String>): TextEdit[] {
     const text = document.getText();
 
-    let schemaWithAdditionalTags = jsyaml.Schema.create(customTags.map((tag) => {
+    let schemaWithAdditionalTags = jsyaml.DEFAULT_SCHEMA.extend(customTags.map((tag) => {
 		const typeInfo = tag.split(' ');
-		return new jsyaml.Type(typeInfo[0], { kind: typeInfo[1] || 'scalar' });
+		return new jsyaml.Type(typeInfo[0], { kind: (typeInfo[1] || 'scalar') as 'scalar' | 'mapping' | 'sequence' });
 	}));
 
-	//We need compiledTypeMap to be available from schemaWithAdditionalTags before we add the new custom properties
-	customTags.map((tag) => {
-		const typeInfo = tag.split(' ');
-		schemaWithAdditionalTags.compiledTypeMap[typeInfo[0]] = new jsyaml.Type(typeInfo[0], { kind: typeInfo[1] || 'scalar' });
-	});
-
-	let additionalOptions: Yaml.LoadOptions = {
+	let additionalOptions: jsyaml.LoadOptions = {
 		schema: schemaWithAdditionalTags
 	}
 
     const documents = []
     jsyaml.loadAll(text, doc => documents.push(doc), additionalOptions)
 
-    const dumpOptions = { indent: options.tabSize, noCompatMode: true };
+    const dumpOptions: jsyaml.DumpOptions = { indent: options.tabSize, schema: schemaWithAdditionalTags };
 
     let newText;
     if (documents.length == 1) {
         const yaml = documents[0]
-        newText = jsyaml.safeDump(yaml, dumpOptions)
+        newText = jsyaml.dump(yaml, dumpOptions)
     }
     else {
-        const formatted = documents.map(d => jsyaml.safeDump(d, dumpOptions))
+        const formatted = documents.map(d => jsyaml.dump(d, dumpOptions))
         newText = '%YAML 1.2' + EOL + '---' + EOL + formatted.join('...' + EOL + '---' + EOL) + '...' + EOL
     }
 
