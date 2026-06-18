@@ -42,7 +42,8 @@ jobs:
 ===
 `);
         assert.equal(diagnostics.length, 1);
-        assert.ok(diagnostics[0].message.indexOf("single-document") >= 0);
+        const message = diagnostics[0].message;
+        assert.ok(typeof message === 'string' && message.indexOf("single-document") >= 0);
     });
 
     // In truth, these tests should probably all be rewritten to test parser/yamlParser,
