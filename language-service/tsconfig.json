@@ -11,8 +11,7 @@
 			"dom"
 		],
 		"outDir": "./lib",
-		"noUnusedLocals": true,
-		"skipLibCheck": true
+		"noUnusedLocals": true
 	},
 	"include": [
 		"src"
