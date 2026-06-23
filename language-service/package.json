@@ -36,7 +36,7 @@
     "url": "https://github.com/microsoft/azure-pipelines-language-server.git"
   },
   "dependencies": {
-    "js-yaml": "4.1.1",
+    "js-yaml": "4.2.0",
     "jsonc-parser": "2.0.2",
     "vscode-json-languageservice": "^4.0.2",
     "vscode-languageserver-types": "^3.16.0",
@@ -63,7 +63,8 @@
     "webpack-cli": "^4.5.0"
   },
   "overrides": {
-    "serialize-javascript": "7.0.5"
+    "serialize-javascript": "7.0.5",
+    "js-yaml": "4.2.0"
   },
   "scripts": {
     "build": "npm run clean && npm run compile && webpack --mode production && npm pack",
