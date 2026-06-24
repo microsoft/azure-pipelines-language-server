@@ -1,3 +1,6 @@
+#### 0.9.0
+- Updated `js-yaml`, `mocha`, and `webpack` to patched versions and added a `serialize-javascript` override to fix vulnerabilities [#PR-179](https://github.com/microsoft/azure-pipelines-language-server/pull/179) and [#PR-180](https://github.com/microsoft/azure-pipelines-language-server/pull/180)
+
 #### 0.8.0
 - Added "go to definition" support for templates [#PR-157](https://github.com/microsoft/azure-pipelines-language-server/pull/157) - thanks @Stuart-Wilcox!
 - Added a standalone `azure-pipelines-language-server` executable [#PR-147](https://github.com/microsoft/azure-pipelines-language-server/pull/147) - thanks @williamboman!
