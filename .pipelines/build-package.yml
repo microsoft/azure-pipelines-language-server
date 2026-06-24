@@ -24,10 +24,10 @@ jobs:
   - template: /.pipelines/${{ format('version-{0}.yml', parameters.configuration) }}@self
     parameters:
       root: ${{ parameters.root }}
-  - task: NodeTool@0
-    displayName: Install Node 16 LTS or greater
+  - task: UseNode@1
+    displayName: Install Node 20.20.0
     inputs:
-      versionSpec: ">=16.13.0"
+      version: "20.20.0"
   - script: npm ci
     displayName: npm ci
     workingDirectory: ${{ parameters.root }}
@@ -76,6 +76,17 @@ jobs:
     - bash: npm install
       displayName: Prepare to create GitHub Release
       workingDirectory: '$(Build.SourcesDirectory)/.pipelines/github-release'
+  # Publish to npm only after every release gate above (changelog validation, etc.)
+  # has passed, since publishing is irreversible.
+  - ${{ if eq( parameters.configuration, 'release') }}:
+    - script: |
+        set -euo pipefail
+        npm config set //registry.npmjs.org/:_authToken "$NPM_TOKEN"
+        npm publish "${{ parameters.packagename }}-$(cat version.txt).tgz" --registry https://registry.npmjs.org/ --access public
+      displayName: Publish package to npm
+      workingDirectory: ${{ parameters.root }}
+      env:
+        NPM_TOKEN: $(npm-automation.token)
   - ${{ if eq( parameters.configuration, 'release') }}:
     - bash: |
         SCRIPT=.pipelines/github-release/github-release.js
