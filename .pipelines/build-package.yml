@@ -96,6 +96,7 @@ jobs:
         VERSION_TAG=$PACKAGE_NAME/v$PACKAGE_VERSION
         node $SCRIPT $CONTENT $CHANGELOG $VERSION_TAG $GITHUB_TOKEN
       displayName: Create GitHub Release
+      continueOnError: true
       env:
         GITHUB_TOKEN: $(GitHubSecret)
         STAGE_DIR: ${{ format('$(Build.ArtifactStagingDirectory)/{0}', parameters.packageName) }}
