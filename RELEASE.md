@@ -1,5 +1,7 @@
 # Release process
 
+The service and server release pipelines publish by default. To validate a release without publishing, set **Build and validate without publishing** (`dryRun`) to `true` when queueing either pipeline. A dry run performs the complete build, test, pack, tarball-count, and `_manifest/` validation flow, but does not run ESRP or create a GitHub Release.
+
 1. Choose your new target version number. For this, we'll use "0.1.2".
 2. Make a branch to ship from. `git switch -c ship-0.1.2`
 3. Release the service first. `cd language-service`

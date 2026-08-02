@@ -3,6 +3,12 @@
 
 # Release build script for language-service
 # Only trigger manually
+parameters:
+- name: dryRun
+  displayName: Build and validate without publishing
+  type: boolean
+  default: false
+
 trigger: none
 pr: none
 variables:
@@ -41,3 +47,4 @@ extends:
         name: 'build_language_service'
         root: 'language-service'
         packagename: 'azure-pipelines-language-service'
+        dryRun: ${{ parameters.dryRun }}
