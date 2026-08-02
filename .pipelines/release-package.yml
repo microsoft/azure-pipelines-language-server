@@ -1,0 +1,93 @@
+parameters:
+  name: ''
+  root: ''
+  packagename: ''
+
+stages:
+- stage: BuildAndPack
+  displayName: Build, test, and pack
+  jobs:
+  - template: /.pipelines/build-package.yml@self
+    parameters:
+      name: ${{ parameters.name }}
+      root: ${{ parameters.root }}
+      configuration: release
+
+- stage: PublishToNpmViaESRP
+  displayName: Publish to npm via ESRP
+  dependsOn: BuildAndPack
+  jobs:
+  - job: esrp
+    displayName: ESRP Release (npm)
+    pool:
+      name: 1ES-ABTT-Shared-Pool
+      image: abtt-windows-2025
+      os: windows
+    templateContext:
+      type: releaseJob
+      isProduction: true
+      inputs:
+      - input: pipelineArtifact
+        artifactName: npm-packages
+        targetPath: $(Pipeline.Workspace)/npm-packages
+    steps:
+    - task: EsrpRelease@12
+      displayName: Publish package to npm via ESRP
+      inputs:
+        connectedservicename: '$(EsrpServiceConnection)'
+        usemanagedidentity: true
+        keyvaultname: '$(EsrpKeyVault)'
+        signcertname: '$(EsrpSignCert)'
+        clientid: '$(EsrpClientId)'
+        intent: PackageDistribution
+        contenttype: npm
+        contentsource: Folder
+        folderlocation: '$(Pipeline.Workspace)/npm-packages/packages'
+        waitforreleasecompletion: true
+        owners: '$(EsrpOwners)'
+        approvers: '$(EsrpApprovers)'
+        serviceendpointurl: '$(EsrpServiceEndpointUrl)'
+        mainpublisher: '$(EsrpMainPublisher)'
+        domaintenantid: '$(EsrpDomainTenantId)'
+
+- stage: CreateGitHubRelease
+  displayName: Create GitHub Release
+  dependsOn: PublishToNpmViaESRP
+  jobs:
+  - job: github_release
+    displayName: Create GitHub Release
+    pool:
+      name: 1ES-ABTT-Shared-Pool
+      image: abtt-ubuntu-2404
+      os: linux
+    templateContext:
+      inputs:
+      - input: pipelineArtifact
+        artifactName: npm-packages
+        targetPath: $(Pipeline.Workspace)/npm-packages
+    steps:
+    - task: UseNode@1
+      displayName: Install Node 20.20.0
+      inputs:
+        version: '20.20.0'
+    - task: NpmAuthenticate@0
+      displayName: Authenticate npm
+      inputs:
+        workingFile: .pipelines/github-release/.npmrc
+    - script: npm ci
+      displayName: Install GitHub Release dependencies
+      workingDirectory: .pipelines/github-release
+    - bash: |
+        set -euo pipefail
+        SCRIPT=.pipelines/github-release/github-release.js
+        METADATA_DIR="$(Pipeline.Workspace)/npm-packages/release-metadata"
+        PACKAGE_VERSION=$(cat "$METADATA_DIR/version.txt")
+        CONTENT="$(Pipeline.Workspace)/npm-packages/packages/${PACKAGE_NAME}-${PACKAGE_VERSION}.tgz"
+        CHANGELOG="$METADATA_DIR/minichangelog.txt"
+        VERSION_TAG="${PACKAGE_NAME}/v${PACKAGE_VERSION}"
+        node "$SCRIPT" "$CONTENT" "$CHANGELOG" "$VERSION_TAG" "$GITHUB_TOKEN"
+      displayName: Create GitHub Release
+      continueOnError: true
+      env:
+        GITHUB_TOKEN: $(GitHubSecret)
+        PACKAGE_NAME: ${{ parameters.packagename }}

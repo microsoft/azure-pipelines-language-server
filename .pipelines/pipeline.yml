@@ -30,13 +30,9 @@ extends:
         parameters:
           name: 'build_language_service'
           root: 'language-service'
-          packagename: 'azure-pipelines-language-service'
-          tarballPath: 'language-service'
           configuration: 'ci'
       - template: /.pipelines/build-package.yml@self
         parameters:
           name: 'build_language_server'
           root: 'language-server'
-          packagename: 'azure-pipelines-language-server'
-          tarballPath: 'language-server'
           configuration: 'ci'

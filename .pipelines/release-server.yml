@@ -6,7 +6,13 @@
 trigger: none
 pr: none
 variables:
-- group: npm-tokens
+- group: esrp-npm-release
+- name: EsrpMainPublisher
+  value: 'ESRPRELPACMAN'
+- name: EsrpServiceEndpointUrl
+  value: 'https://api.esrp.microsoft.com'
+- name: EsrpDomainTenantId
+  value: '975f013f-7f24-47e8-a7d3-abc4752bf346'
 resources:
   repositories:
   - repository: 1ESPipelineTemplates
@@ -21,21 +27,17 @@ extends:
     sdl:
       sourceAnalysisPool:
         name: 1ES-ABTT-Shared-Pool
-        image: abtt-windows-2022
+        image: abtt-windows-2025
         os: windows
     pool:
       name: 1ES-ABTT-Shared-Pool
-      image: abtt-ubuntu-2204
+      image: abtt-ubuntu-2404
       os: linux
     customBuildTags:
     - ES365AIMigrationTooling
     stages:
-    - stage: stage
-      jobs:
-      - template: /.pipelines/build-package.yml@self
-        parameters:
-          name: 'build_language_server'
-          root: 'language-server'
-          packagename: 'azure-pipelines-language-server'
-          tarballPath: 'language-server'
-          configuration: 'release'
+    - template: /.pipelines/release-package.yml@self
+      parameters:
+        name: 'build_language_server'
+        root: 'language-server'
+        packagename: 'azure-pipelines-language-server'
