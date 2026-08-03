@@ -61,6 +61,7 @@
   },
   "scripts": {
     "build": "npm run compile && npm pack",
+    "build:pipeline": "npm run compile",
     "compile": "tsc -p .",
     "watch": "tsc -watch -p .",
     "test": "mocha --require ts-node/register --ui bdd ./test/**/*.test.ts",

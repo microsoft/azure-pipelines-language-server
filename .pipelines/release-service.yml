@@ -3,10 +3,16 @@
 
 # Release build script for language-service
 # Only trigger manually
+parameters:
+- name: dryRun
+  displayName: Build and validate without publishing
+  type: boolean
+  default: false
+
 trigger: none
 pr: none
 variables:
-- group: npm-tokens
+- group: esrp-npm-release
 resources:
   repositories:
   - repository: 1ESPipelineTemplates
@@ -21,21 +27,18 @@ extends:
     sdl:
       sourceAnalysisPool:
         name: 1ES-ABTT-Shared-Pool
-        image: abtt-windows-2022
+        image: abtt-windows-2025
         os: windows
     pool:
       name: 1ES-ABTT-Shared-Pool
-      image: abtt-ubuntu-2204
+      image: abtt-ubuntu-2404
       os: linux
     customBuildTags:
     - ES365AIMigrationTooling
     stages:
-    - stage: stage
-      jobs:
-      - template: /.pipelines/build-package.yml@self
-        parameters:
-          name: 'build_language_service'
-          root: 'language-service'
-          packagename: 'azure-pipelines-language-service'
-          tarballPath: 'language-service'
-          configuration: 'release'
+    - template: /.pipelines/release-package.yml@self
+      parameters:
+        name: 'build_language_service'
+        root: 'language-service'
+        packagename: 'azure-pipelines-language-service'
+        dryRun: ${{ parameters.dryRun }}

@@ -1,12 +1,14 @@
 # Release process
 
+The service and server release pipelines publish by default. To validate a release without publishing, set **Build and validate without publishing** (`dryRun`) to `true` when queueing either pipeline. A dry run performs the complete build, test, pack, tarball-count, and `_manifest/` validation flow, but does not run ESRP or create a GitHub Release.
+
 1. Choose your new target version number. For this, we'll use "0.1.2".
 2. Make a branch to ship from. `git switch -c ship-0.1.2`
 3. Release the service first. `cd language-service`
     1. Bump the language-service version. `npm version --no-git-tag-version 0.1.2`
     2. Ensure there's an entry for this new version in the service `changelog.md`.
     3. Commit and push. `git commit -am "version service" && git push -u origin ship-0.1.2`
-    4. **This step creates a GitHub Release and publishes the package to npm** Run the [service release pipeline][release-service], targeting your ship branch. (NB: make sure you're logged into Azure DevOps. It's a public project so you can view it anonymously, and may have to explicitly log in from the upper right.) 
+    4. **This step publishes the package to npm through ESRP, then creates a GitHub Release.** Run the [service release pipeline][release-service], targeting your ship branch, and complete the ESRP approval. (NB: make sure you're logged into Azure DevOps. It's a public project so you can view it anonymously, and may have to explicitly log in from the upper right.)
     5. Verify the new version is live on npm and that the GitHub release was created.
 4. Bump the dependency in the server.
     1. Get to the right directory. `cd ../language-server`
@@ -15,7 +17,7 @@
     1. Bump the language-server version. `npm version --no-git-tag-version 0.1.2`
     2. Ensure there's an entry for this new version in the server `changelog.md`. (TODO/improvement: we should hardlink the server/service changelog files, as there's never a time when they should differ.)
     3. Commit and push. `git commit -am "version server" && git push -u origin ship-0.1.2`
-    4. **This step creates a GitHub Release and publishes the package to npm** Run the [server release pipeline][release-server], targeting your ship branch. The pipeline publishes to npm automatically; no manual `npm publish` is required.
+    4. **This step publishes the package to npm through ESRP, then creates a GitHub Release.** Run the [server release pipeline][release-server], targeting your ship branch, and complete the ESRP approval.
     5. Verify the new version is live on npm and that the GitHub release was created.
 6. Create a PR from your ship branch to `main`. Merge it. :tada: you're done!
 

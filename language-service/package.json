@@ -68,6 +68,7 @@
   },
   "scripts": {
     "build": "npm run clean && npm run compile && webpack --mode production && npm pack",
+    "build:pipeline": "npm run clean && npm run compile && webpack --mode production",
     "compile": "tsc -p .",
     "watch": "tsc -watch -p .",
     "clean": "rimraf lib _bundles",
