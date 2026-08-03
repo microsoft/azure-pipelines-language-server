@@ -33,8 +33,8 @@ jobs:
   - script: npm ci
     displayName: npm ci
     workingDirectory: ${{ parameters.root }}
-  - script: npm run build
-    displayName: Build and generate a package
+  - script: npm run build:pipeline
+    displayName: Build package contents
     workingDirectory: ${{ parameters.root }}
   - script: npx mocha --require ts-node/register --ui bdd ./test/**/*.test.ts --reporter mocha-junit-reporter
     displayName: Run tests
