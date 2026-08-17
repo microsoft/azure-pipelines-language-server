@@ -1,3 +1,6 @@
+#### 0.9.1
+- Updated `js-yaml`, `brace-expansion` and `fast-uri` packages to patched versions to fix vulnerabilities [PR#192](https://github.com/microsoft/azure-pipelines-language-server/pull/192)
+
 #### 0.9.0
 - Updated `js-yaml`, `mocha`, and `webpack` to patched versions and added a `serialize-javascript` override to fix vulnerabilities [#PR-179](https://github.com/microsoft/azure-pipelines-language-server/pull/179) and [#PR-180](https://github.com/microsoft/azure-pipelines-language-server/pull/180)
 

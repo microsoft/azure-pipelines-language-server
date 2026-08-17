@@ -1,7 +1,7 @@
 {
   "name": "azure-pipelines-language-server",
   "description": "Azure Pipelines language server",
-  "version": "0.9.0",
+  "version": "0.9.1",
   "author": "Microsoft",
   "license": "MIT",
   "contributors": [
@@ -56,7 +56,9 @@
     "typescript": "~4.4.4"
   },
   "overrides": {
-    "js-yaml": "4.2.0",
+    "js-yaml": "4.3.1",
+    "brace-expansion@1.x": {".": "^1.1.18"},
+    "brace-expansion@2.x": {".": "^2.1.4"},
     "serialize-javascript": "7.0.5"
   },
   "scripts": {
