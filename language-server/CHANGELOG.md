@@ -1,3 +1,7 @@
+#### 0.9.2
+- Updated the language-server to use the new language service published in [PR#192](https://github.com/microsoft/azure-pipelines-language-server/pull/192) [PR#193](https://github.com/microsoft/azure-pipelines-language-server/pull/193)
+
+
 #### 0.9.1
 - Updated `js-yaml` and `brace-expansion` packages to patched versions to fix vulnerabilities [PR#192](https://github.com/microsoft/azure-pipelines-language-server/pull/192)
 
