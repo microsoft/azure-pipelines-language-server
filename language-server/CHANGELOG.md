@@ -1,3 +1,7 @@
+#### 0.9.3
+- Updated `js-yaml` to patched version and added a `browserslist` override to fix vulnerabilities [PR#199](https://github.com/microsoft/azure-pipelines-language-server/pull/199)
+- Updated language-server to use latest language service version published in [PR#198](https://github.com/microsoft/azure-pipelines-language-server/pull/198)
+
 #### 0.9.2
 - Updated the language-server to use the new language service published in [PR#192](https://github.com/microsoft/azure-pipelines-language-server/pull/192) [PR#193](https://github.com/microsoft/azure-pipelines-language-server/pull/193)
 
