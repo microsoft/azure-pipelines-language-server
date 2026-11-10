@@ -1,3 +1,6 @@
+#### 0.9.4
+- Updated `azure-pipelines-language-service` to 0.9.3 and `brace-expansion` overrides to patched versions to fix vulnerabilities [PR#201](https://github.com/microsoft/azure-pipelines-language-server/pull/201)
+
 #### 0.9.3
 - Updated `js-yaml` to patched version and added a `browserslist` override to fix vulnerabilities [PR#199](https://github.com/microsoft/azure-pipelines-language-server/pull/199)
 - Updated language-server to use latest language service version published in [PR#198](https://github.com/microsoft/azure-pipelines-language-server/pull/198)
