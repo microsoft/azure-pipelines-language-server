@@ -1,3 +1,6 @@
+#### 0.9.3
+- Updated `brace-expansion` and `fast-uri` to patched versions to fix vulnerabilities [PR#200](https://github.com/microsoft/azure-pipelines-language-server/pull/200)
+
 #### 0.9.2
 - Updated `js-yaml` , `fast-uri` to patched versions and added a `browserslist` override to fix vulnerabilities [PR#198](https://github.com/microsoft/azure-pipelines-language-server/pull/198)
 
